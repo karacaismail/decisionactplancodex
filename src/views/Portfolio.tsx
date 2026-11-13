@@ -48,23 +48,33 @@ export default function Portfolio({
     comparison = rows.filter((r) => ids.includes(r.p.id))
   return (
     <>
-      <div className="folio-head">
-        <div>
-          <span className="office-kicker">
-            <Stack /> Portföy özeti
-          </span>
-          <h2>{plans.length} plan</h2>
-          <p>
-            {rows.filter((r) => !r.p.example).length} gerçek plan ·{' '}
-            {rows.filter((r) => r.p.example).length} örnek plan
-          </p>
-        </div>
-        <dl>
-          <dt>Açık görevler</dt>
-          <dd>{rows.reduce((s, r) => s + (r.p.example ? 0 : r.tasks), 0)}</dd>
-          <dt>Gerçek planlarda</dt>
-        </dl>
-      </div>
+      <section className="portfolio-metrics" aria-label="Portföy özeti">
+        {[
+          {
+            label: 'Gerçek plan',
+            value: rows.filter((r) => !r.p.example).length,
+            icon: Briefcase,
+          },
+          {
+            label: 'Örnek plan',
+            value: rows.filter((r) => r.p.example).length,
+            icon: Stack,
+          },
+          {
+            label: 'Gerçek planlarda açık görev',
+            value: rows.reduce((n, r) => n + (r.p.example ? 0 : r.tasks), 0),
+            icon: Scales,
+          },
+        ].map(({ label, value, icon: Icon }) => (
+          <div key={label}>
+            <span>
+              <Icon size={17} />
+              {label}
+            </span>
+            <strong>{value}</strong>
+          </div>
+        ))}
+      </section>
       <section className="panel">
         <div className="section-head">
           <div>
@@ -126,7 +136,20 @@ export default function Portfolio({
                 {stages[stage].name}
               </small>
             </div>
-            <span className="office-chip">{advice.outcome}</span>
+            <span
+              className="office-chip"
+              data-tone={
+                advice.outcome === 'Durdurun'
+                  ? 'negative'
+                  : advice.outcome === 'Bekletin'
+                    ? 'warning'
+                    : advice.outcome === 'İlerleyin'
+                      ? 'positive'
+                      : undefined
+              }
+            >
+              {advice.outcome}
+            </span>
             <Button onClick={() => open(p)}>
               Planı aç <ArrowRight />
             </Button>

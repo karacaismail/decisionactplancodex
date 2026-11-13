@@ -32,3 +32,16 @@
   font-size: 18px;
   gap: 5px;
 }
+
+.drawer-brand {
+  padding: 0 0 16px;
+  margin: 0 0 10px;
+  border-bottom: 1px solid var(--line);
+}
+.drawer-nav button {
+  min-height: var(--hit);
+  font-weight: 480;
+}
+.drawer-nav button[aria-current='page'] {
+  font-weight: 620;
+}

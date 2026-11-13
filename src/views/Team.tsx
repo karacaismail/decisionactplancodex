@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Alert, Button, Input, Select, Tabs } from 'antd'
-import { Buildings, Key, UsersThree } from '@phosphor-icons/react'
+import {
+  Buildings,
+  Key,
+  UsersThree,
+  UserGear,
+  PencilSimpleLine,
+  SealCheck,
+  Eye,
+} from '@phosphor-icons/react'
 import {
   teamRequest,
   roleLabel,
@@ -68,7 +76,7 @@ export default function Team({
     )
   }
   return (
-    <div className="office-layout">
+    <div className={session ? 'office-layout' : 'office-layout access-layout'}>
       <section className="panel">
         <div className="office-heading">
           <Buildings size={27} />
@@ -171,20 +179,43 @@ export default function Team({
         )}
       </section>
       {!session ? (
-        <aside className="panel">
+        <aside className="panel access-guide">
           <div className="office-heading">
             <Key size={25} />
             <h2>Kim ne yapabilir?</h2>
           </div>
-          <dl className="ops-dl">
-            <dt>Yönetici</dt>
-            <dd>Üye davet eder ve erişimi kaldırır.</dd>
-            <dt>Düzenleyen</dt>
-            <dd>Planları, görevleri ve kararları günceller.</dd>
-            <dt>İnceleyen</dt>
-            <dd>Belirli bir plan sürümünü onaylar veya düzeltmeye gönderir.</dd>
-            <dt>Okuyucu</dt>
-            <dd>Kurumun planlarını ve raporlarını okur.</dd>
+          <dl className="access-roles">
+            {[
+              {
+                icon: UserGear,
+                role: 'Yönetici',
+                detail: 'Üye davet eder ve erişimi kaldırır.',
+              },
+              {
+                icon: PencilSimpleLine,
+                role: 'Düzenleyen',
+                detail: 'Planları, görevleri ve kararları günceller.',
+              },
+              {
+                icon: SealCheck,
+                role: 'İnceleyen',
+                detail:
+                  'Belirli bir plan sürümünü onaylar veya düzeltmeye gönderir.',
+              },
+              {
+                icon: Eye,
+                role: 'Okuyucu',
+                detail: 'Kurumun planlarını ve raporlarını görür.',
+              },
+            ].map(({ icon: Icon, role, detail }) => (
+              <div key={role}>
+                <dt>
+                  <Icon size={19} />
+                  {role}
+                </dt>
+                <dd>{detail}</dd>
+              </div>
+            ))}
           </dl>
           <p>
             Bu Mac kurum kayıtlarını yerel veritabanında saklar. Kişisel

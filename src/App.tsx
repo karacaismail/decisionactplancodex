@@ -29,10 +29,12 @@ import {
   Sun,
   UploadSimple,
   SlidersHorizontal,
+  MagnifyingGlass,
 } from '@phosphor-icons/react'
 import { usePlans } from './usePlans'
 import { currentStage, validatePlan } from './domain'
 import { download } from './store'
+import { identity } from './ui/identity'
 import { navigation, type Page } from './ui/navigation'
 import { launchPlan, type Launch } from './operations'
 import { teamRequest, roleLabel, type Session } from './team'
@@ -140,6 +142,10 @@ function Workspace({
     return () => window.removeEventListener('hashchange', cb)
   }, [])
   useEffect(() => {
+    for (const [key, value] of Object.entries(
+      identity[dark ? 'dark' : 'light'],
+    ))
+      document.documentElement.style.setProperty('--' + key, value)
     document.documentElement.dataset.theme = dark ? 'dark' : 'light'
     try {
       localStorage.setItem('atlas-theme', dark ? 'dark' : 'light')
@@ -225,25 +231,53 @@ function Workspace({
     setStage(0)
     go('editor')
   }
+  const [quickOpen, setQuickOpen] = useState(false),
+    [query, setQuery] = useState('')
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setQuery('')
+        setQuickOpen((v) => !v)
+      }
+    }
+    window.addEventListener('keydown', key)
+    return () => window.removeEventListener('keydown', key)
+  }, [])
+  const matches = navigation.filter((n) =>
+    n.label
+      .toLocaleLowerCase('tr')
+      .includes(query.trim().toLocaleLowerCase('tr')),
+  )
+  function jump(page: Page) {
+    setQuickOpen(false)
+    go(page)
+  }
+  const colors = identity[dark ? 'dark' : 'light']
   const title = navigation.find((n) => n.id === page)!.label
   return (
     <ConfigProvider
       locale={trTR}
       theme={{
+        components: { Button: { primaryColor: colors.onAccent } },
         algorithm: dark ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
           fontFamily: '"Outfit Variable", Outfit, sans-serif',
           fontSize: 16,
-          colorPrimary: dark ? '#f2aa78' : '#99461f',
-          colorText: dark ? '#f1f1e9' : '#1e3338',
-          colorTextSecondary: dark ? '#b7c9c6' : '#54696c',
-          colorBgContainer: dark ? '#213137' : '#ffffff',
-          colorBgElevated: dark ? '#263940' : '#ffffff',
-          colorBorder: dark ? '#557072' : '#a6b1ad',
-          borderRadius: 9,
+          colorPrimary: colors.accent,
+          colorText: colors.ink,
+          colorTextSecondary: colors.muted,
+          colorBgContainer: colors.paper,
+          colorBgElevated: colors.elevated,
+          colorBorder: colors.control,
+          borderRadius: 6,
+          fontSizeSM: 14,
           controlHeight: 42,
           motionEaseInOut: 'cubic-bezier(.65,0,.35,1)',
           controlOutlineWidth: 0,
+          colorBorderSecondary: colors.line,
+          colorFillTertiary: colors.subtle,
+          colorTextPlaceholder: colors.muted,
         },
       }}
     >
@@ -278,6 +312,18 @@ function Workspace({
               </Suspense>
             )}
             <div className="toolbar">
+              {wide && (
+                <button
+                  className="jump-control"
+                  onClick={() => {
+                    setQuery('')
+                    setQuickOpen(true)
+                  }}
+                >
+                  <MagnifyingGlass size={17} />
+                  Bölüm bul <kbd>⌘ K</kbd>
+                </button>
+              )}
               {wide && (
                 <span className="save" role="status">
                   <CheckCircle size={17} />
@@ -336,7 +382,7 @@ function Workspace({
             <div className="page-heading">
               <div>
                 <h1>{title}</h1>
-                <p>{descriptions[page]}</p>
+                {page !== 'editor' && <p>{descriptions[page]}</p>}
               </div>
               <Button
                 disabled={readOnly}
@@ -422,6 +468,7 @@ function Workspace({
                     suffixIcon={<CaretDown />}
                   />
                   {p.example && <span className="sample">Örnek plan</span>}
+                  <span className="revision-note">Sürüm {p.revision}</span>
                   {!wide && (
                     <span className="mobile-save" role="status">
                       {store.status}
@@ -507,6 +554,36 @@ function Workspace({
           </footer>
         </div>
       </div>
+      <Modal
+        title="Bölüm bul"
+        open={quickOpen}
+        footer={null}
+        onCancel={() => setQuickOpen(false)}
+        afterOpenChange={(open) => {
+          if (open) document.getElementById('section-query')?.focus()
+        }}
+      >
+        <Input
+          id="section-query"
+          aria-label="Bölüm adı"
+          prefix={<MagnifyingGlass />}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onPressEnter={() => {
+            if (matches.length === 1) jump(matches[0].id)
+          }}
+          placeholder="Bölüm adı yazın"
+        />
+        <div className="jump-results">
+          {matches.map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => jump(id)}>
+              <Icon size={19} />
+              {label}
+            </button>
+          ))}
+          {!matches.length && <p>Bölüm bulunamadı.</p>}
+        </div>
+      </Modal>
       <Modal
         title="Yeni plan"
         open={dialog}

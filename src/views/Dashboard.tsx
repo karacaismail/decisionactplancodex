@@ -1,18 +1,14 @@
 import { Button } from 'antd'
 import {
-  Buildings,
-  ClipboardText,
-  Briefcase,
   ArrowRight,
   ArrowUpRight,
-  Check,
   Flag,
   Path,
-  Stack,
   Notebook,
-  Files,
-  MapTrifold,
+  ClipboardText,
   ClockCounterClockwise,
+  Files,
+  BookOpenText,
 } from '@phosphor-icons/react'
 import {
   activeSteps,
@@ -23,8 +19,9 @@ import {
   effective,
   type Plan,
 } from '../domain'
+import { activeWork } from '../operations'
 import { steps, stages } from '../data/steps'
-import CompassArt from '../ui/CompassArt'
+import Relief from '../ui/Relief'
 import type { Page } from '../ui/navigation'
 
 export default function Dashboard({
@@ -38,154 +35,155 @@ export default function Dashboard({
 }) {
   const stage = currentStage(p),
     active = activeSteps(p),
-    done = steps.filter((s) => active.includes(s.id) && complete(p, s)).length
-  const approvedCount = stages.filter((_, i) => approved(p, i)).length
+    approvedCount = stages.filter((_, i) => approved(p, i)).length
+  const done = steps.filter(
+    (s) => active.includes(s.id) && complete(p, s),
+  ).length
+  const metrics = [
+    {
+      label: 'Onaylı karar',
+      value: approvedCount,
+      unit: '/ 8',
+      icon: Flag,
+      page: 'editor',
+    },
+    {
+      label: 'Tamamlanan adım',
+      value: done,
+      unit: '/ ' + active.length,
+      icon: Path,
+      page: 'editor',
+    },
+    {
+      label: 'Kanıt kaydı',
+      value: p.evidence.length,
+      unit: '',
+      icon: Notebook,
+      page: 'evidence',
+    },
+    {
+      label: 'Açık görev',
+      value: activeWork(p).length,
+      unit: '',
+      icon: ClipboardText,
+      page: 'work',
+    },
+  ] as const
   return (
     <>
-      <div className="dashboard-hero">
-        <div className="hero-copy">
-          <div className="hero-kicker">
-            <span className="signal" />{' '}
+      <div className="dashboard-hero atlas-cover">
+        <Relief />
+        <div className="atlas-cover-copy">
+          <div className="cover-kicker">
+            <i />
             {approvedCount === 8 ? 'Son karar' : 'Açık karar'}
-            <span className="hero-divider" />{' '}
-            {String(stage + 1).padStart(2, '0')} / 08
+            <span>{String(stage + 1).padStart(2, '0')} / 08</span>
           </div>
           <h2>{stages[stage].name}</h2>
           <p>{stages[stage].question}</p>
-          <Button onClick={() => openStage(stage)} className="hero-button">
-            Kararı incele <ArrowRight size={17} />
+          <Button className="cover-action" onClick={() => openStage(stage)}>
+            Kararı incele <ArrowRight size={18} />
           </Button>
         </div>
-        <CompassArt stage={stage} />
       </div>
-      <div className="stat-grid">
-        {[
-          {
-            title: 'Karar ilerlemesi',
-            value: String(approvedCount),
-            unit: '/ 8',
-            note: 'Onaylanan karar',
-            icon: Flag,
-            tone: 'orange',
-            page: 'editor',
-          },
-          {
-            title: 'Plan adımları',
-            value: String(done),
-            unit: '/ ' + active.length,
-            note: 'Tamamlanan adım',
-            icon: Path,
-            tone: 'teal',
-            page: 'editor',
-          },
-          {
-            title: 'Kanıt defteri',
-            value: String(p.evidence.length),
-            unit: 'kayıt',
-            note: 'Kaynağı yazılan kanıt',
-            icon: Notebook,
-            tone: 'purple',
-            page: 'evidence',
-          },
-        ].map(({ title, value, unit, note, icon: Icon, tone, page }) => (
-          <button className="stat" key={title} onClick={() => go(page as Page)}>
-            <span className={'icon-tile ' + tone}>
-              <Icon size={21} />
-            </span>
-            <span className="stat-label">{title}</span>
-            <div className="stat-number">
-              {value}
-              <span>{unit}</span>
-            </div>
-            <small>{note}</small>
-          </button>
-        ))}
-      </div>
-      <div className="workspace-launch">
-        {[
-          {
-            page: 'portfolio',
-            title: 'Plan portföyü',
-            detail: 'Planları karşılaştır',
-            icon: Briefcase,
-          },
-          {
-            page: 'work',
-            title: 'Görevler',
-            detail: 'Sorumluları ve teslimleri izle',
-            icon: ClipboardText,
-          },
-          {
-            page: 'team',
-            title: 'Kurum alanı',
-            detail: 'Üyeleri ve yetkileri yönet',
-            icon: Buildings,
-          },
-        ].map(({ page, title, detail, icon: Icon }) => (
-          <button key={page} onClick={() => go(page as Page)}>
-            <span className="icon-tile teal">
-              <Icon size={20} />
-            </span>
+      <section className="metric-band" aria-label="Plan göstergeleri">
+        {metrics.map(({ label, value, unit, icon: Icon, page }) => (
+          <button key={label} onClick={() => go(page)}>
             <span>
-              <b>{title}</b>
-              <small>{detail}</small>
+              <Icon size={17} />
+              {label}
             </span>
-            <ArrowRight size={16} />
+            <strong>
+              {value} <small>{unit}</small>
+            </strong>
           </button>
         ))}
-      </div>
-      <div className="dash-grid">
-        <section className="panel route-panel">
-          <div className="section-head">
-            <div>
-              <h2>Karar rotası</h2>
-              <p>Kararları sırayla inceleyin.</p>
-            </div>
-            <MapTrifold size={24} />
+      </section>
+      <div className="overview-columns">
+        <section className="panel decision-register">
+          <div className="surface-title">
+            <h2>Karar rotası</h2>
+            <span>{approvedCount} / 8 onay</span>
           </div>
-          <ol className="stage-list">
-            {stages.map((s, i) => {
-              const passed = approved(p, i),
-                here = i === stage && !passed
-              return (
-                <li
-                  key={s.name}
-                  className={passed ? 'done' : here ? 'current' : ''}
-                >
-                  <button onClick={() => openStage(i)}>
-                    <span className="stage-dot">
-                      {passed ? (
-                        <Check size={15} weight="bold" />
-                      ) : (
-                        String(i + 1).padStart(2, '0')
-                      )}
-                    </span>
-                    <span className="stage-name">
-                      {s.name}
-                      {here && <small className="inline-state">Açık</small>}
-                    </span>
-                    <ArrowUpRight size={16} />
-                  </button>
-                </li>
-              )
-            })}
-          </ol>
+          <div
+            className="table-scroll"
+            role="region"
+            aria-label="Karar listesi"
+            tabIndex={0}
+          >
+            <table aria-label="Karar rotası">
+              <thead>
+                <tr>
+                  <th scope="col">Karar</th>
+                  <th scope="col">Adımlar</th>
+                  <th scope="col">Durum</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stages.map((s, i) => {
+                  const related = steps.filter(
+                      (x) => x.stage === i && active.includes(x.id),
+                    ),
+                    count = related.filter((x) => complete(p, x)).length,
+                    pass = approved(p, i),
+                    current = i === stage && !pass,
+                    last = p.history.findLast((h) => h.stage === i)
+                  return (
+                    <tr key={s.name} className={current ? 'row-current' : ''}>
+                      <th scope="row">
+                        <button onClick={() => openStage(i)}>
+                          <span className="row-index">
+                            {String(i + 1).padStart(2, '0')}
+                          </span>
+                          {s.name}
+                        </button>
+                      </th>
+                      <td>
+                        {count} / {related.length}
+                      </td>
+                      <td>
+                        <span
+                          className={
+                            'status-text ' +
+                            (pass ? 'positive' : current ? 'live' : '')
+                          }
+                        >
+                          <i />
+                          {pass
+                            ? 'Onaylandı'
+                            : last?.stale
+                              ? 'İncelenecek'
+                              : last
+                                ? effective(last)
+                                : current
+                                  ? 'Açık'
+                                  : 'Sırada'}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
         <div className="aside-stack">
-          <section className="panel">
-            <div className="section-head">
+          <section className="panel event-register">
+            <div className="surface-title">
               <h2>Son kararlar</h2>
-              <ClockCounterClockwise size={23} />
+              <ClockCounterClockwise size={21} />
             </div>
             {p.history.length ? (
-              <ul className="activity">
+              <ol>
                 {p.history
                   .slice(-3)
                   .reverse()
                   .map((h) => (
                     <li key={h.id}>
-                      <span className="activity-glyph">
-                        <Check size={15} />
+                      <span
+                        className={'event-mark ' + (h.stale ? 'archived' : '')}
+                      >
+                        <Flag size={17} />
                       </span>
                       <div>
                         <b>{stages[h.stage].name}</b>
@@ -197,24 +195,23 @@ export default function Dashboard({
                       </div>
                     </li>
                   ))}
-              </ul>
+              </ol>
             ) : (
-              <p>İlk karar kaydedilince burada görünür.</p>
+              <p className="empty-entry">Henüz karar kaydı yok.</p>
             )}
           </section>
-          <button className="report-shortcut" onClick={() => go('reports')}>
-            <span className="icon-tile teal">
-              <Files size={24} />
-            </span>
-            <span>
-              <b>Plan raporları</b>
-              <small>Yönetici özeti ve iş listesi</small>
-            </span>
-            <ArrowRight size={20} />
-          </button>
-          <button className="text-link" onClick={() => go('methods')}>
-            <Stack size={17} /> Karar Kitabı’nı aç <ArrowUpRight size={15} />
-          </button>
+          <div className="desk-links">
+            <button onClick={() => go('reports')}>
+              <Files />
+              Plan raporları
+              <ArrowUpRight />
+            </button>
+            <button onClick={() => go('methods')}>
+              <BookOpenText />
+              Karar Kitabı
+              <ArrowUpRight />
+            </button>
+          </div>
         </div>
       </div>
     </>

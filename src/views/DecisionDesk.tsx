@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Button, Drawer, Progress } from 'antd'
 import {
   Path,
@@ -7,8 +7,6 @@ import {
   CalendarBlank,
   ArrowsClockwise,
   Notebook,
-  CheckCircle,
-  Compass,
   Flag,
 } from '@phosphor-icons/react'
 import {
@@ -22,6 +20,7 @@ import {
   type Plan,
 } from '../domain'
 import { stages, steps } from '../data/steps'
+import Relief from '../ui/Relief'
 import './office.css'
 export default function DecisionDesk({
   p,
@@ -29,7 +28,9 @@ export default function DecisionDesk({
   setStage,
   review,
   openGap,
+  children,
 }: {
+  children: ReactNode
   p: Plan
   stage: number
   setStage: (s: number) => void
@@ -46,6 +47,10 @@ export default function DecisionDesk({
     typeof budget === 'number' && typeof spent === 'number'
       ? budget - spent
       : null
+  const budgetUsed =
+    typeof spent === 'number' && typeof budget === 'number' && budget > 0
+      ? Math.round((spent * 100) / budget)
+      : null
   const used = p.history.filter(
     (h) => h.stage === stage && h.outcome === 'Yeniden deneyin',
   ).length
@@ -61,44 +66,33 @@ export default function DecisionDesk({
   return (
     <>
       <section className="desk-banner">
+        <Relief />
         <div className="desk-intro">
-          <div className="office-kicker">
-            <Compass size={18} /> Karar dosyası{' '}
+          <div className="cover-kicker">
+            <i /> Karar dosyası{' '}
             <span>{String(stage + 1).padStart(2, '0')} / 08</span>
           </div>
           <h2>{stages[stage].name}</h2>
-          <p>{stages[stage].summary}</p>
-          <button
-            className="resume-step"
-            onClick={() => {
-              const el = document.getElementById('active-question')
-              el?.focus({ preventScroll: true })
-              el?.scrollIntoView({ block: 'start' })
-            }}
-          >
-            Adıma devam et <ArrowRight size={17} />
-          </button>
+          <p>{stages[stage].question}</p>
         </div>
-        <div className="desk-map">
-          <div className="mini-route" aria-label="Sekiz karar">
+        <div className="desk-index">
+          <div className="index-dashes" aria-hidden="true">
             {stages.map((s, i) => (
-              <button
-                aria-label={i + 1 + '. kararı aç: ' + s.name}
-                title={s.name}
-                aria-current={i === stage ? 'step' : undefined}
-                className={approved(p, i) ? 'complete' : ''}
+              <i
                 key={s.name}
-                onClick={() => setStage(i)}
-              >
-                {approved(p, i) ? <CheckCircle size={17} /> : i + 1}
-              </button>
+                className={
+                  stage === i ? 'current' : approved(p, i) ? 'done' : ''
+                }
+              />
             ))}
           </div>
           <button className="map-link" onClick={() => show('map')}>
-            <Path size={17} /> Karar haritasını aç <ArrowRight size={16} />
+            <Path size={18} />
+            Karar haritasını aç <ArrowRight size={15} />
           </button>
         </div>
       </section>
+      {children}
       <aside className="desk-side">
         <button className="limits-toggle" onClick={() => show('limits')}>
           <Wallet size={18} /> Kaynak sınırları{' '}
@@ -106,42 +100,51 @@ export default function DecisionDesk({
           <ArrowRight size={16} />
         </button>
         <div className="limits-strip">
-          {[
-            {
-              icon: Wallet,
-              label: 'Kalan bütçe',
-              value: allowance === null ? 'Yazılmadı' : money(allowance),
-            },
-            {
-              icon: ArrowsClockwise,
-              label: 'Kalan deneme',
-              value:
-                typeof attempts === 'number'
-                  ? String(
-                      Math.max(
-                        0,
-                        (stage === 5 ? Math.min(3, attempts) : attempts) - used,
-                      ),
-                    )
-                  : 'Yazılmadı',
-            },
-            {
-              icon: CalendarBlank,
-              label: 'Bitiş tarihi',
-              value:
-                typeof end === 'string' && end ? dateLabel(end) : 'Yazılmadı',
-            },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label}>
-              <Icon size={19} />
-              <span>
-                <small>{label}</small>
-                <b>{value}</b>
-              </span>
+          <div className="budget-face">
+            <div>
+              <Wallet size={18} />
+              <span>Kalan bütçe</span>
             </div>
-          ))}
+            <strong>{money(allowance)}</strong>
+            {budgetUsed !== null && (
+              <>
+                <div className="budget-track" aria-hidden="true">
+                  <i
+                    style={{
+                      width: Math.min(100, Math.max(0, budgetUsed)) + '%',
+                    }}
+                  />
+                </div>
+                <small>%{budgetUsed} kullanıldı</small>
+              </>
+            )}
+          </div>
+          <dl className="resource-ledger">
+            <div>
+              <dt>
+                <ArrowsClockwise size={16} /> Kalan deneme
+              </dt>
+              <dd>
+                {typeof attempts === 'number'
+                  ? Math.max(
+                      0,
+                      (stage === 5 ? Math.min(3, attempts) : attempts) - used,
+                    )
+                  : 'Yazılmadı'}
+              </dd>
+            </div>
+            <div>
+              <dt>
+                <CalendarBlank size={16} /> Bitiş tarihi
+              </dt>
+              <dd>
+                {typeof end === 'string' && end ? dateLabel(end) : 'Yazılmadı'}
+              </dd>
+            </div>
+          </dl>
         </div>
         <div className="desk-review">
+          <h3>Karar önerisi</h3>
           <div>
             <Flag size={19} />
             <strong>{advice.outcome}</strong>

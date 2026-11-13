@@ -148,7 +148,20 @@ export default function ReviewQueue({
               Sürüm {t.revision} · {t.authorName} · {dateLabel(t.created)}
             </small>
           </div>
-          <span className="office-chip">{labels[t.state]}</span>
+          <span
+            className="office-chip"
+            data-tone={
+              t.state === 'approved'
+                ? 'positive'
+                : t.state === 'pending'
+                  ? 'warning'
+                  : t.state === 'returned'
+                    ? 'negative'
+                    : undefined
+            }
+          >
+            {labels[t.state]}
+          </span>
           <Button disabled={busy} onClick={() => view(t)}>
             Dosyayı aç <ArrowRight />
           </Button>

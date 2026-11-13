@@ -1,9 +1,11 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { CurrencyCircleDollar, ChartBar, Scales } from '@phosphor-icons/react'
 import { Select } from 'antd'
 import { init, use } from 'echarts/core'
 import { BarChart } from 'echarts/charts'
 import { GridComponent } from 'echarts/components'
 import { SVGRenderer } from 'echarts/renderers'
+import { identity } from '../ui/identity'
 import { cash, money, activeSteps, complete, type Plan } from '../domain'
 import { steps, stages } from '../data/steps'
 use([BarChart, GridComponent, SVGRenderer])
@@ -85,9 +87,10 @@ export default function Insights({ p, dark }: { p: Plan; dark: boolean }) {
     const el = canvas.current
     if (!el || !exists) return
     const ch = init(el, undefined, { renderer: 'svg' }),
-      css = getComputedStyle(el),
-      ink = css.getPropertyValue('--muted').trim(),
-      accent = css.getPropertyValue('--accent').trim()
+      colors = identity[dark ? 'dark' : 'light'],
+      ink = colors.muted,
+      accent = colors.accent,
+      gridColor = colors.line
     ch.setOption({
       animation: false,
       textStyle: { fontFamily: 'Outfit Variable, sans-serif', fontSize: 14 },
@@ -96,10 +99,13 @@ export default function Insights({ p, dark }: { p: Plan; dark: boolean }) {
         type: 'category',
         data: chart.bars.map((b) => b.short),
         axisLabel: { color: ink, fontSize: 14, interval: 0 },
+        axisTick: { show: false },
+        axisLine: { lineStyle: { color: gridColor } },
       },
       yAxis: {
         type: 'value',
         minInterval: 1,
+        splitLine: { lineStyle: { color: gridColor, type: 'dashed' } },
         axisLabel: { color: ink, fontSize: 14 },
       },
       series: [
@@ -107,7 +113,13 @@ export default function Insights({ p, dark }: { p: Plan; dark: boolean }) {
           name: chart.unit,
           type: 'bar',
           data: chart.bars.map((b) => b.value),
-          itemStyle: { color: accent, borderRadius: [4, 4, 0, 0] },
+          itemStyle: { color: accent, borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: el.clientWidth > 420,
+            position: 'top',
+            color: ink,
+            fontSize: 14,
+          },
           barMaxWidth: 44,
         },
       ],
@@ -149,25 +161,36 @@ export default function Insights({ p, dark }: { p: Plan; dark: boolean }) {
       ]
   return (
     <>
-      <div className="stat-grid">
-        {stats.map(([label, value]) => (
-          <div className="panel" key={label}>
-            <small>{label}</small>
-            <h2>{value}</h2>
-          </div>
-        ))}
-      </div>
+      <section className="portfolio-metrics" aria-label="Mali göstergeler">
+        {stats.map(([label, value], i) => {
+          const Icon = [CurrencyCircleDollar, ChartBar, Scales][i]
+          return (
+            <div key={label}>
+              <span>
+                <Icon size={17} />
+                {label}
+              </span>
+              <strong>{value}</strong>
+            </div>
+          )
+        })}
+      </section>
       <section className="panel">
-        <label className="chart-select">
-          <span>Gösterge seçin</span>
-          <Select
-            aria-label="Gösterge seçin"
-            value={index}
-            onChange={setIndex}
-            options={datasets.map((d, i) => ({ label: d.title, value: i }))}
-          />
-        </label>
-        <h2>{chart.title}</h2>
+        <div className="chart-heading">
+          <div>
+            <h2>{chart.title}</h2>
+            <small>Ölçü birimi: {chart.unit}</small>
+          </div>
+          <label className="chart-select">
+            <span>Gösterge seçin</span>
+            <Select
+              aria-label="Gösterge seçin"
+              value={index}
+              onChange={setIndex}
+              options={datasets.map((d, i) => ({ label: d.title, value: i }))}
+            />
+          </label>
+        </div>
         {exists ? (
           <div className="chart" ref={canvas} aria-hidden="true" />
         ) : (

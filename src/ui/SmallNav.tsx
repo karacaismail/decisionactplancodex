@@ -21,6 +21,9 @@ export default function SmallNav({ page, go }: NavProps) {
         onClose={() => setOpen(false)}
         size="min(85vw, 320px)"
       >
+        <div className="drawer-brand">
+          <Brand />
+        </div>
         <nav className="drawer-nav" aria-label="Ana menü">
           {navigation.map(({ id, label, icon: Icon }) => (
             <button

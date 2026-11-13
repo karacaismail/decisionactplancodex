@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { Button, Tabs, Select } from 'antd'
-import { DownloadSimple, Printer } from '@phosphor-icons/react'
+import {
+  DownloadSimple,
+  Printer,
+  ListBullets,
+  Files,
+} from '@phosphor-icons/react'
 import { freezeReports, report, type Plan } from '../domain'
 import { download } from '../store'
 export default function Reports({
@@ -16,6 +21,15 @@ export default function Reports({
   const [selected, select] = useState('')
   const pair = p.publications?.find((r) => r.id === selected)
   const content = pair?.[kind] ?? report(p, kind)
+  const lines = content.split('\n\n')
+  const outline = lines
+    .map((text, index) => ({ text, index }))
+    .filter((i) => i.text.startsWith('## '))
+  function goToSection(index: number) {
+    const h = document.getElementById('doc-section-' + index)
+    h?.focus({ preventScroll: true })
+    h?.scrollIntoView({ block: 'start' })
+  }
   return (
     <section className="panel reports">
       <div className="report-version">
@@ -72,19 +86,55 @@ export default function Reports({
           Yazdır
         </Button>
       </div>
-      <article className="report-body">
-        {content
-          .split('\n\n')
-          .map((line, i) =>
+      {outline.length > 0 && (
+        <div className="report-jump">
+          <ListBullets aria-hidden="true" size={18} />
+          <Select<number>
+            aria-label="Raporda bölüme git"
+            placeholder="İçindekiler"
+            value={undefined}
+            onChange={(index) =>
+              requestAnimationFrame(() => goToSection(index))
+            }
+            options={outline.map((o) => ({
+              value: o.index,
+              label: o.text.slice(3),
+            }))}
+          />
+        </div>
+      )}
+      <div className="report-spread">
+        <article className="report-body">
+          <header className="document-title">
+            <Files size={26} />
+            <div>
+              <h2>{lines[0].replace(/^# /, '')}</h2>
+              <p>{lines[1]}</p>
+              <small>{lines[2]}</small>
+            </div>
+          </header>
+          {lines.slice(3).map((line, i) =>
             line.startsWith('## ') ? (
-              <h3 key={i}>{line.slice(3)}</h3>
-            ) : line.startsWith('# ') ? (
-              <h2 key={i}>{line.slice(2)}</h2>
+              <h3 tabIndex={-1} id={'doc-section-' + (i + 3)} key={i}>
+                {line.slice(3)}
+              </h3>
             ) : (
               <p key={i}>{line}</p>
             ),
           )}
-      </article>
+        </article>
+        <nav className="report-index" aria-label="Rapordaki bölümler">
+          <h3>
+            <ListBullets size={19} />
+            İçindekiler
+          </h3>
+          {outline.map((item) => (
+            <button key={item.index} onClick={() => goToSection(item.index)}>
+              {item.text.slice(3)}
+            </button>
+          ))}
+        </nav>
+      </div>
     </section>
   )
 }

@@ -1,25 +1,52 @@
-import { HardDrives } from '@phosphor-icons/react'
+import { HardDrives, CaretRight } from '@phosphor-icons/react'
 import { navigation, Brand, type NavProps } from './navigation'
 import './wide.css'
+const groups = [
+  {
+    title: 'Çalışma alanı',
+    entries: ['dashboard', 'portfolio', 'editor', 'work'],
+  },
+  {
+    title: 'İnceleme',
+    entries: ['evidence', 'insights', 'reports', 'methods'],
+  },
+  { title: 'Yönetim', entries: ['team'] },
+]
 export default function WideRail({ page, go, scope }: NavProps) {
   return (
     <aside className="wide-rail">
       <Brand />
-      <div className="rail-group">Çalışma alanı</div>
       <nav aria-label="Ana menü">
-        {navigation.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            aria-current={id === page ? 'page' : undefined}
-            onClick={() => go(id)}
-          >
-            <Icon size={21} weight={id === page ? 'fill' : 'regular'} />
-            {label}
-          </button>
+        {groups.map((group) => (
+          <div className="rail-group" key={group.title}>
+            <span>{group.title}</span>
+            {group.entries.map((id) => {
+              const entry = navigation.find((n) => n.id === id)!
+              const Icon = entry.icon
+              return (
+                <button
+                  key={id}
+                  aria-current={page === id ? 'page' : undefined}
+                  onClick={() => go(entry.id)}
+                >
+                  <Icon
+                    size={20}
+                    weight={page === id ? 'duotone' : 'regular'}
+                  />
+                  {entry.label}
+                  {page === id && (
+                    <CaretRight className="rail-pointer" size={14} />
+                  )}
+                </button>
+              )
+            })}
+          </div>
         ))}
       </nav>
       <div className="rail-bottom">
-        <HardDrives size={23} />
+        <span className="rail-drive">
+          <HardDrives size={20} />
+        </span>
         <div>
           <b>{scope || 'Kişisel alan'}</b>
           <small>

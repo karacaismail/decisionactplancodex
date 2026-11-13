@@ -13,3 +13,7 @@
 - Her kurum isteğinde oturumu, üyeliği ve alanı sunucuda doğrulayın.
 - İncelemeyi açan üye kendi isteğini onaylayamaz. Onay yalnız gönderilen sürümü kapsar.
 - Tarayıcı denemeleri ayrı bir veritabanı kullanmalıdır.
+
+- Ortak tema renklerini `src/ui/identity.ts` dosyasından alın. Ant Design ve grafikler aynı renkleri kullanır.
+- Telefonda form, kaynak panelinden önce gelir. Klavye sırası ekrandaki sırayı izler.
+- Görsel kabul için `tests/browser/design.spec.ts` dosyasını kullanın.

@@ -11,16 +11,14 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
-  CheckCircle,
   BookOpenText,
-  Flag,
+  ListBullets,
   NotePencil,
 } from '@phosphor-icons/react'
-import { steps, stages, type Value } from '../data/steps'
+import { steps, type Value } from '../data/steps'
 import {
   activeSteps,
   applyEdit,
-  complete,
   currentStage,
   outcomes,
   openGaps,
@@ -173,252 +171,234 @@ export default function Editor({
             )
           }
         }}
-      />
-      {p.answers['00']?.start === 'Devralınan iş' && stage === 0 && (
-        <Suspense fallback={<p>Devir kaydı açılıyor.</p>}>
-          <Takeover
-            p={p}
-            change={change}
-            readOnly={readOnly}
-            visit={(id) => {
-              const dest = steps.find((s) => s.id === id)!
-              try {
-                localStorage.setItem(
-                  'atlas-step-' + p.id + '-' + dest.stage,
-                  id,
-                )
-              } catch {}
-              setStage(dest.stage)
-              setSelected(id)
-              setMode('step')
-              focusQuestion()
-            }}
-          />
-        </Suspense>
-      )}
-      <div className="stage-switch">
-        <label htmlFor="stage-select">Kararı seçin</label>
-        <Select
-          id="stage-select"
-          value={stage}
-          options={stages.map((s, i) => ({
-            label: i + 1 + '. ' + s.name,
-            value: i,
-          }))}
-          onChange={(i) => {
-            setStage(i)
-            setMode('step')
-            setSelected('')
-            methods(false)
-            error('')
-            setNotice('')
-          }}
-        />
-      </div>
-      <section className="panel editor-panel">
-        <div className="eyeline">
-          <Flag size={18} /> Karar {stage + 1} / 8
-        </div>
-        <h2>{stages[stage].question}</h2>
-        <p className="muted">
-          {items.filter((s) => complete(p, s)).length} / {items.length} adım
-          tamamlandı.
-        </p>
-        {(p.changes || []).some((c) => c.needsReview && !c.reviewer) && (
-          <section className="review-note">
-            <h3>İkinci görüş</h3>
-            <p>Değişen sınırı inceleyen kişinin adını yazın.</p>
-            <ul>
-              {p.changes
-                ?.filter((c) => c.needsReview && !c.reviewer)
-                .map((c) => (
-                  <li key={c.id}>
-                    {
-                      steps
-                        .find((s) => s.id === c.step)
-                        ?.fields.find((f) => f.key === c.key)?.label
-                    }
-                    : {String(c.before)} yerine {String(c.after)}
-                  </li>
-                ))}
-            </ul>
-            <Input
-              disabled={readOnly}
-              aria-label="İkinci görüş sahibi"
-              value={reviewer}
-              onChange={(e) => setReviewer(e.target.value)}
-            />
-            <Button
-              disabled={
-                readOnly ||
-                !reviewer.trim() ||
-                reviewer.trim() === p.answers['01']?.owner
-              }
-              onClick={() => {
-                change((prev) => ({
-                  ...prev,
-                  changes: prev.changes?.map((c) =>
-                    c.needsReview && !c.reviewer
-                      ? { ...c, reviewer: reviewer.trim() }
-                      : c,
-                  ),
-                }))
-                setReviewer('')
+      >
+        {p.answers['00']?.start === 'Devralınan iş' && stage === 0 && (
+          <Suspense fallback={<p>Devir kaydı açılıyor.</p>}>
+            <Takeover
+              p={p}
+              change={change}
+              readOnly={readOnly}
+              visit={(id) => {
+                const dest = steps.find((s) => s.id === id)!
+                try {
+                  localStorage.setItem(
+                    'atlas-step-' + p.id + '-' + dest.stage,
+                    id,
+                  )
+                } catch {}
+                setStage(dest.stage)
+                setSelected(id)
+                setMode('step')
+                focusQuestion()
               }}
-            >
-              Görüşü kaydet
-            </Button>
-          </section>
-        )}
-        <div className="step-tabs" aria-label="Adım seçimi">
-          {items.map((s, i) => (
-            <button
-              key={s.id}
-              aria-pressed={mode === 'step' && s === step}
-              onClick={() => choose(i)}
-            >
-              {complete(p, s) && <CheckCircle />}
-              {s.id}. {s.title}
-            </button>
-          ))}
-          <button aria-pressed={mode === 'decision'} onClick={review}>
-            Kararı kaydet
-          </button>
-        </div>
-        {notice && <Alert title={notice} type="success" showIcon />}
-        {mode === 'step' ? (
-          <>
-            <div className="form-heading">
-              <div className="eyeline">
-                <NotePencil size={17} /> Adım {step.id}
-              </div>
-              <h3 id="active-question" tabIndex={-1}>
-                {step.title}
-              </h3>
-              <p>{step.help}</p>
-            </div>
-            {step.id === '00' && p.answers['00']?.start === 'Devralınan iş' && (
-              <Alert
-                type="info"
-                showIcon
-                title="Son üç ayın ödemelerini, kayıplarını ve açık teslimlerini inceleyin."
-              />
-            )}
-            <details className="step-help">
-              <summary>Örnek ve uygulama rehberi</summary>
-              {(stepHelp[step.id as keyof typeof stepHelp] || []).map(
-                (note, i) => (
-                  <p key={i}>{note}</p>
-                ),
-              )}
-            </details>
-            <ConfigProvider componentDisabled={readOnly}>
-              <fieldset disabled={readOnly} className="fields read-fields">
-                {visibleFields(p, step).map((f) => (
-                  <div className="field" key={f.key}>
-                    <label htmlFor={'field-' + f.key}>{f.label}</label>
-                    <FieldInput
-                      f={f}
-                      v={p.answers[step.id]?.[f.key]}
-                      id={'field-' + f.key}
-                      onChange={(v) => edit(f.key, v)}
-                    />
-                  </div>
-                ))}
-              </fieldset>
-            </ConfigProvider>
-            <StepSummary id={step.id} p={p} />
-            <div className="editor-controls">
-              <Button
-                disabled={!index}
-                icon={<ArrowLeft />}
-                onClick={() => choose(index - 1)}
-              >
-                Önceki
-              </Button>
-              <Button
-                type="primary"
-                onClick={() =>
-                  index < items.length - 1 ? choose(index + 1) : review()
-                }
-              >
-                {index < items.length - 1 ? 'Sonraki adım' : 'Kararı incele'}{' '}
-                <ArrowRight />
-              </Button>
-            </div>
-            <Button
-              type="link"
-              icon={<BookOpenText />}
-              onClick={() => methods(!showMethods)}
-            >
-              {showMethods ? 'Yöntemleri kapat' : 'Bu adımla ilgili yöntemler'}
-            </Button>
-            {showMethods && (
-              <Suspense fallback={<p>Yöntemler açılıyor.</p>}>
-                <Methods step={step.id} />
-              </Suspense>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="form-heading">
-              <h3 id="active-question" tabIndex={-1}>
-                Karar kaydı
-              </h3>
-              <p>
-                Öneriyi ve dayanakları inceleyin. Sonucu karar sahibi seçer.
-              </p>
-            </div>
-            <Alert
-              type={advice.outcome === 'İlerleyin' ? 'success' : 'warning'}
-              showIcon
-              title={advice.outcome}
-              description={advice.reason}
             />
-            <div className="fields">
-              <label>
-                <span>Karar sonucu</span>
-                <Select
-                  value={form.outcome}
-                  onChange={(outcome) => setForm({ ...form, outcome })}
-                  options={outcomes.map((v) => ({ value: v, label: v }))}
-                />
-              </label>
-              {field('reason', 'Kararın gerekçesi')}
-              {field('owner', 'Karar sahibi')}
-              {field('task', 'Sonraki iş veya sınırlı kapsam')}
-              {field('date', 'Kontrol veya bitiş tarihi')}
-              {field('proof', 'Kapanış kanıtı')}
-              {form.outcome === 'Koşullu ilerleyin' && (
-                <label>
-                  <span>Eksik kanıt alanı</span>
-                  <Select
-                    value={form.gapKey}
-                    onChange={(gapKey) => setForm({ ...form, gapKey })}
-                    options={openGaps(p, stage)}
-                  />
-                </label>
-              )}
-              {form.outcome === 'Koşullu ilerleyin' && (
-                <label>
-                  <span>Harcama sınırı (TL)</span>
-                  <InputNumber
-                    min={0}
-                    value={form.limit}
-                    onChange={(n) =>
-                      setForm({ ...form, limit: n ?? undefined })
-                    }
-                  />
-                </label>
-              )}
-            </div>
-            {err && <Alert type="error" title={err} showIcon />}
-            <Button disabled={readOnly} type="primary" onClick={record}>
-              Karar kaydını ekle
-            </Button>
-          </>
+          </Suspense>
         )}
-      </section>
+        <section className="panel editor-panel">
+          <div className="step-selector">
+            <label htmlFor="file-step">
+              <ListBullets size={20} /> Plan adımı
+            </label>
+            <Select
+              id="file-step"
+              value={mode === 'step' ? step.id : 'decision'}
+              onChange={(v) => {
+                if (v === 'decision') review()
+                else choose(items.findIndex((s) => s.id === v))
+              }}
+              options={[
+                ...items.map((s) => ({
+                  value: s.id,
+                  label: s.id + '. ' + s.title,
+                })),
+                { value: 'decision', label: 'Kararı kaydet' },
+              ]}
+            />
+          </div>
+          {(p.changes || []).some((c) => c.needsReview && !c.reviewer) && (
+            <section className="review-note">
+              <h3>İkinci görüş</h3>
+              <p>Değişen sınırı inceleyen kişinin adını yazın.</p>
+              <ul>
+                {p.changes
+                  ?.filter((c) => c.needsReview && !c.reviewer)
+                  .map((c) => (
+                    <li key={c.id}>
+                      {
+                        steps
+                          .find((s) => s.id === c.step)
+                          ?.fields.find((f) => f.key === c.key)?.label
+                      }
+                      : {String(c.before)} yerine {String(c.after)}
+                    </li>
+                  ))}
+              </ul>
+              <Input
+                disabled={readOnly}
+                aria-label="İkinci görüş sahibi"
+                value={reviewer}
+                onChange={(e) => setReviewer(e.target.value)}
+              />
+              <Button
+                disabled={
+                  readOnly ||
+                  !reviewer.trim() ||
+                  reviewer.trim() === p.answers['01']?.owner
+                }
+                onClick={() => {
+                  change((prev) => ({
+                    ...prev,
+                    changes: prev.changes?.map((c) =>
+                      c.needsReview && !c.reviewer
+                        ? { ...c, reviewer: reviewer.trim() }
+                        : c,
+                    ),
+                  }))
+                  setReviewer('')
+                }}
+              >
+                Görüşü kaydet
+              </Button>
+            </section>
+          )}
+          {notice && <Alert title={notice} type="success" showIcon />}
+          {mode === 'step' ? (
+            <>
+              <div className="form-heading">
+                <div className="eyeline">
+                  <NotePencil size={17} /> Adım {step.id}
+                </div>
+                <h3 id="active-question" tabIndex={-1}>
+                  {step.title}
+                </h3>
+                <p>{step.help}</p>
+              </div>
+              {step.id === '00' &&
+                p.answers['00']?.start === 'Devralınan iş' && (
+                  <Alert
+                    type="info"
+                    showIcon
+                    title="Son üç ayın ödemelerini, kayıplarını ve açık teslimlerini inceleyin."
+                  />
+                )}
+              <details className="step-help">
+                <summary>Örnek ve uygulama rehberi</summary>
+                {(stepHelp[step.id as keyof typeof stepHelp] || []).map(
+                  (note, i) => (
+                    <p key={i}>{note}</p>
+                  ),
+                )}
+              </details>
+              <ConfigProvider componentDisabled={readOnly}>
+                <fieldset disabled={readOnly} className="fields read-fields">
+                  {visibleFields(p, step).map((f) => (
+                    <div className="field" data-kind={f.kind} key={f.key}>
+                      <label htmlFor={'field-' + f.key}>{f.label}</label>
+                      <FieldInput
+                        f={f}
+                        v={p.answers[step.id]?.[f.key]}
+                        id={'field-' + f.key}
+                        onChange={(v) => edit(f.key, v)}
+                      />
+                    </div>
+                  ))}
+                </fieldset>
+              </ConfigProvider>
+              <StepSummary id={step.id} p={p} />
+              <div className="editor-controls">
+                <Button
+                  disabled={!index}
+                  icon={<ArrowLeft />}
+                  onClick={() => choose(index - 1)}
+                >
+                  Önceki
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() =>
+                    index < items.length - 1 ? choose(index + 1) : review()
+                  }
+                >
+                  {index < items.length - 1 ? 'Sonraki adım' : 'Kararı incele'}{' '}
+                  <ArrowRight />
+                </Button>
+              </div>
+              <Button
+                type="link"
+                icon={<BookOpenText />}
+                onClick={() => methods(!showMethods)}
+              >
+                {showMethods
+                  ? 'Yöntemleri kapat'
+                  : 'Bu adımla ilgili yöntemler'}
+              </Button>
+              {showMethods && (
+                <Suspense fallback={<p>Yöntemler açılıyor.</p>}>
+                  <Methods step={step.id} />
+                </Suspense>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="form-heading">
+                <h3 id="active-question" tabIndex={-1}>
+                  Karar kaydı
+                </h3>
+                <p>
+                  Öneriyi ve dayanakları inceleyin. Sonucu karar sahibi seçer.
+                </p>
+              </div>
+              <Alert
+                type={advice.outcome === 'İlerleyin' ? 'success' : 'warning'}
+                showIcon
+                title={advice.outcome}
+                description={advice.reason}
+              />
+              <div className="fields">
+                <label>
+                  <span>Karar sonucu</span>
+                  <Select
+                    value={form.outcome}
+                    onChange={(outcome) => setForm({ ...form, outcome })}
+                    options={outcomes.map((v) => ({ value: v, label: v }))}
+                  />
+                </label>
+                {field('reason', 'Kararın gerekçesi')}
+                {field('owner', 'Karar sahibi')}
+                {field('task', 'Sonraki iş veya sınırlı kapsam')}
+                {field('date', 'Kontrol veya bitiş tarihi')}
+                {field('proof', 'Kapanış kanıtı')}
+                {form.outcome === 'Koşullu ilerleyin' && (
+                  <label>
+                    <span>Eksik kanıt alanı</span>
+                    <Select
+                      value={form.gapKey}
+                      onChange={(gapKey) => setForm({ ...form, gapKey })}
+                      options={openGaps(p, stage)}
+                    />
+                  </label>
+                )}
+                {form.outcome === 'Koşullu ilerleyin' && (
+                  <label>
+                    <span>Harcama sınırı (TL)</span>
+                    <InputNumber
+                      min={0}
+                      value={form.limit}
+                      onChange={(n) =>
+                        setForm({ ...form, limit: n ?? undefined })
+                      }
+                    />
+                  </label>
+                )}
+              </div>
+              {err && <Alert type="error" title={err} showIcon />}
+              <Button disabled={readOnly} type="primary" onClick={record}>
+                Karar kaydını ekle
+              </Button>
+            </>
+          )}
+        </section>
+      </DecisionDesk>
       <Collapse
         items={[
           {
