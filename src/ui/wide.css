@@ -1,0 +1,66 @@
+.wide-rail {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--rail);
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  padding: 32px 19px;
+  z-index: 3;
+}
+.wide-rail .brand {
+  padding: 2px 6px;
+}
+.rail-group {
+  font-weight: 550;
+  font-size: 14px;
+  color: var(--muted);
+  margin: 52px 14px 10px;
+}
+.wide-rail nav {
+  display: grid;
+  gap: 5px;
+}
+.wide-rail nav button,
+.drawer-nav button {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.wide-rail nav button:hover,
+.drawer-nav button:hover {
+  background: var(--canvas);
+  color: var(--ink);
+}
+.wide-rail nav [aria-current='page'],
+.drawer-nav [aria-current='page'] {
+  background: var(--tint);
+  color: var(--accent);
+  font-weight: 600;
+}
+.rail-bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 5px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+.rail-bottom b,
+.rail-bottom small {
+  display: block;
+  font-size: 14px;
+}
+.rail-bottom b {
+  color: var(--ink);
+}

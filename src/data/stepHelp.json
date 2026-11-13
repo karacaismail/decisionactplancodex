@@ -1,0 +1,101 @@
+{
+  "00": ["Yedi soruyu yanıtlayın. İşinizi kendi sözlerinizle yazın."],
+  "01": ["Başarıyı, ortakların beklentilerini ve çıkış yönünü yazın."],
+  "02": ["Toplam para, süre, deneme hakkı ve durma koşullarını belirleyin."],
+  "03": ["Ekip varsa kararı, itirazı ve onayı üstlenenleri belirtin."],
+  "04": [
+    "Yeni pazarda veya izin gereken işte dış koşulları inceleyin.",
+    "Kurucu alan bilgisini, deneyimini, müşteri erişimini ve becerisini değerlendirir. Dört puanın her biri 1 ile 5 arasındadır. Başlangıç ölçüsü toplamda en az 12, her alanda en az 2 puandır. Düşük puan eksik beceriyi araştırmayı gerektirir. Örneğin üç aylık uygulama deneyimi seçebilirsiniz. Diğer seçenek, eksik beceriyi taşıyan bir ortak bulmaktır. Üç durma koşulu yazın. Kullanılabilir parayı zorunlu aylık gidere bölün. Sonuç, yeni gelir olmadan paranın kaç ay yeteceğini gösterir. Haftada 10 saatten az çalışabiliyorsanız süreyi yeniden hesaplayın. İki kat süre, karşılaştırma için başlangıç tahminidir. Yeni süre ek harcama yetkisi vermez.",
+    "Dış koşulları incelerken. Siyaset, ekonomi, toplum, teknoloji, hukuk ve çevreyi düşünün. Basit işte kararı değiştirebilecek iki veya üç etkeni seçin. Yüksek belirsizlikte iki önemli etkenin dört birleşimini inceleyin. Her durumda ilk uyarıyı ve yapılacak işi yazın.",
+    "Elinizde ne olur? Karar sahibi, kaynak sınırı ve araştırma izni. Payın nasıl ve ne zaman kazanılacağı ortakların kendi koşullarına bağlıdır."
+  ],
+  "05": ["Sorunu son gerçek olayla tarif edin."],
+  "06": [
+    "Profilinize göre görüşün. Kullanıcının bugünkü davranışını kaydedin."
+  ],
+  "07": ["Son olayı, bugünkü çabayı ve kaybı üç ayrı kayda bağlayın."],
+  "08": [
+    "İlk müşteri grubunu ve erişim yolunu yazın.",
+    "#### Görüşme ve sorun ölçüleri",
+    "Eşik, karar için baştan belirlenen alt veya üst sınırdır. Aşağıdaki sayılar başlangıç değerleridir. Kendi işinize uygun sayıyı ve gerekçesini denemeden önce yazın. Kararda bu yazılı değer geçerlidir.",
+    "İki görüşme hedefi aynı gruba uyuyorsa yüksek sayıyı seçin. Örneğin tüketiciye hizmet sunarken başlangıç hedefi 15 kişidir. Aynı kişiyi toplamda bir kez sayın. Ücretsiz hizmette ödeme yerine ayrılan zamanı veya görevli kişiyi kaydedin. Bir kamu biriminin bütçe ayırmasıyla kişinin hizmeti kullanması ayrı kayıtlardır.",
+    "Görüşmede sorun. “Bu işi en son ne zaman yaptınız? Nerede takıldınız? Sonra ne yaptınız?” Önce son olayı dinleyin. Ürün fikrini sonra anlatın. Aynı yanıtlar tekrarlansa bile eksik kalan grubun görüşmesini tamamlayın.",
+    "07. adımda üç kanıt arayın.",
+    "1. Tekrar. Görüştüğünüz kişiler aynı sorunu son yaşadıkları olayla anlatabiliyor mu?\n2. Çaba. Bu sorunu çözmek için bugün zaman, para veya insan ayırıyorlar mı?\n3. Kayıp. Bugünkü yöntem, başta belirlediğiniz sınırı aşan bir kayıp yaratıyor mu?",
+    "Kaybın birimini ve sınırını görüşmelerden önce yazın. Örneğin bir sevkiyat ekibi haftada en az 2 saatlik yeniden işleme arıyor. Geçen hafta ekip aynı sevk belgesini üç kez düzeltmiş. Kayıtlar toplam 150 dakika gösteriyor. Ekip, kayıp için belirlediği sınırın aşıldığını yazabilir. Diğer iki kanıt ayrıca kontrol edilir.",
+    "Her sorunun yanına “karşılandı”, “karşılanmadı” veya “bilinmiyor” yazın. İlgili kaydı ekleyin. Söyleneni doğrulayacak kayıt yoksa “bilinmiyor” yazın. Eski puanların anlamı önceki kayıtlar bölümündedir.",
+    "Elinizde ne olur? Hedef grup, bugünkü yöntem ve gözlenen kayıp. Örneğin servis sırasından ayrılan kişiyle görüşmeniz farklı bir engeli gösterebilir."
+  ],
+  "09": ["Pazarı, rakipleri ve bugün kullanılan çözümü inceleyin."],
+  "10": ["En riskli varsayımı ve onu çürütecek bulguyu yazın."],
+  "11": [
+    "Kararın ağırlığına göre seçenek üretin. Bugünkü yöntemi karşılaştırmaya ekleyin."
+  ],
+  "12": [
+    "Beceri, tedarik, mekân ve gereken parayı kontrol edin.",
+    "Fiziksel ürün veya donanım için gereken kaynakları kontrol edin. İş yeri gerekiyorsa aynı kontrolü yapın. Diğer işlerde kısa not yeterlidir. Tedarik süresini, en küçük siparişi ve ödeme gününü öğrenin. Her yol için yapma, satın alma ve ortaklık seçeneklerini düşünün. Donanım işinde çalışan küçük bir örnek gösterin. Bu doğrulama 15. adımdaki talep testinden önce gelir.",
+    "11. adımda seçenek sayısı. Ucuz ve geri alınabilir işte bir alternatifi mevcut yöntemle karşılaştırın. Geri dönüşü pahalı kararda en az üç farklı çözüm üretin. Mevcut yöntemi ayrıca ekleyin. En güçlü iki çözümü 15. adımda aynı ölçüyle sınayın. Yalnız bir çözüm uygulanabiliyorsa eksiği kaydedin. Ağır yatırımda tek uygulanabilir yol kaldıysa gerekçesini bağımsız görüşle inceleyin. Bugünkü yöntemle karşılaştırmayı kaydedin. Yetkili kişi bu istisnayı onaylayana kadar büyük yatırım bekler.",
+    "Pazar ve seçenek hesabı. Aynı dönem için erişilebilen talebi ve teslim kapasitesini ayrı hesaplayın. Başlangıç satış tahmini bu ikisinin küçüğünü aşmamalıdır. Örneğin ayda 30 sipariş bekliyor, yalnız 20 sipariş teslim edebiliyorsunuz. Planı en çok 20 teslimle kurun. Sektör raporundan gelen tahmin farklıysa farkın nedenini araştırın.",
+    "Önce hangi varsayım? Etkiyi ve eldeki kanıtı ayrı puanlayın. İki ölçekte de 1 en düşük, 5 en yüksek değerdir. Önce etkisi 4 veya 5 olan varsayımlara bakın. Bunlardan kanıtı 1 veya 2 olanları sınayın. Hangi bulgunun seçimi değiştireceğini yazın.",
+    "Elinizde ne olur? Erişebileceğiniz grup, denenebilir seçenek ve vazgeçtiğiniz yol. Bölgede 40 okul bulunabilir. Ekibin ulaşabildiği ve satın alma yetkisi bulunan okullar ayrıca sayılır."
+  ],
+  "13": ["Teklifin kişiye hangi yararı sağlayacağını yazın."],
+  "14": [
+    "Ücretli işte fatura düzenini doğrulayın. Ücretsiz işte bütçe yetkisini doğrulayın."
+  ],
+  "15": [
+    "Taahhüdü, retleri ve toplam teklif sayısını kaydedin.",
+    "#### 14. adım. İlk ödemeye hazırlık",
+    "Önce para alınıp alınmayacağını belirleyin. Ücretsiz kamu hizmetinde bütçe ve uygulama yetkisini kaydedin. Kurum içi işte aynı kontrolü yapın. Bu adım o iş için yeni şirket kurulmasını gerektirmez.",
+    "Ücretli teklifte kurucu, mali müşavirle ödeme ve fatura düzenini belirler. Fiyatı, teslim tarihini ve iade koşulunu yazılı kayda bağlayın. Ödeme yolunu kontrol edin. İşiniz izin gerektiriyorsa ilgili izni doğrulayın.",
+    "Ücretli satışta fatura düzeni veya gerekli izin eksikse para almayın. Depozito da ödemedir. İzin gerektirmeyen ön kayıt veya niyet mektubuyla ilgiyi ölçebilirsiniz. İzin süresi 3 ayı aşacaksa bu seçeneği ayrıca değerlendirin. Ücretsiz hizmette bütçe ve uygulama yetkisini kaydedin. Para alınmayacağını belirtin. Tam kuruluş ve sözleşme kontrolü 31. adımdadır.",
+    "Deneme için başlangıç süresi 1 ile 3 haftadır. Önce 12. adımın sonucunu kontrol edin. Ardından 14. adımdaki ödeme koşullarını doğrulayın.",
+    "Talep eşiğini seçerken. Fiziksel ürün, hizmet veya donanım sunuyorsanız ilgili teklif satırını seçin. Dijital üründe alıcı türünün satırını kullanın. Kurumsal yetki, izin ve iki taraflı eşleşme koşulları ayrıca geçerlidir. Örneğin kamuya cihaz satışında iki niyet mektubu donanıma ilgiyi gösterir. Kurumdaki deneme, yetkili kişinin yazılı onayını bekler. Pazar yerinde alıcıyı ve satıcıyı ayrı izleyin. Kayıtlar gerçek eşleşme sayısını göstermez. Ödeme gerçekleşmediyse niyet mektubunu tahsilat saymayın. Ödeme alınamıyorsa ön kaydı ödeme saymayın. Ücretsiz hizmette belirlediğiniz katılım ve bütçe kanıtını kullanın. Aynı gözlemi iki ayrı taahhüt olarak saymayın.",
+    "Elinizde ne olur? Teklif, kabul ölçüsü, ölçünün gerekçesi ve gerçekleşen davranış. Ödeme ticari talebe, kitap teslim almaya gelmek katılıma kanıt olabilir. “Gelirim” diyen kişiler araştırılacak bir ipucu verir."
+  ],
+  "16": ["Geliri, gideri ve ödeme günlerini hesaplayın."],
+  "17": ["Başarısızlığın olası nedenini, erken işaretini ve önlemini yazın."],
+  "18": ["Hedef grubu, seçilen yolu ve vazgeçilen seçeneği belirleyin."],
+  "19": ["İlk 90 günün hedefini, sorumlusunu ve bitişini yazın."],
+  "20": [
+    "Yetkiyi, bütçeyi ve kanıtı tek karar dosyasında birleştirin.",
+    "İyi, orta ve kötü durum için para hesabı çıkarın. On yedinci adımda beş olası başarısızlık nedenini yazın. Olasılığa ve etkiye 1 ile 3 arasında puan verin. İki puanı çarpın. Başlangıçta 6 ve üstünü kritik sayın. Ağır zarar ihtimali puandan bağımsız incelenir. Orta durumda katkı sıfır veya eksiyse fiyatı veya gideri değiştirin. Geri ödeme 12 ayı aşıyorsa 24. adımda kanalı sınayın.",
+    "Bir sayfalık iş planı. Sorunu, hedef grubu, teklifi ve çözümü yazın. Erişim yolu, gelir, gider ve ölçüyü ekleyin. Sizi seçtiren üstünlük bilinmiyorsa alanı açık bırakın. En kırılgan tahmini seçin. Örneğin maliyet %20 artarsa kasa hangi ödeme gününde yetersiz kalır?",
+    "Elinizde ne olur? Bir sayfalık strateji, deneme bütçesi ve yetkili kişi. Ücretsiz hizmette ayrılan bütçeyi ve tamamlanan hizmet başına gideri kullanın."
+  ],
+  "21": ["İlk teslimin kapsamını ve fayda ölçüsünü tanımlayın."],
+  "22": ["Başlangıç değerini kaydedin. İlk kullanıcıdan önce ölçümü deneyin."],
+  "23": ["Sınırlı bir grupla gerçek teslim yapın."],
+  "24": ["Hangi yolun uygun müşteriyi getirdiğini ölçün."],
+  "25": [
+    "Üç ölçütü, gerçek faydayı ve zarar sınırını birlikte değerlendirin.",
+    "Dijital ürünü yapmak 6 haftayı aşıyorsa kapsamı daraltın. Donanımda başlangıç üst sınırı 6 aydır. 22. adımda ölçüm kartı. İşe uygun üç ayrı işletme ölçüsü seçin. Ayrıca kullanıcının elde edeceği doğrudan fayda için bir ölçü yazın. Aynı bulguyu iki kez saymayın. Hepsini ve zarar sınırını teslimden önce kaydedin.",
+    "İlk teslim. Kullanıcının tamamlaması gereken işi yazın. İlk teslim için vazgeçilmez işlevleri seçin. İlk deneme için örnek büyüklük tüketicide 10 ile 50 kişidir. İşletmede 3 ile 10 kurum, kamuda 1 veya 2 deneme başlangıç örneğidir. Bunlar 06. adımdaki görüşmelerden ayrı sayılır. Uygunsa 2 veya 3 erişim yolunu küçük bütçelerle karşılaştırın. Örnek süre 2 haftadır. Karar sahibi her yolun giderini ve tamamlanan işini kaydeder.",
+    "Elinizde ne olur? Önceki sonuç, gözlenen fayda, kusurlar ve düzeltme sahibi. Satış, tavsiye veya memnuniyet tek başına teslimin işe yaradığını göstermez."
+  ],
+  "26": [
+    "Bir veya iki varsayımı seçin. Her denemeyi 1 veya 2 haftada değerlendirin."
+  ],
+  "27": ["İşi tamamlamanın önceki yönteme göre faydasını kontrol edin."],
+  "28": ["Aynı sürede tekrar kullanımı veya kabulü karşılaştırın."],
+  "29": ["Aynı dönemin giderini, yeni müşterisini ve katkısını hesaplayın."],
+  "30": [
+    "Büyüme gerekiyorsa üç erişim yolunu küçük denemelerle karşılaştırın."
+  ],
+  "31": ["Kuruluş veya sözleşme gerekiyorsa yetkili kişiyle tamamlayın."],
+  "32": [
+    "Kusur veya bekleme varsa nedenini bulup yeniden ölçün.",
+    "29. adımda müşteri kazanma maliyeti. Hesap dönemini seçin. O dönemin müşteri kazanma giderini toplayın. Gideri aynı dönemde kazanılan yeni müşteri sayısına bölün. Örneğin bir ayda müşteri kazanmak için 12.000 TL harcadınız. O ay 6 yeni müşteri kazandınız. Müşteri başına gider 2.000 TL olur. Yeni müşteri sayısı sıfırsa oran hesaplanamaz.",
+    "Gözlem süreleri. 26. adımdaki 1 veya 2 hafta küçük düzeltme süresidir. 7. kararın üç aylık dönemi, toplam sonucu gözden geçirme süresidir. Abonelikte aynı grubu 1, 2 ve 3 ay sonra izleyin. Mevsimlik işte hasat veya satış dönemini bekleyin. Tek teslimli işte kabul veya bakım tarihini kullanın. 12 ay sonunda sonuç eksikse yeni harcama yetkisini kapatın. Dış koşul bekleniyorsa işi bekletin. Geçerli bulgu varsayımı çürütüyorsa yön değiştirin veya durdurun.",
+    "Tekrar ve fiyat için başlangıç ölçüleri. Tüketiciye sunulan dijital üründe örnek işaret, ankette en az %40 “çok üzülürüm” yanıtıdır. Örneğin 20 yanıtın 8’i %40 eder. Tekrar kullanımın aynı grupta sürüp sürmediğini ayrıca kontrol edin. İşletmeye satışta yenilemeyi izleyin. Fiziksel üründe tekrar siparişi ve iadeyi sayın. Hizmette tekrar alımı ve tavsiyeyi izleyin. Pazar yerinde iki tarafta tamamlanan tekrar işlemleri sayın.",
+    "Aynı grubun kişi başına ilk 12 aylık katkısını bulun. Bu tutarı o grubun kişi başına kazanma giderine bölün. Net gelirden ilgili değişken giderleri çıkarın. Tamamlanmamış ayları tahmin olarak ayrı gösterin. Kişi başına kazanma gideri sıfırsa bu oran hesaplanamaz. Başlangıç hedefi 3 ve üstüdür. Kazanma gideri sıfır veya bilinmiyorsa doğrudan katkıyı ve nakdi inceleyin. Gerekli alternatif ölçüyü baştan kaydedin. Oran hesaplanabiliyorsa 1’den küçük değerde büyüme harcamasını durdurun. Oran en az 1 ve 3’ten küçükse büyümeyi sınırlayın. Tam 3 hedefi karşılar. Oran 1’i aşıp üç dönem yükseldiyse sınırlı büyüme denemesi değerlendirilebilir. Nakit, fayda ve kapasite koşulları ayrıca sağlanmalıdır. Ücretsiz hizmette bütçe ve hizmet başına gideri kullanın.",
+    "Fiyatı ve kaliteyi araştırmak için. Hangi fiyat alıcıya ucuz, pahalı veya kabul edilemez geliyor? Yanıtları gerçek tekliflerdeki seçimlerle karşılaştırın. Gideri, iadeyi ve teslim yükünü de kaydedin. Hata yineleniyorsa aynı görevi kullanıcıyla izleyin. Örneğin beş gözlemde aynı engel görülürse önce o engeli düzeltin.",
+    "Elinizde ne olur? Tarihli sonuçlar, kapasite sınırı ve açıklanamayan farklar. Yeni grup gözlem süresini tamamlamadıysa sonucu “bilinmiyor” olarak kaydedin."
+  ],
+  "33": ["Büyütme, sürdürme, devretme ve kapatma seçeneklerini karşılaştırın."],
+  "34": [
+    "İş devredilecek veya kapanacaksa açık sözlere sorumlu atayın.",
+    "Büyüme seçildiyse bir yerde veya tek ekipte sınırlı deneme açın. Devralan kişi açık siparişleri, ödemeleri ve destek görevini yazılı kabul eder.",
+    "Elinizde ne olur? Seçim, yetkili kişi, yeniden değerlendirme olayı ve geri dönüş yolu."
+  ]
+}

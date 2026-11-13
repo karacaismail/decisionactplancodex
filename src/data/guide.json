@@ -1,0 +1,283 @@
+[
+  {
+    "rows": [
+      [
+        "Ciddi zarar tehlikesi var.",
+        "Durdurun. Etkilenen işi güvenli biçimde kapatın."
+      ],
+      [
+        "Sıradaki işin izni veya yetkisi eksik.",
+        "Bekletin. Eksik izin veya yetki gelince tekrar bakın."
+      ],
+      [
+        "Planlanan araştırmanın kaynağı eksik.",
+        "Bekletin. Daha küçük bir işi ayrıca değerlendirebilirsiniz."
+      ],
+      [
+        "Para 3 aydan az yetiyor, ek gelir yok.",
+        "Başlangıç ölçüsüne göre işi bekletin. Önceden gerekçelendirilmiş farklı bir sınır varsa onu uygulayın."
+      ],
+      [
+        "Yetki, kaynak ve durma kuralları açık.",
+        "İlerleyin. Sorun görüşmelerine başlayın."
+      ]
+    ],
+    "notes": [
+      "Günlük hayattan örnek. Bir dükkân sahibi yeni rafı denemek için bir hafta ayırır. Deneme bittiğinde yeni sipariş için ayrıca karar verir.",
+      "Kim yapar? Kurucu veya araştırma bütçesini yöneten kişi.",
+      "Planlanan süre. En çok 2 hafta."
+    ]
+  },
+  {
+    "rows": [
+      [
+        "Ciddi zarar tehlikesi var.",
+        "Durdurun. Etkilenen işi güvenli biçimde kapatın."
+      ],
+      [
+        "Sıradaki işin izni veya yetkisi eksik.",
+        "Bekletin. Eksik izin veya yetki gelince tekrar bakın."
+      ],
+      [
+        "Ölçüm güvenilmez veya önemli bir grup eksik.",
+        "Yeniden deneyin. Geçerli ölçüm gelene kadar sonucu açık bırakın."
+      ],
+      [
+        "Sorun tanınıyor. Geçerli gözlemde kimse zaman, para veya çalışan ayırmamış.",
+        "Bekletin. Yeni bir davranışta yeniden açın. Örnek kontrol süresi 6 aydır."
+      ],
+      [
+        "İki ölçüt karşılandı, üçüncü ölçüt eksik.",
+        "Kalan hakla 5 ile 10 ek görüşme yapın. Bu deneme bir kez, en çok 2 hafta sürer."
+      ],
+      [
+        "Geçerli ölçümde yalnız bir ölçüt karşılandı.",
+        "Yön değiştirin. 05. adımda sorunu veya grubu daraltın."
+      ],
+      [
+        "Geçerli ölçümde hiçbir ölçüt karşılanmadı.",
+        "Bu sorun için çalışmayı durdurun."
+      ],
+      [
+        "Tekrar, bugünkü çaba ve kayıp için yazılı ölçüler karşılandı.",
+        "İlerleyin. Erişim yolunu inceleyin."
+      ]
+    ],
+    "notes": [
+      "Günlük hayattan örnek. Bir esnaf dün iki saatini yanlış faturayı düzeltmeye ayırmış. Süreyi gösteren kayıt, “çok uğraşıyoruz” sözünden daha fazla bilgi verir.",
+      "Kim yapar? Kullanıcıyı gözleyebilen ekip üyesi veya kurucu.",
+      "Planlanan süre. Mevcut pazarda 3 ile 6 haftadır. Yeni pazarda 6 ile 8 haftadır. Yeni pazarda ilk takvim değerlendirmesini 6. haftada yapın.",
+      "| Kiminle görüşeceksiniz? | Başlangıç görüşme sayısı | Aranan davranış |\n|---|---|---|\n| Tüketici | 15 kişiden en az 9’u son olayı anlatır. | En az 5 kişi zaman veya para harcamıştır. |\n| İşletme | 10 görüşmede en az 6 kişi son olayı anlatır. | En az 3 işletme para veya çalışan ayırmıştır. |\n| Kamu veya büyük kurum | 6 görüşmede en az 4 kişi son olayı anlatır. | En az 2 birim çalışan görevlendirmiştir. |\n| İki taraflı pazar yeri | Her tarafta en az 10 kişiyle başlayın. | Alıcı ve satıcı için kendi grubunun davranışını ayrı arayın. |\n| Hizmet alan kişi | 10 görüşmede en az 6 kişi son olayı anlatır. | Ücretli hizmette en az 3 kişi benzer hizmete ödeme yapmıştır. |"
+    ]
+  },
+  {
+    "rows": [
+      [
+        "Ciddi zarar tehlikesi var.",
+        "Durdurun. Etkilenen işi güvenli biçimde kapatın."
+      ],
+      [
+        "Sıradaki işin izni veya yetkisi eksik.",
+        "Bekletin. Eksik izin veya yetki gelince tekrar bakın."
+      ],
+      [
+        "Kritik beceri eksik, güvenli bağımsız bir iş de yok.",
+        "Bekletin. Başka çözüm varsa 11. adımda yön değiştirin."
+      ],
+      [
+        "Ortak bekleniyor ama ayrı bir hazırlık işi yapılabiliyor.",
+        "Yalnız o hazırlık için koşullu ilerleyin. Ortak gerektiren teslim bekler."
+      ],
+      [
+        "Hedef gruba erişilemiyor.",
+        "Yön değiştirin. 08. adımda grubu veya ulaşma yolunu yeniden seçin."
+      ],
+      [
+        "Bugünkü yöntem üstün veya ağır yatırım için seçenekler yetersiz.",
+        "Yatırımı bekletin. Yeni karşılaştırma için sorumlu ve tarih yazın."
+      ],
+      [
+        "Seçenekler işin riskine uygun. Erişim, gerekli beceri ve ulaşılabilir talep yeterli.",
+        "İlerleyin. Teklifi hazırlayın."
+      ]
+    ],
+    "notes": [
+      "Günlük hayattan örnek. Bir tamirci uzak mahalleye ulaşmak istiyor. Önce bir gün araçla gitmenin bedelini hesaplar.",
+      "Kim yapar? Müşteriye ulaşacak kişi ve teslim sorumlusu.",
+      "Planlanan süre. 2 ile 3 hafta."
+    ]
+  },
+  {
+    "rows": [
+      [
+        "Ciddi zarar tehlikesi var.",
+        "Durdurun. Etkilenen işi güvenli biçimde kapatın."
+      ],
+      [
+        "Sıradaki işin izni veya yetkisi eksik.",
+        "Bekletin. Eksik izin veya yetki gelince tekrar bakın."
+      ],
+      [
+        "İlgi var ama istenen taahhüt yok.",
+        "Yeniden deneyin. Hedef grup yanlışsa 08. adıma dönün."
+      ],
+      [
+        "Geçerli ölçüm teklifi çürütüyor.",
+        "Yön değiştirin. Grup yanlışsa 08, çözüm zayıfsa 11. adıma dönün."
+      ],
+      [
+        "Önceden yazılan taahhüt eşiği uygun davranışla karşılandı.",
+        "İlerleyin. 16. adımda yatırım hesabını açın. Teslim yetkisi 5. kararda verilir."
+      ]
+    ],
+    "notes": [
+      "Günlük hayattan örnek. Bir kurum tanıtımı beğenebilir. Deneme günü için bir çalışan görevlendirmesi ise kayda girecek bir davranıştır.",
+      "Kim yapar? Teklifi sunacak kişi ve bütçe sahibine ulaşabilen kişi.",
+      "Planlanan süre. 2 ile 3 hafta.",
+      "| Profil | Hangi davranış sayılır? | Başlangıç eşiği |\n|---|---|---|\n| Tüketiciye dijital ürün | Fiyatı ve ürünün hazır olma durumunu gösterin. | 100 ziyaretçiden en az 3 ön kayıt gerekir. Kayıt yaptıranlardan en az 3’ü ön ödeme yapar veya depozito verir. |\n| İşletme | Yetkili kişinin niyet mektubunu veya ücretli denemeyi kaydedin. | En az 3 niyet mektubu veya ücretli deneme |\n| Kamu veya büyük kurum | Kurumun yetkili kişisiyle sınırlı deneme planlayın. | En az 1 imzalı deneme anlaşması |\n| İki taraflı pazar yeri | Seçilen ilk tarafı ve diğer tarafı ayrı izleyin. | İlk tarafta 10 kayıt, diğer tarafta 3 ödeme |\n| Fiziksel ürün | Numuneyi ve teslim koşullarını gösterin. | En az 5 ön sipariş veya depozito |\n| Hizmet | Küçük bir gerçek hizmet sunun. | En az 3 ödeyen müşteri |\n| Donanım | Çalışmayı gösteren teknik örneği sunun. | En az 2 niyet mektubu |"
+    ]
+  },
+  {
+    "rows": [
+      [
+        "Ciddi zarar tehlikesi var.",
+        "Durdurun. Etkilenen işi güvenli biçimde kapatın."
+      ],
+      [
+        "Sıradaki işin izni veya yetkisi eksik.",
+        "Bekletin. Eksik izin veya yetki gelince tekrar bakın."
+      ],
+      [
+        "Para ilk ödeme gününe yetmiyor.",
+        "Yatırımı bekletin. Ödeme koşulunu görüşün."
+      ],
+      [
+        "Kritik bilinmeyen güvenli ve küçük bir denemeyle çözülebilir.",
+        "Kalan hakla yalnız o denemeyi açın. Başlangıç süresi en çok 2 haftadır."
+      ],
+      [
+        "Riskin önlemi veya kaynağı eksik.",
+        "Bekletin veya daha küçük bir seçeneğe dönün."
+      ],
+      ["Yetki, kaynak ve risk sınırı uygun.", "Sınırlı ilk teslimi açın."]
+    ],
+    "notes": [
+      "Günlük hayattan örnek. Atölye kumaş bedelini cuma günü öder. Müşterinin parası daha sonra gelecekse aradaki açığı görmesi gerekir.",
+      "Kim yapar? Harcama yetkilisi. Teslim sorumlusu kapasiteyi doğrular.",
+      "Planlanan süre. 2 ile 3 hafta."
+    ]
+  },
+  {
+    "rows": [
+      [
+        "Ciddi zarar tehlikesi var.",
+        "Durdurun. Etkilenen işi güvenli biçimde kapatın."
+      ],
+      [
+        "Sıradaki işin izni veya yetkisi eksik.",
+        "Bekletin. Eksik izin veya yetki gelince tekrar bakın."
+      ],
+      [
+        "Kullanıcı işi tamamlayamıyor.",
+        "Teslim kusurunu 21. adımda düzeltin. Kalan hakla aynı görevi yeniden ölçün."
+      ],
+      [
+        "Teslim doğru, ancak doğrudan fayda görülmüyor.",
+        "Yön değiştirin. 11. adımda başka çözümü değerlendirin."
+      ],
+      [
+        "Fayda görüldü. Üç işletme ölçüsünden ikisi karşılandı.",
+        "Eksik ölçüt düzelebiliyorsa 2 hafta yeniden deneyin. Önceden ayrılan hakla toplam en çok 3 deneme yapılır."
+      ],
+      [
+        "Üç ölçüt ve fayda eşiği karşılandı.",
+        "İlerleyin. Tekrar teslimi ölçün."
+      ]
+    ],
+    "notes": [
+      "Günlük hayattan örnek. Dört işletme yazılımı satın alıyor. Yalnız biri raporu yardımsız hazırlayabiliyor. Ekip sonraki satıştan önce hatayı inceliyor.",
+      "Kim yapar? Teslim sorumlusu işi yürütür. Sonucu kullanacak kişi kabul ölçüsünü doğrular.",
+      "Planlanan süre. 4 ile 8 hafta. Donanımda 3 ile 6 ay planlayın. Fiziksel üründe tedarik süresini ekleyin. Kurumlara satışta alım süresini ayrıca yazın.",
+      "| İş | Üç işletme ölçüsü için örnek | Ayrı fayda ölçüsü |\n|---|---|---|\n| Kuruma rapor hizmeti | Ücretli deneme, zamanında kurulum, destek gideri | Yardımsız rapor bitiren işletme sayısı |\n| Gezici kütüphane | Açılan durak, zamanında sefer, sefer gideri | İstediği kitabı teslim alabilen kişi sayısı |"
+    ]
+  },
+  {
+    "rows": [
+      [
+        "Ciddi zarar tehlikesi var.",
+        "Durdurun. Etkilenen işi güvenli biçimde kapatın."
+      ],
+      [
+        "Sıradaki işin izni veya yetkisi eksik.",
+        "Bekletin. Eksik izin veya yetki gelince tekrar bakın."
+      ],
+      [
+        "Yeni sipariş gecikmeyi artırıyor veya kasa düşüyor.",
+        "Gecikmede 32. adıma dönün. Kasa düşüyorsa büyümeyi bekletin."
+      ],
+      ["Gözlem dönemi tamamlanmadı.", "Bekletin. Sonucu sıfır yazmayın."],
+      [
+        "Fayda var ama ticari gider karşılanmıyor.",
+        "Büyüme harcamasını bekletin. 29. adımda fiyatı ve gideri sınayın."
+      ],
+      [
+        "Oran 1’den büyük, 3’ten küçük ve üç dönem yükseliyor. Diğer koşullar uygun.",
+        "Koşullu ilerleyin. 8. kararda tek denemenin sınırını yazın. Kalan para ve teslime ilişkin koşullar da sağlanmalıdır."
+      ],
+      [
+        "Ticari iş kendi yazılı para ölçüsünü karşıladı. Fayda, tekrar, kasa ve kapasite yeterli.",
+        "İlerleyin. Uygun erişim yolu ve gerekli sözleşmelerle 8. kararı açın."
+      ],
+      [
+        "Ücretsiz hizmetin faydası, erişimi, kapasitesi ve bütçesi yeterli.",
+        "İlerleyin. 8. kararda sonraki hizmet dönemini değerlendirin."
+      ]
+    ],
+    "notes": [
+      "Günlük hayattan örnek. Bir terzi ilk siparişi zamanında yetiştiriyor. Siparişler artınca gecikme başlıyorsa yeni iş almadan bekleyen işleri inceliyor.",
+      "Kim yapar? Hizmet sorumlusu dönemleri izler. Para sorumlusu giderleri ve tahsilatı doğrular.",
+      "Planlanan süre. Başlangıç planı 3 aylık dönemlerden oluşur. En çok 4 dönemde, toplam 12 ayda karar verilir."
+    ]
+  },
+  {
+    "rows": [
+      [
+        "Ciddi zarar tehlikesi var.",
+        "Durdurun. Etkilenen işi güvenli biçimde kapatın."
+      ],
+      [
+        "Sıradaki işin izni veya yetkisi eksik.",
+        "Bekletin. Eksik izin veya yetki gelince tekrar bakın."
+      ],
+      [
+        "Yeni yer kaliteyi, erişimi veya kasayı bozdu.",
+        "Büyümeyi bekletin. Kararı 3 ay sonra yeniden inceleyebilirsiniz."
+      ],
+      [
+        "Ekip mevcut ölçekte kalmayı seçti.",
+        "İlerleyin. Mevcut işi sürdürün ve yeniden bakılacak olayı yazın."
+      ],
+      [
+        "Devir seçildi ama devralacak kişi açık işleri kabul etmedi.",
+        "Devri bekletin. Sorumluluk mevcut kişide kalır."
+      ],
+      [
+        "Devir seçildi ve açık işler yazılı kabul edildi.",
+        "İlerleyin. 34. adımda sorumluluğu devredin."
+      ],
+      [
+        "Kapanış seçildi.",
+        "Durdurun. 34. adımda açık sipariş, ödeme ve bakım yükümlülüklerini tamamlayın."
+      ],
+      [
+        "Yeni yerde fayda, kalite ve para dengesi korunuyor.",
+        "İlerleyin. Yalnız onaylanan sonraki genişlemeyi açın."
+      ]
+    ],
+    "notes": [
+      "Günlük hayattan örnek. Bir kütüphane yeni durakta daha çok kişiye ulaşabilir. Eski duraktaki okurlar hizmeti kaybediyorsa büyümeyi bekletir.",
+      "Kim yapar? İşin devamından sorumlu yetkili. Devir varsa teslim alan kişi de gerekli kayıtları doğrular.",
+      "Planlanan süre. Karar için 1 ile 2 hafta. Büyüme denemesi için 3 ay."
+    ]
+  }
+]

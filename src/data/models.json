@@ -1,0 +1,898 @@
+[
+  {
+    "title": "Eisenhower Matrisi",
+    "slug": "eisenhower-matrisi",
+    "section": "Zaman ve Önceliklendirme",
+    "advice": "Süre daraldığında gecikmesi zarar verecek işi öne alın. Yaklaşan teslim, geciken bakımın riskini gizleyebilir.",
+    "steps": []
+  },
+  {
+    "title": "Evet/Hayır Kuralı",
+    "slug": "evet-hayir-kurali",
+    "section": "Zaman ve Önceliklendirme",
+    "advice": "Tekrarlanan taleplerde hangi işi kabul edeceğinizi önceden yazın. Koşullar değiştiğinde eski kabul kuralı iyi işleri dışlayabilir.",
+    "steps": []
+  },
+  {
+    "title": "Durma Kuralı",
+    "slug": "durma-kurali",
+    "section": "Zaman ve Önceliklendirme",
+    "advice": "Araştırma kararı değiştirmiyorsa yeni harcamayı kesin. Belirsizlik ucuz bir gözlemle çözülebiliyorsa erken kapanış fırsatı kaçırabilir.",
+    "steps": ["02", "25"]
+  },
+  {
+    "title": "Pareto İlkesi",
+    "slug": "pareto-ilkesi",
+    "section": "Zaman ve Önceliklendirme",
+    "advice": "Kayıplar birkaç nedende toplanıyorsa başlıca nedeni inceleyin. Nadir ağır riski ayrıca koruyun. Eski dönemin dağılımı yeni dönemde değişebilir.",
+    "steps": ["30"]
+  },
+  {
+    "title": "MoSCoW Önceliklendirme",
+    "slug": "moscow-onceliklendirme",
+    "section": "Zaman ve Önceliklendirme",
+    "advice": "İlk teslimde eksikliği işi engelleyen parçaları ayırın. Her isteğe zorunlu derseniz ilk teslim küçülmez.",
+    "steps": ["21"]
+  },
+  {
+    "title": "Lastik Bant Modeli",
+    "slug": "lastik-bant-modeli",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "İki yol arasında kalındığında tutunma ve değişme nedenlerini yazın. Kurucunun tercihi müşterinin talebini göstermez.",
+    "steps": []
+  },
+  {
+    "title": "Seçim Fazlalığı",
+    "slug": "secim-fazlaligi",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "Teklifler karışıyorsa benzer seçenekleri azaltıp seçimi gözleyin. Az seçenek, özel ihtiyacı olan müşteriyi dışlayabilir.",
+    "steps": []
+  },
+  {
+    "title": "Sonuçlar Modeli",
+    "slug": "sonuclar-modeli",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "Karar gecikiyorsa beklemenin bedelini de hesaplayın. Sonucu hayal etmek olasılığını ölçmez.",
+    "steps": ["15"]
+  },
+  {
+    "title": "Bilinçsiz Düşünme Teorisi",
+    "slug": "bilincsiz-dusunme-teorisi",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "Deneyimli kişinin sezgisini tahmin olarak kaydedip bağımsız gözlem arayın. Yeni bir sektörde eski sezginin dayanağı zayıflayabilir.",
+    "steps": []
+  },
+  {
+    "title": "Bilişsel Çelişki Modeli",
+    "slug": "bilissel-celiski",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "Ekip sonucu savunmaya başladıysa ilk tahminle gerçekleşeni karşılaştırın. Bir kişinin itirazı tek başına düşünme hatası göstermez.",
+    "steps": ["10"]
+  },
+  {
+    "title": "Zor Seçim Modeli",
+    "slug": "zor-secim-modeli",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "Ölçüler eşitse hangi değerden vazgeçebileceğinizi yazın. Aynı toplam puan farklı kişilere farklı zararlar saklayabilir.",
+    "steps": []
+  },
+  {
+    "title": "Bilişsel Önyargı",
+    "slug": "bilissel-onyargi",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "Güçlü kanaatinizi yanlış çıkarabilecek bir örnek arayın. Bir hataya ad vermek onu gerçekten yaptığınızı göstermez.",
+    "steps": ["06"]
+  },
+  {
+    "title": "Yol Ayrımı Modeli",
+    "slug": "yol-ayrimi-modeli",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "Mevcut gidişat tıkandıysa devam, bekleme ve değişim sonuçlarını karşılaştırın. Listede bulunmayan bir ortaklık bütün seçenekleri değiştirebilir.",
+    "steps": ["01"]
+  },
+  {
+    "title": "Karar Matrisi (Ağırlıklı Puanlama)",
+    "slug": "karar-matrisi",
+    "section": "Karar Verme ve Düşünme Hataları",
+    "advice": "Ölçüler çatışıyorsa ağırlıkları seçenekleri puanlamadan belirleyin. Küçük bir ağırlık değişince kazanan değişiyorsa seçim kırılgandır.",
+    "steps": ["07", "11", "18"]
+  },
+  {
+    "title": "Akış (Flow) Modeli",
+    "slug": "akis-modeli",
+    "section": "Kendini Tanıma",
+    "advice": "Görev çok zorsa büyüklüğünü kişinin deneyimine göre ayarlayın. Kişi yaptığı işe dalabilir ama teslim yine gecikebilir.",
+    "steps": []
+  },
+  {
+    "title": "Johari Penceresi",
+    "slug": "johari-penceresi",
+    "section": "Kendini Tanıma",
+    "advice": "Kurucu güçlü yönünden eminse birlikte çalışanlardan somut örnek isteyin. Aynı ekibin ortak görüşü müşterinin deneyimini kaçırabilir.",
+    "steps": ["20"]
+  },
+  {
+    "title": "Hayal Edilemez Modeli",
+    "slug": "hayal-edilemez-modeli",
+    "section": "Kendini Tanıma",
+    "advice": "Ekip aksama ihtimalini düşünemiyorsa planı bozacak olayı tarif edin. Hayal edilen aksamanın olasılığı henüz bilinmez.",
+    "steps": []
+  },
+  {
+    "title": "Uffe Elbæk Modeli",
+    "slug": "uffe-elbaek-modeli",
+    "section": "Kendini Tanıma",
+    "advice": "Ekip kendini farklı tarif ediyorsa davranış örneklerini karşılaştırın. Tek görüşme kalıcı bir kişilik özelliği göstermez.",
+    "steps": []
+  },
+  {
+    "title": "Enerji Modeli",
+    "slug": "enerji-modeli",
+    "section": "Kendini Tanıma",
+    "advice": "Kurucu zamanı yetersizse iş yükünü takvimde gerçek saatlerle gösterin. Kişinin kendini hazır hissetmesi takvimde yer açmaz.",
+    "steps": []
+  },
+  {
+    "title": "Kişisel Performans Modeli",
+    "slug": "kisisel-performans-modeli",
+    "section": "Kendini Tanıma",
+    "advice": "Verim dalgalanıyorsa tek gün yerine karşılaştırılabilir dönemleri inceleyin. İşin zorluğu değişirse kişisel üretim sayısı yanıltabilir.",
+    "steps": []
+  },
+  {
+    "title": "Making-of Modeli",
+    "slug": "making-of-modeli",
+    "section": "Kendini Tanıma",
+    "advice": "Geçmiş başarıyı açıklarken o günkü koşulu ve yardımı da kaydedin. Geçmişi anlatırken başarısız denemeler kolayca unutulur.",
+    "steps": ["34"]
+  },
+  {
+    "title": "Kişisel Potansiyel Tuzağı",
+    "slug": "kisisel-potansiyel-tuzagi",
+    "section": "Kendini Tanıma",
+    "advice": "Görev yetenek beklentisine dayanıyorsa önce küçük bir teslim isteyin. Bir başarılı deneme sürekli teslim gücünü göstermez.",
+    "steps": []
+  },
+  {
+    "title": "Hediye Modeli",
+    "slug": "hediye-modeli",
+    "section": "İnsan ve Toplum Davranışı",
+    "advice": "Bedelsiz sunumda karşılık verme baskısının yanıtı etkileyebileceğini hesaba katın. Ücretsiz denemeden sonra gelen övgü, ödeme taahhüdünden farklıdır.",
+    "steps": []
+  },
+  {
+    "title": "Siyasi Pusula",
+    "slug": "siyasi-pusula",
+    "section": "İnsan ve Toplum Davranışı",
+    "advice": "Taraflar değerlerde ayrılıyorsa çatışan öncelikleri kendi sözleriyle kaydedin. Bir etiket tarafın hangi koşulda uzlaşacağını söylemez.",
+    "steps": []
+  },
+  {
+    "title": "Maslow Piramitleri",
+    "slug": "maslow-piramitleri",
+    "section": "İnsan ve Toplum Davranışı",
+    "advice": "İhtiyaçlar çatışıyorsa kişinin son seçiminde neyi öncelediğini sorun. İhtiyaçların sırası herkes için aynı olmayabilir.",
+    "steps": []
+  },
+  {
+    "title": "Sinus Milieu ve Bourdieu Modelleri",
+    "slug": "sinus-milieu-bourdieu",
+    "section": "İnsan ve Toplum Davranışı",
+    "advice": "Benzer gelire sahip gruplarda farklı kullanım alışkanlıklarını araştırın. Grubun ortalaması tek alıcının tercihini gizleyebilir.",
+    "steps": ["08"]
+  },
+  {
+    "title": "Beklentiler Modeli",
+    "slug": "beklentiler-modeli",
+    "section": "İnsan ve Toplum Davranışı",
+    "advice": "Memnuniyet düşüyorsa ilk vaat ile alınan sonucu karşılaştırın. Aynı puanı veren iki kişi farklı şeyler beklemiş olabilir.",
+    "steps": ["13"]
+  },
+  {
+    "title": "Schelling Ayrışma Modeli",
+    "slug": "schelling-ayrisma-modeli",
+    "section": "İnsan ve Toplum Davranışı",
+    "advice": "Küçük tercihler dışlanmaya dönüşüyorsa hizmet alamayan grubu izleyin. Benzetimdeki sonuç gerçek mahalledeki nedeni kanıtlamaz.",
+    "steps": []
+  },
+  {
+    "title": "Herzberg Çift Faktör Kuramı",
+    "slug": "herzberg-cift-faktor",
+    "section": "İnsan ve Toplum Davranışı",
+    "advice": "Ekip zorlanıyorsa çalışma şartlarıyla işin sağladığı gelişimi ayrı sorun. Aynı ücret değişikliği farklı ekiplerde farklı karşılık bulabilir.",
+    "steps": []
+  },
+  {
+    "title": "Çatışma Çözümü Modeli",
+    "slug": "catisma-cozumu-modeli",
+    "section": "Oyun Teorisi ve Müzakere",
+    "advice": "Taraflar anlaşamıyorsa her birinin korumak istediği sonucu belirleyin. Güç dengesizse sessizlik uzlaşma anlamına gelmez.",
+    "steps": ["01"]
+  },
+  {
+    "title": "Mahkûm İkilemi",
+    "slug": "mahkum-ikilemi",
+    "section": "Oyun Teorisi ve Müzakere",
+    "advice": "Kısa vadeli çıkar işbirliğini bozuyorsa anlaşma şartlarını değiştirin. Tarafların kazançları yanlış yazılırsa beklenen tepki de değişir.",
+    "steps": ["18"]
+  },
+  {
+    "title": "Güven Stratejileri Turnuvası",
+    "slug": "guven-stratejileri",
+    "section": "Oyun Teorisi ve Müzakere",
+    "advice": "Uzun ortaklıktan önce küçük bir karşılıklı taahhüt deneyin. Küçük işte güven kazanmak büyük yükümlülüğü taşıma gücünü göstermez.",
+    "steps": ["03"]
+  },
+  {
+    "title": "Ortak Malların Trajedisi",
+    "slug": "ortak-mallar-trajedisi",
+    "section": "Oyun Teorisi ve Müzakere",
+    "advice": "Ortak kaynak tükeniyorsa kullanım sınırını ve izleme görevini paylaşın. Kuralı uygulayan kişi yoksa yazılı sınır kaynağı koruyamaz.",
+    "steps": []
+  },
+  {
+    "title": "Sıfır Toplamlı ve Sıfır Toplamlı Olmayan Oyunlar",
+    "slug": "sifir-toplamli-oyunlar",
+    "section": "Oyun Teorisi ve Müzakere",
+    "advice": "Fiyatta uzlaşamıyorsanız teslim zamanı gibi ikinci bir konu açın. Gerçek kaynak sabitse taraflar yalnız konuşarak ek kapasite yaratamaz.",
+    "steps": []
+  },
+  {
+    "title": "Geri Bildirim Analizi",
+    "slug": "geri-bildirim-analizi",
+    "section": "Öğrenme ve Geri Bildirim",
+    "advice": "Karar günündeki tahmini gerçekleşen sonuçla karşılaştırın. Tahmin yazılmadıysa sonradan yapılan kıyas hafızaya dayanır.",
+    "steps": ["26", "34"]
+  },
+  {
+    "title": "John Whitmore Modeli",
+    "slug": "john-whitmore-modeli",
+    "section": "Öğrenme ve Geri Bildirim",
+    "advice": "Hedef uzaksa ekibin değiştirebileceği yakın bir davranış seçin. Soru sormak yetki veya araç eksiğini gidermez.",
+    "steps": []
+  },
+  {
+    "title": "Geri Bildirim Kutusu",
+    "slug": "geri-bildirim-kutusu",
+    "section": "Öğrenme ve Geri Bildirim",
+    "advice": "Yorumlar çelişiyorsa somut örnekleri ayırıp tekrar edenleri sınayın. Az duyulan bir şikâyet ağır zarar gösterebilir.",
+    "steps": ["23"]
+  },
+  {
+    "title": "Çift Döngülü Öğrenme Modeli",
+    "slug": "cift-dongulu-ogrenme",
+    "section": "Öğrenme ve Geri Bildirim",
+    "advice": "Aynı hata sürüyorsa yöntemin yanında başlangıç varsayımını inceleyin. Her küçük aksakta amacı değiştirmek karşılaştırmayı bozar.",
+    "steps": ["26"]
+  },
+  {
+    "title": "AI Modeli (Takdir Eden Sorgulama)",
+    "slug": "ai-modeli",
+    "section": "Öğrenme ve Geri Bildirim",
+    "advice": "Bir ekip başarılıysa neyi farklı yaptığını yerinde inceleyin. Yalnız başarıyı konuşmak bildirilmeyen hataları örtebilir.",
+    "steps": []
+  },
+  {
+    "title": "Leonardo'nun Görmeyi Bilme Stratejisi",
+    "slug": "leonardo-gormeyi-bilmek",
+    "section": "Öğrenme ve Geri Bildirim",
+    "advice": "Çözüm tartışması erken başladıysa asıl işi baştan sona gözleyin. Tek vardiyada görülen iş bütün vardiyaları temsil etmeyebilir.",
+    "steps": ["06"]
+  },
+  {
+    "title": "Takım Modeli",
+    "slug": "takim-modeli",
+    "section": "Ekip ve Liderlik",
+    "advice": "Teslim için eksik beceriyi bulup sorumlu belirleyin. Beceri listesinde adı geçen kişi iş için müsait olmayabilir.",
+    "steps": ["01"]
+  },
+  {
+    "title": "Hersey–Blanchard Modeli",
+    "slug": "durumsal-liderlik",
+    "section": "Ekip ve Liderlik",
+    "advice": "Yeni işi devrederken desteği kişinin deneyimine göre ayarlayın. Tek göreve bakarak kişinin bütün işlerdeki yetkinliğine karar verilmez.",
+    "steps": []
+  },
+  {
+    "title": "Rol Oyunu Modeli (Belbin & de Bono)",
+    "slug": "rol-oyunu-modeli",
+    "section": "Ekip ve Liderlik",
+    "advice": "Herkes aynı düşünüyorsa bir kişiden karşı seçeneği savunmasını isteyin. Canlandırılan itiraz gerçek müşterinin görüşünün yerini tutmaz.",
+    "steps": ["11"]
+  },
+  {
+    "title": "Drexler/Sibbet Takım Performans Modeli",
+    "slug": "drexler-sibbet-modeli",
+    "section": "Ekip ve Liderlik",
+    "advice": "Görevler tıkandığında ortak amacın ve sorumlu kişinin anlaşıldığını doğrulayın. Kaynak sıkıntısı da ekipte anlaşmazlık yaratabilir.",
+    "steps": []
+  },
+  {
+    "title": "Olumlu Niyet Çerçevesi",
+    "slug": "olumlu-niyet-cercevesi",
+    "section": "Ekip ve Liderlik",
+    "advice": "Direnç varsa kişinin koruduğu ihtiyacı sorun. Etkilenenlerin zararını ayrıca inceleyin. İyi niyet bildirimi verilen zararı ortadan kaldırmaz.",
+    "steps": []
+  },
+  {
+    "title": "Tuckman Modeli (Ekip Gelişim Evreleri)",
+    "slug": "tuckman-modeli",
+    "section": "Ekip ve Liderlik",
+    "advice": "Yeni ekipte gerilim çıkarsa çalışma kurallarını birlikte netleştirin. Ekipler her aşamayı aynı sırada yaşamayabilir.",
+    "steps": ["33"]
+  },
+  {
+    "title": "McGregor X ve Y Kuramı",
+    "slug": "mcgregor-x-y",
+    "section": "Ekip ve Liderlik",
+    "advice": "Sürekli onay bekleniyorsa yetki sınırlarını ve sonuç takibini gözden geçirin. Çalışanları iki kalıcı tipe ayırmak görev koşullarını gizler.",
+    "steps": []
+  },
+  {
+    "title": "SWOT Analizi",
+    "slug": "swot-analizi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "İç güçler ve dış koşullar için doğrulanabilir birer örnek bulun. Aynı fikri dört kutuya yazmak karar üretmez.",
+    "steps": []
+  },
+  {
+    "title": "BCG Kutusu",
+    "slug": "bcg-kutusu",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Ürünleri karşılaştırırken büyüme ve göreli pazar payının güvenilirliğini kontrol edin. Yüksek pazar payı tek başına nakit sağlamaz.",
+    "steps": []
+  },
+  {
+    "title": "Pazar Boşluğu Modeli",
+    "slug": "pazar-boslugu-modeli",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Rakip görünmeyen alanda müşterinin bugün neye para ayırdığını araştırın. Boş görünen yerde ödeme isteği de bulunmayabilir.",
+    "steps": ["09"]
+  },
+  {
+    "title": "Porter'ın Beş Güç Analizi",
+    "slug": "porter-bes-guc",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Fiyat baskısında alıcıyı, tedarikçiyi ve yerine geçen çözümleri inceleyin. Sınırları yanlış çizilen pazarda gerçek rakip gözden kaçar.",
+    "steps": ["04"]
+  },
+  {
+    "title": "PESTLE Analizi",
+    "slug": "pestle-analizi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Dış değişimlerden hangisinin maliyeti veya talebi değiştireceğini belirleyin. Uzun bir eğilim listesi hangisinin işi etkilediğini söylemez.",
+    "steps": ["04"]
+  },
+  {
+    "title": "VRIO Analizi",
+    "slug": "vrio",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Avantaj saydığınız kaynağı kullanacak insan ve düzen var mı, inceleyin. Nadir bir araç, alıcının değer verdiği bir sonuç üretmeyebilir.",
+    "steps": ["12"]
+  },
+  {
+    "title": "Blue Ocean Stratejisi (Mavi Okyanus)",
+    "slug": "mavi-okyanus",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Farklı teklif üretirken çıkarılan özelliklerin alıcıya etkisini deneyin. Rakipten farklı olmak değişim zahmetini karşılamayabilir.",
+    "steps": ["09"]
+  },
+  {
+    "title": "Porter'ın Jenerik Stratejileri",
+    "slug": "porter-jenerik-stratejiler",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Maliyet, farklılık veya dar hedef arasında yapacağınız seçimi açıklayın. Ucuzluk iddiası gerçek maliyet farkı gerektirir.",
+    "steps": ["18"]
+  },
+  {
+    "title": "McKinsey 7S Modeli",
+    "slug": "mckinsey-7s",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Ekip yeni stratejiyi uygulayamıyorsa beceri, yapı ve yönetim uyumunu inceleyin. Yedi başlıkta uyum görülmesi müşteri talebini doğrulamaz.",
+    "steps": ["33"]
+  },
+  {
+    "title": "Temel Yetkinlik",
+    "slug": "temel-yetkinlik",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Dışarıya iş vermeden önce sizi öne çıkaran beceriyi belirleyin. Her beceriyi vazgeçilmez saymak ortaklık seçeneğini kapatır.",
+    "steps": ["12"]
+  },
+  {
+    "title": "Ansoff Matrisi",
+    "slug": "ansoff-matrisi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Yeni ürünle yeni pazara birlikte giriyorsanız belirsizlikleri ayrı sınayın. Büyüme kutusu, yatırımı finanse edecek parayı göstermez.",
+    "steps": ["33"]
+  },
+  {
+    "title": "Gap Analizi (Boşluk Analizi)",
+    "slug": "gap-analizi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Hedefe uzaklığı başlangıç değeri ve aynı birimle gösterin. Farkı ölçmek bu farkın nedenini açıklamaz.",
+    "steps": []
+  },
+  {
+    "title": "Benchmarking (Kıyaslama)",
+    "slug": "benchmarking",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Başka işletmenin sonucunu kullanmadan önce çalışma koşullarını karşılaştırın. Farklı ürün karışımı bir işletmeyi görünürde daha hızlı gösterebilir.",
+    "steps": ["09"]
+  },
+  {
+    "title": "İş Modeli Kanvası",
+    "slug": "is-modeli-kanvasi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Ödeyen, yararlanan, ortak veya gider değişince işin bütününü gözden geçirin. Dolu bir sayfadaki kutular henüz sınanmamış olabilir.",
+    "steps": []
+  },
+  {
+    "title": "Pazara Giriş Stratejileri",
+    "slug": "pazara-giris-stratejileri",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Yeni bölgeye açılmadan kanalı, yerel yetkiyi ve teslimi sınayın. İlk bölgedeki müşteri kazanma gideri yeni bölgede artabilir.",
+    "steps": ["33"]
+  },
+  {
+    "title": "Stratejik İttifaklar ve İşbirlikleri",
+    "slug": "stratejik-ittifaklar",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Ortak gerekiyorsa katkı, sorumluluk ve ayrılma şartlarını yazın. Ortak hedef, tarafların aynı anda kaynak ayıracağını garanti etmez.",
+    "steps": []
+  },
+  {
+    "title": "Döngüsel Ekonomi",
+    "slug": "dongusel-ekonomi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Yeniden kullanım vaadinde geri toplanan ve kullanılan miktarı ölçün. Toplanan malzemenin tümü yeniden kullanılamayabilir.",
+    "steps": []
+  },
+  {
+    "title": "Sürdürülebilirlik Stratejisi",
+    "slug": "surdurulebilirlik-stratejisi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Bugünkü kazanç kaynak tüketimini artırıyorsa ikisini aynı dönemde izleyin. Yalnız birim tüketimi izlemek toplam tüketim artışını gizler.",
+    "steps": []
+  },
+  {
+    "title": "TOWS Matrisi (SWOT'un Eylem Hali)",
+    "slug": "tows-matrisi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Bir güç veya zayıflığı dış koşulla eşleştirip somut eylem çıkarın. Her kutuya eylem yazmak kaynakları önemsiz işlere dağıtabilir.",
+    "steps": ["18"]
+  },
+  {
+    "title": "Değer Zinciri (Porter)",
+    "slug": "deger-zinciri",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Maliyeti düşürürken hangi işin müşteri faydasını ürettiğini bulun. Bir bölümün tasarrufu başka bölümün giderini artırabilir.",
+    "steps": []
+  },
+  {
+    "title": "GE-McKinsey Matrisi",
+    "slug": "ge-mckinsey-matrisi",
+    "section": "Strateji ve Rekabet Analizi",
+    "advice": "Birden çok yatırımda pazar çekiciliğini ve kendi gücünüzü ayrı puanlayın. Varsayılan puanlardaki küçük değişimler yatırım sırasını tersine çevirebilir.",
+    "steps": []
+  },
+  {
+    "title": "Alıcı Karar Modeli",
+    "slug": "alici-karar-modeli",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Seçim uzuyorsa eksik bilgiyi ve gereken onayı öğrenin. Kullanıcı teklifi seçse bile bütçe sahibi reddedebilir.",
+    "steps": []
+  },
+  {
+    "title": "Uzun Kuyruk Modeli",
+    "slug": "uzun-kuyruk-modeli",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Az satılan çok çeşitte toplam katkıyı stok gideriyle karşılaştırın. Dijital raf mantığı bozulabilir mallarda pahalıya gelebilir.",
+    "steps": ["30"]
+  },
+  {
+    "title": "Uçurum – Difüzyon Modeli",
+    "slug": "ucurum-difuzyon-modeli",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "İlk hevesli kullanıcıdan sonra daha temkinli bir grupla deneyin. İlk alıcıların ilgisi geniş pazarda tekrar oluşmayabilir.",
+    "steps": ["28"]
+  },
+  {
+    "title": "Pazarlamanın 4P'si",
+    "slug": "pazarlama-4p",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Satış zayıfsa ürün, fiyat, erişim ve tanıtımı ayrı inceleyin. Bütün öğeler birlikte değişirse sonucun nedeni belirsizleşir.",
+    "steps": ["24"]
+  },
+  {
+    "title": "Değer Önerisi Kanvası",
+    "slug": "deger-onerisi-kanvasi",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Vaat ettiğiniz yararı müşterinin gerçek bir işiyle eşleştirin. Kâğıttaki eşleşme kişinin gerçekten daha kolay çalıştığını göstermez.",
+    "steps": ["05", "13"]
+  },
+  {
+    "title": "Müşteri İlişkileri Yönetimi (CRM)",
+    "slug": "crm-yonetimi",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Tekrarlanan hizmette yalnız iş için gerekli müşteri bilgisini tutun. Sessiz kalan müşteri sistemde hâlâ etkin görünebilir.",
+    "steps": []
+  },
+  {
+    "title": "Müşteri Memnuniyeti Ölçümü",
+    "slug": "musteri-memnuniyeti-olcumu",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Memnuniyet puanını bırakma nedenleri ve tamamlanan işlerle birlikte okuyun. Yalnız yanıt verenleri saymak ayrılan kişileri görünmez kılar.",
+    "steps": ["27"]
+  },
+  {
+    "title": "Müşteri Yolculuğu Haritası",
+    "slug": "musteri-yolculugu-haritasi",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Kişi yarıda bırakıyorsa son tamamladığı adımı ve engeli bulun. Yalnız kurum içinden çizilen harita dışarıdaki beklemeyi kaçırabilir.",
+    "steps": ["05", "32"]
+  },
+  {
+    "title": "Persona (Temsili Müşteri Profili)",
+    "slug": "persona",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Hedef kişiyi tarif ederken özellikleri görüşme ve davranış kayıtlarıyla destekleyin. Hayalî bir kişinin öyküsü gözlem sayılmaz.",
+    "steps": ["08"]
+  },
+  {
+    "title": "RFM Analizi",
+    "slug": "rfm-analizi",
+    "section": "Pazarlama ve Müşteri",
+    "advice": "Tekrarlı satışta son alış, sıklık ve harcamayı birlikte değerlendirin. Yeni müşterilerin tekrar alış için yeterli zamanı olmamış olabilir.",
+    "steps": []
+  },
+  {
+    "title": "SMART Hedefler",
+    "slug": "smart-hedefler",
+    "section": "Hedef ve Performans",
+    "advice": "Belirsiz hedefe ölçü, birim, sorumlu ve bitiş zamanı ekleyin. Ölçülebilen hedef bazen gerçek faydayı eksik temsil eder.",
+    "steps": ["19"]
+  },
+  {
+    "title": "OKR (Hedefler ve Anahtar Sonuçlar)",
+    "slug": "okr",
+    "section": "Hedef ve Performans",
+    "advice": "Ortak amaçta ilerlemeyi elde edilen sonuçla ölçün. Her görevi hedefe dönüştürmek ekipler arasındaki önceliği gizler.",
+    "steps": ["19"]
+  },
+  {
+    "title": "Dengeli Karne (Balanced Scorecard)",
+    "slug": "dengeli-karne",
+    "section": "Hedef ve Performans",
+    "advice": "Gelir artarken hizmet, çalışan yükü ve kalitedeki değişimi izleyin. Ortalama puan tek bir ciddi kalite sorununu örtebilir.",
+    "steps": []
+  },
+  {
+    "title": "KPI Tasarımı (Doğru Gösterge Seçimi)",
+    "slug": "kpi-tasarimi",
+    "section": "Hedef ve Performans",
+    "advice": "Ölçü seçerken hangi kararın değişeceğini ve olası yan etkisini yazın. Kolay ölçülen sayı kararın asıl sorusunu yanıtlamayabilir.",
+    "steps": ["22"]
+  },
+  {
+    "title": "Nakit Akışı ve Başabaş Noktası",
+    "slug": "nakit-akisi-ve-basabas",
+    "section": "Hedef ve Performans",
+    "advice": "Sipariş yeterli görünüyorsa giderleri ve ödeme günlerini birlikte inceleyin. Başabaş hesabı ödeme günü kasadaki parayı tek başına göstermez.",
+    "steps": ["02", "29"]
+  },
+  {
+    "title": "Hoshin Kanri (Strateji Açılımı)",
+    "slug": "hoshin-kanri",
+    "section": "Hedef ve Performans",
+    "advice": "Yönetim hedefini sahaya aktarırken uygulayıcıdan yapılabilirlik geri bildirimi alın. Yukarıdan gelen hedef sahada yeterli süre ayrılmadan uygulanamaz.",
+    "steps": ["33"]
+  },
+  {
+    "title": "OGSM (Tek Sayfalık Strateji Planı)",
+    "slug": "ogsm",
+    "section": "Hedef ve Performans",
+    "advice": "Dağınık stratejiyi amaç, ölçülebilir hedef, seçim ve takip olarak özetleyin. Özet sayfa, dayandığı kanıtların yerini tutmaz.",
+    "steps": ["19"]
+  },
+  {
+    "title": "Birim Ekonomisi (CLV / CAC)",
+    "slug": "birim-ekonomisi-clv-cac",
+    "section": "Hedef ve Performans",
+    "advice": "Müşteriyi kazanma giderini o müşteriden beklenen toplam katkıyla karşılaştırın. Yeni işte müşteri ilişkisinin beklenen süresi belirsizdir.",
+    "steps": ["16", "29"]
+  },
+  {
+    "title": "Proje Portföy Matrisi",
+    "slug": "proje-portfoy-matrisi",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "İşler yarışıyorsa hangisinin kaynak alacağını ve hangisinin kapanacağını yazın. Projeler aynı kişiye bağlıysa ayrı puanlar ortak sınırı gizler.",
+    "steps": []
+  },
+  {
+    "title": "Sonuç Optimizasyonu Modeli",
+    "slug": "sonuc-optimizasyonu",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "İlk örnek yeterliyse ek düzeltmenin kararı değiştirip değiştirmediğini sorun. Küçük düzeltmeyi ertelemek güvenlik kusurunda geçerli değildir.",
+    "steps": ["21"]
+  },
+  {
+    "title": "Proje Yönetimi Üçgeni",
+    "slug": "proje-yonetim-ucgeni",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "Teslim tarihi kısalırsa kapsam veya kaynak için yeni karar alın. Maliyet baskısı zorunlu güvenlik koşulunu kaldırmaz.",
+    "steps": ["12", "21"]
+  },
+  {
+    "title": "MVP ve Kapı (Gate) Döngüsü",
+    "slug": "mvp-ve-gate-dongusu",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "En küçük gerçek teslimden sonra ek yatırım kararını ayrı verin. Bir gösterim, gerçek teslim ve destek yükünü eksik yansıtabilir.",
+    "steps": ["25"]
+  },
+  {
+    "title": "Pivot",
+    "slug": "pivot",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "Kararın dayandığı varsayım çürüdüğünde neyi değiştirip neyi koruduğunuzu yazın. Sürekli yön değiştirmek hangi varsayımın yanlış çıktığını gizler.",
+    "steps": ["25"]
+  },
+  {
+    "title": "Scrum",
+    "slug": "scrum",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "İş belirsizse kısa aralık sonunda incelenebilir bir teslim üretin. Düzenli toplantılar işin teslim edildiğini göstermez.",
+    "steps": []
+  },
+  {
+    "title": "Kanban",
+    "slug": "kanban",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "İşler birikiyorsa aynı anda başlayabilecek iş sayısını sınırlayın. Yalnız görevleri taşımak bekleme nedenini ortadan kaldırmaz.",
+    "steps": ["23"]
+  },
+  {
+    "title": "Çeviklik ve Şelale (Agile vs Waterfall)",
+    "slug": "ceviklik-ve-selale",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "Geri alınabilir işleri kısa deneyin. Birbirine bağlı pahalı işleri sıraya koyun. Gerekli izin süresini kısa çalışma dönemlerine bölmek süreyi kısaltmaz.",
+    "steps": []
+  },
+  {
+    "title": "Gantt Şeması",
+    "slug": "gantt-semasi",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "Teslim başka işe bağlıysa süreleri ve başlama koşulunu görünür kılın. Takvimdeki kesin tarihler tedarik belirsizliğini gizleyebilir.",
+    "steps": []
+  },
+  {
+    "title": "Kritik Yol Yöntemi (CPM ve PERT)",
+    "slug": "kritik-yol-yontemi",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "Gecikmeyi önlemek için son tarihi değiştiren bağımlılığa öncelik verin. Bir süre tahmini değişince gecikmeyi belirleyen iş de değişebilir.",
+    "steps": []
+  },
+  {
+    "title": "RACI Matrisi",
+    "slug": "raci-matrisi",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "Çok taraflı kararda yapanı, onaylayanı ve bilgi alacak kişiyi ayırın. Onaylayan kişinin gerekli bütçeye yetkisi olmayabilir.",
+    "steps": ["03"]
+  },
+  {
+    "title": "Lean Canvas (Yalın Kanvas)",
+    "slug": "lean-canvas",
+    "section": "Proje ve Ürün Geliştirme",
+    "advice": "Başlangıçta sorunu, hedef grubu, gideri ve kritik tahmini özetleyin. Tahminleri yazmak, hangisinin yanlış olduğunu tek başına göstermez.",
+    "steps": ["16"]
+  },
+  {
+    "title": "PDCA Döngüsü (Deming Döngüsü)",
+    "slug": "pdca-dongusu",
+    "section": "Süreç ve Kalite",
+    "advice": "Küçük bir değişiklik deneyip aynı ölçüyle kontrol edin. Ölçüm biçimi değişirse önceki sonuçla kıyas bozulur.",
+    "steps": ["26"]
+  },
+  {
+    "title": "Kaizen",
+    "slug": "kaizen",
+    "section": "Süreç ve Kalite",
+    "advice": "Sık yinelenen küçük aksaklığı işi yapan kişiyle düzeltin. Yanlış ürünün üretimini hızlandırmak müşteri kaybını çözmez.",
+    "steps": ["32"]
+  },
+  {
+    "title": "Yalın Yönetim (Lean)",
+    "slug": "yalin-yonetim",
+    "section": "Süreç ve Kalite",
+    "advice": "Gereksiz bekleme ve taşımayı müşteri faydasını koruyarak azaltın. Yedek kapasiteyi kaldırmak küçük bir kesintinin etkisini büyütebilir.",
+    "steps": []
+  },
+  {
+    "title": "Altı Sigma (Six Sigma)",
+    "slug": "alti-sigma",
+    "section": "Süreç ve Kalite",
+    "advice": "Tekrarlı işte hata nedenlerini karşılaştırmadan önce ölçümün tutarlılığını sınayın. Az sayıdaki farklı iş, düzenli hata örüntüsü vermeyebilir.",
+    "steps": []
+  },
+  {
+    "title": "Tam Zamanında Üretim (JIT)",
+    "slug": "tam-zamaninda-uretim",
+    "section": "Süreç ve Kalite",
+    "advice": "Stoku azaltmadan önce tedarik kesintisinin teslim üzerindeki etkisini hesaplayın. Tek tedarikçide gecikme tüm hattı durdurabilir.",
+    "steps": []
+  },
+  {
+    "title": "Toplam Kalite Yönetimi (TQM)",
+    "slug": "toplam-kalite-yonetimi",
+    "section": "Süreç ve Kalite",
+    "advice": "Aynı kusur bölümler arasında geçiyorsa sorumluluğu kaynakta belirleyin. Kalite belgesi hatanın sahada önlendiğini göstermez.",
+    "steps": []
+  },
+  {
+    "title": "Süreç Yeniden Tasarımı (BPR)",
+    "slug": "surec-yeniden-tasarimi",
+    "section": "Süreç ve Kalite",
+    "advice": "Eski adımlar değer üretmiyorsa süreci yeniden kurup küçük ölçekte deneyin. Bütün süreci bir kerede değiştirmek geri dönmeyi zorlaştırır.",
+    "steps": []
+  },
+  {
+    "title": "SCOR Modeli",
+    "slug": "scor-modeli",
+    "section": "Süreç ve Kalite",
+    "advice": "Teslim aksadığında tedarik, üretim, dağıtım ve iadeyi birlikte inceleyin. Çok küçük işlerde ayrıntılı süreç haritasının yükü faydayı aşabilir.",
+    "steps": []
+  },
+  {
+    "title": "Balık Kılçığı Diyagramı (Ishikawa)",
+    "slug": "balik-kilcigi",
+    "section": "Süreç ve Kalite",
+    "advice": "Bir hata için olası nedenleri sınıflayın. En olası nedeni sınayın. En kalabalık dal en güçlü neden olmayabilir.",
+    "steps": ["32"]
+  },
+  {
+    "title": "Stok Yönetimi",
+    "slug": "stok-yonetimi",
+    "section": "Süreç ve Kalite",
+    "advice": "Talep dalgalanıyorsa stokta yokluk, bozulma ve bağlanan parayı birlikte izleyin. Ucuz toplu alım kasada ödeme açığı yaratabilir.",
+    "steps": []
+  },
+  {
+    "title": "5 Neden (Kök Neden Analizi)",
+    "slug": "bes-neden",
+    "section": "Süreç ve Kalite",
+    "advice": "Görünen belirtinin nedenlerini araştırıp açıklamayı sahada sınayın. Bir olayın birbirinden bağımsız birkaç nedeni olabilir.",
+    "steps": ["01"]
+  },
+  {
+    "title": "SIPOC (Süreç Özet Haritası)",
+    "slug": "sipoc",
+    "section": "Süreç ve Kalite",
+    "advice": "Teslim belirsizse girdiyi, işi, çıktıyı ve alıcıyı birlikte tanımlayın. Özet harita dar boğazdaki bekleme süresini ölçmez.",
+    "steps": []
+  },
+  {
+    "title": "Rumsfeld Matrisi",
+    "slug": "rumsfeld-matrisi",
+    "section": "Risk ve Belirsizlik",
+    "advice": "Bilgi açığında bilinenleri, tahminleri ve yanıtlanmamış soruları ayırın. Liste henüz sorulmamış soruların tamamını gösteremez.",
+    "steps": ["04", "10"]
+  },
+  {
+    "title": "İsviçre Peyniri Modeli",
+    "slug": "isvicre-peyniri",
+    "section": "Risk ve Belirsizlik",
+    "advice": "Birden çok kontrol varsa aynı hatanın hepsini aşabileceği yeri arayın. Aynı kaynağa dayanan iki kontrol birlikte aksayabilir.",
+    "steps": ["17"]
+  },
+  {
+    "title": "Siyah Kuğu Modeli",
+    "slug": "siyah-kugu-modeli",
+    "section": "Risk ve Belirsizlik",
+    "advice": "Öngörülemeyen kesintilere karşı kayıp sınırı ve yedek kaynak ayırın. Nadir olayı adlandırmak tarihini öngörmeyi sağlamaz.",
+    "steps": ["17"]
+  },
+  {
+    "title": "Monte Carlo Simülasyonu",
+    "slug": "monte-carlo-simulasyonu",
+    "section": "Risk ve Belirsizlik",
+    "advice": "Girdilerin aralıkları gerçek verilere dayanıyorsa olası sonuç dağılımını inceleyin. Varsayımları görünür tutun. Zayıf girdilerle çok sayıda hesap yapmak kesinlik sağlamaz.",
+    "steps": ["17"]
+  },
+  {
+    "title": "Kriz Yönetimi",
+    "slug": "kriz-yonetimi",
+    "section": "Risk ve Belirsizlik",
+    "advice": "Zarar başlamışsa durduracak, haber verecek ve hizmeti toparlayacak kişileri belirleyin. Provası yapılmamış yedek plan sahada çalışmayabilir.",
+    "steps": []
+  },
+  {
+    "title": "Duyarlılık Analizi",
+    "slug": "duyarlilik-analizi",
+    "section": "Risk ve Belirsizlik",
+    "advice": "Fiyat veya miktar değiştiğinde kararın hangi değerde döndüğünü bulun. Gider ve satış birlikte değişirse tek değişkenli hesap eksik kalır.",
+    "steps": ["16"]
+  },
+  {
+    "title": "Senaryo Planlama",
+    "slug": "senaryo-planlama",
+    "section": "Risk ve Belirsizlik",
+    "advice": "Dış koşul belirsizse birkaç olası durumda aynı seçeneği sınayın. En sevilen senaryoyu kesin tahmin saymak diğer seçenekleri görünmez kılar.",
+    "steps": ["04"]
+  },
+  {
+    "title": "Morfolojik Kutu ve SCAMPER",
+    "slug": "morfolojik-kutu-scamper",
+    "section": "Yaratıcılık ve Dahi Stratejileri",
+    "advice": "Aynı fikirler dönüyorsa özellikleri değiştirip farklı birleşimler deneyin. Özellikleri birleştirmek uygulanabilir bir teklif oluşturmayabilir.",
+    "steps": ["11"]
+  },
+  {
+    "title": "Kutunun Dışında Düşünmek",
+    "slug": "kutunun-disinda-dusunmek",
+    "section": "Yaratıcılık ve Dahi Stratejileri",
+    "advice": "Ekibin kendiliğinden koyduğu bir kısıtı kaldırıp yeni seçenek üretin. Güvenlik koşulu yaratıcı bir tercih gibi kaldırılamaz.",
+    "steps": []
+  },
+  {
+    "title": "Freud'un Derin Yapı Stratejisi",
+    "slug": "freud-belirti-okuma",
+    "section": "Yaratıcılık ve Dahi Stratejileri",
+    "advice": "Tek açıklamaya bağlıysanız gözlenen davranış için başka neden arayın. Yorumdan kişinin gerçek niyeti veya sağlığı çıkarılamaz.",
+    "steps": []
+  },
+  {
+    "title": "Tesla'nın Zihinsel Prototipleme Stratejisi",
+    "slug": "tesla-zihinsel-prototipleme",
+    "section": "Yaratıcılık ve Dahi Stratejileri",
+    "advice": "Pahalı örnekten önce işleyişi zihinde canlandırıp belirsiz noktayı çizin. Zihindeki örnek malzeme, zaman veya dayanım sınırını kanıtlamaz.",
+    "steps": ["11"]
+  },
+  {
+    "title": "İnovasyon Stratejileri",
+    "slug": "inovasyon-stratejileri",
+    "section": "Yaratıcılık ve Dahi Stratejileri",
+    "advice": "Mevcut işi iyileştirmekle yeni alanı denemek için kaynakları ayrı belirleyin. Deneme sayısı artarken öğrenilen karar sayısı yerinde kalabilir.",
+    "steps": []
+  },
+  {
+    "title": "Kara Kutu Modeli",
+    "slug": "kara-kutu-modeli",
+    "section": "Veri ve Teknoloji Çağı",
+    "advice": "İç işleyiş bilinmiyorsa girdiyi değiştirip çıktıyı güvenli koşulda sınayın. Bir girdide doğru sonuç alınması diğer koşulları doğrulamaz.",
+    "steps": []
+  },
+  {
+    "title": "Gelecekte Nasıl Karar Vereceğiz?",
+    "slug": "gelecekte-nasil-karar-verecegiz",
+    "section": "Veri ve Teknoloji Çağı",
+    "advice": "Bir araç öneri sunuyorsa kararı ve sorumluluğu kimin taşıdığını belirtin. Otomatik öneri görev sahibinin onayı yerine geçmez.",
+    "steps": []
+  },
+  {
+    "title": "Hedef Sabitleme Tuzağı",
+    "slug": "hedef-sabitleme-tuzagi",
+    "section": "Veri ve Teknoloji Çağı",
+    "advice": "Bir sayı ödüle bağlandıysa istenmeyen davranışları da izleyin. Yan ölçü izlenmezse hedef kazanılırken asıl sonuç kötüleşebilir.",
+    "steps": ["22"]
+  },
+  {
+    "title": "BT Yönetişimi (ITIL ve COBIT)",
+    "slug": "bt-yonetisimi-itil-cobit",
+    "section": "Veri ve Teknoloji Çağı",
+    "advice": "Hizmet araca bağımlıysa arıza, değişiklik ve yetki sahibini belirleyin. Çok sayıda onay, arızada sorumlunun harekete geçmesini geciktirebilir.",
+    "steps": []
+  },
+  {
+    "title": "A/B Testi",
+    "slug": "ab-testi",
+    "section": "Veri ve Teknoloji Çağı",
+    "advice": "İki seçeneği benzer koşullarda karşılaştırın. Küçük farkı kesin sonuç saymayın. Gruplar farklıysa görülen farkı seçeneğe bağlayamazsınız.",
+    "steps": ["15", "24"]
+  },
+  {
+    "title": "Kohort Analizi",
+    "slug": "kohort-analizi",
+    "section": "Veri ve Teknoloji Çağı",
+    "advice": "Aynı dönemde başlayan grupları eşit kullanım süresinde karşılaştırın. Yeni grubu daha eski grupla farklı yaşlarda kıyaslamak yanıltır.",
+    "steps": ["28"]
+  }
+]

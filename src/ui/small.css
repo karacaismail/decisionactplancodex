@@ -1,0 +1,34 @@
+.small-nav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+.drawer-nav {
+  display: grid;
+  gap: 8px;
+}
+.drawer-nav button {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--radius);
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: var(--paper);
+}
+.drawer-nav button[aria-current='page'] {
+  background: var(--tint);
+  color: var(--accent);
+}
+.small-nav .brand img {
+  width: 28px;
+  height: 28px;
+}
+.small-nav .brand {
+  font-size: 18px;
+  gap: 5px;
+}

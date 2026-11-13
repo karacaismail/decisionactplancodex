@@ -1,0 +1,150 @@
+import { useEffect, useRef, useState } from 'react'
+import { readPlans, savePlan } from './store'
+import { demonstration } from './demo'
+import type { Plan } from './domain'
+
+export function usePlans() {
+  const [plans, setPlans] = useState<Plan[]>([]),
+    [selected, select] = useState(''),
+    [status, setStatus] = useState('Yükleniyor')
+  const [loadError, setError] = useState(''),
+    [busy, setBusy] = useState(false),
+    [failures, setFailures] = useState<Record<string, string>>({})
+  const data = useRef(new Map<string, Plan>()),
+    pending = useRef(new Set<string>()),
+    running = useRef(false),
+    blocked = useRef(new Set<string>())
+  function render() {
+    setPlans([...data.current.values()])
+  }
+  async function load() {
+    const rows = await readPlans()
+    if (!rows.length) {
+      try {
+        rows.push(await savePlan(demonstration()))
+      } catch (e) {
+        const concurrent = await readPlans()
+        if (!concurrent.length) throw e
+        rows.push(...concurrent)
+      }
+    }
+    data.current = new Map(rows.map((p) => [p.id, p]))
+    pending.current.clear()
+    blocked.current.clear()
+    let last = ''
+    try {
+      last = localStorage.getItem('atlas-plan') || ''
+    } catch {}
+    render()
+    select((prev) =>
+      data.current.has(prev)
+        ? prev
+        : data.current.has(last)
+          ? last
+          : rows.find((p) => !p.example)?.id || rows[0].id,
+    )
+    setError('')
+    setStatus('Kaydedildi')
+  }
+  useEffect(() => {
+    if (selected)
+      try {
+        localStorage.setItem('atlas-plan', selected)
+      } catch {}
+  }, [selected])
+  useEffect(() => {
+    load().catch((e) => {
+      setError(String(e.message || e))
+      setStatus('Kayıt açılamadı')
+    })
+  }, [])
+  useEffect(() => {
+    function before(e: BeforeUnloadEvent) {
+      if (pending.current.size || running.current || blocked.current.size) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', before)
+    return () => window.removeEventListener('beforeunload', before)
+  }, [])
+  async function flush() {
+    if (running.current) return
+    running.current = true
+    setBusy(true)
+    try {
+      for (;;) {
+        const id = [...pending.current].find((id) => !blocked.current.has(id))
+        if (!id) break
+        const snapshot = data.current.get(id)!
+        try {
+          const saved = await savePlan(snapshot),
+            latest = data.current.get(id)!
+          if (latest === snapshot) {
+            data.current.set(id, saved)
+            pending.current.delete(id)
+          } else
+            data.current.set(id, {
+              ...latest,
+              revision: saved.revision,
+              updatedAt: saved.updatedAt,
+            })
+          render()
+        } catch (e) {
+          blocked.current.add(id)
+          const message = e instanceof Error ? e.message : 'Kayıt başarısız.'
+          setFailures((prev) => ({ ...prev, [id]: message }))
+        }
+      }
+      setStatus('Kaydedildi')
+    } finally {
+      running.current = false
+      setBusy(false)
+    }
+  }
+  const [generation, setGeneration] = useState(0)
+  async function reload() {
+    if (!selected) return load()
+    const saved = (await readPlans()).find((p) => p.id === selected)
+    if (!saved)
+      throw Error(
+        'Bu planın kaydedilmiş sürümü bulunamadı. JSON kopyanızı indirin.',
+      )
+    data.current.set(selected, saved)
+    setGeneration((n) => n + 1)
+    pending.current.delete(selected)
+    blocked.current.delete(selected)
+    setFailures((prev) => {
+      const next = { ...prev }
+      delete next[selected]
+      return next
+    })
+    render()
+  }
+  function write(plan: Plan) {
+    data.current.set(plan.id, plan)
+    pending.current.add(plan.id)
+    render()
+    if (!blocked.current.has(plan.id)) setStatus('Kaydediliyor')
+    void flush()
+  }
+  function change(fn: (p: Plan) => Plan) {
+    const p = data.current.get(selected)
+    if (p) {
+      const next = fn(p)
+      if (next !== p) write(next)
+    }
+  }
+  return {
+    plans,
+    plan: plans.find((p) => p.id === selected),
+    select,
+    write,
+    change,
+    status: failures[selected] ? 'Kaydedilemedi' : status,
+    busy,
+    generation,
+    error: failures[selected] || loadError,
+    reload,
+  }
+}

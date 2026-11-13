@@ -1,0 +1,835 @@
+import { steps, stages } from './data/steps.ts'
+import type { Answers, Field, Step, Value } from './data/steps.ts'
+
+export const outcomes = [
+  'Durdurun',
+  'Bekletin',
+  'Yeniden deneyin',
+  'Yön değiştirin',
+  'Koşullu ilerleyin',
+  'İlerleyin',
+] as const
+export type Outcome = (typeof outcomes)[number]
+export interface DecisionInput {
+  outcome: Outcome
+  reason: string
+  owner: string
+  task?: string
+  date?: string
+  proof?: string
+  limit?: number
+  gapKey?: string
+}
+export interface Decision extends DecisionInput {
+  id: string
+  stage: number
+  at: string
+  stale: boolean
+}
+export interface Evidence {
+  id: string
+  title: string
+  source: string
+  step: string
+  at: string
+}
+export interface ReportPair {
+  id: string
+  revision: number
+  at: string
+  executive: string
+  action: string
+}
+export interface Plan {
+  publications?: ReportPair[]
+  schemaVersion: 1
+  id: string
+  name: string
+  example: boolean
+  revision: number
+  updatedAt: string
+  changes?: {
+    id: string
+    step: string
+    key: string
+    before: Value
+    after: Value
+    at: string
+    needsReview: boolean
+    reviewer?: string
+  }[]
+  answers: Record<string, Answers>
+  history: Decision[]
+  evidence: Evidence[]
+}
+export const now = () => new Date().toISOString()
+export function today() {
+  const d = new Date()
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+export function createPlan(name: string): Plan {
+  if (!name.trim()) throw Error('Plan adını yazın.')
+  return {
+    schemaVersion: 1,
+    id: crypto.randomUUID(),
+    name: name.trim(),
+    example: false,
+    revision: 0,
+    updatedAt: now(),
+    answers: {},
+    history: [],
+    evidence: [],
+    changes: [],
+  }
+}
+export function activeSteps(p: Plan) {
+  const profile = p.answers['00'] || {}
+  return steps
+    .filter((s) => {
+      switch (s.id) {
+        case '03':
+          return profile.team === 'Ekip'
+        case '04':
+          return (
+            profile.market === 'Yeni pazar' || profile.permit === 'Gerekiyor'
+          )
+        case '12':
+          return (
+            ['Fiziksel ürün', 'Donanım'].includes(String(profile.product)) ||
+            profile.site === 'Evet'
+          )
+        case '30':
+          return (
+            p.answers['33']?.direction === 'Büyüt' ||
+            p.answers['29']?.growth === 'Evet'
+          )
+        case '31':
+          return (
+            profile.permit === 'Gerekiyor' ||
+            p.answers['29']?.contract === 'Evet'
+          )
+        case '32':
+          return p.answers['29']?.defect === 'Evet'
+        case '34':
+          return (
+            ['Devret', 'Kapat'].includes(String(p.answers['33']?.direction)) ||
+            profile.start === 'Devralınan iş'
+          )
+        default:
+          return true
+      }
+    })
+    .map((s) => s.id)
+}
+export function visibleFields(p: Plan, s: Step) {
+  const branch = p.answers['00']?.mode === 'Ücretsiz hizmet' ? 'free' : 'paid'
+  return s.fields.filter((f) => {
+    if (f.branch && f.branch !== branch) return false
+    if (f.key === 'fundingTerms')
+      return p.answers['00']?.funding === 'Dış kaynak'
+    if (['other', 'otherPeriod', 'otherCount', 'matches'].includes(f.key))
+      return p.answers['00']?.buyer === 'İki taraflı pazar'
+    if (s.id === '11' && ['review', 'exception'].includes(f.key)) {
+      if (p.answers['11']?.risk !== 'Yüksek') return false
+      return (
+        f.key === 'review' ||
+        (Array.isArray(p.answers['11']?.options) &&
+          p.answers['11'].options.length === 1)
+      )
+    }
+    return true
+  })
+}
+export function calendar(v: unknown): v is string {
+  return (
+    typeof v === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(v) &&
+    !Number.isNaN(Date.parse(v)) &&
+    new Date(v).toISOString().slice(0, 10) === v
+  )
+}
+export function present(v: unknown, f: Field): boolean {
+  if (f.kind === 'list')
+    return (
+      Array.isArray(v) &&
+      v.length > 0 &&
+      v.every(
+        (r) =>
+          r && f.columns?.every((c) => typeof r[c] === 'string' && r[c].trim()),
+      )
+    )
+  if (f.kind === 'date') return calendar(v)
+  if (f.kind === 'number')
+    return (
+      (!['kişi', 'adet'].includes(f.unit || '') || Number.isInteger(v)) &&
+      typeof v === 'number' &&
+      Number.isFinite(v) &&
+      v >= (f.min ?? 0)
+    )
+  return (
+    typeof v === 'string' && !!v.trim() && (!f.choices || f.choices.includes(v))
+  )
+}
+export function complete(p: Plan, s: Step) {
+  return visibleFields(p, s).every((f) => present(p.answers[s.id]?.[f.key], f))
+}
+export function applyEdit(
+  p: Plan,
+  step: string,
+  key: string,
+  value: Value,
+): Plan {
+  if (JSON.stringify(p.answers[step]?.[key]) === JSON.stringify(value)) return p
+  const next = {
+    ...p,
+    answers: { ...p.answers, [step]: { ...p.answers[step], [key]: value } },
+  }
+  const before = activeSteps(p),
+    after = activeSteps(next)
+  const stage = Math.min(
+    ...steps
+      .filter(
+        (s) => s.id === step || before.includes(s.id) !== after.includes(s.id),
+      )
+      .map((s) => s.stage),
+  )
+  const old = p.answers[step]?.[key]
+  if (
+    old !== undefined &&
+    old !== '' &&
+    [
+      'budget',
+      'end',
+      'attempts',
+      'stop',
+      'threshold',
+      'harm',
+      'benefit',
+    ].includes(key)
+  ) {
+    const increase =
+      key === 'budget' || key === 'attempts'
+        ? Number(value) > Number(old)
+        : key === 'end'
+          ? String(value) > String(old)
+          : true
+    const changes = [...(p.changes || [])]
+    const change = {
+      id: crypto.randomUUID(),
+      step,
+      key,
+      before: old,
+      after: value,
+      at: now(),
+      needsReview: p.answers['00']?.team === 'Tek kurucu' && increase,
+    }
+    changes.push(change)
+    Object.assign(next, { changes })
+  }
+  return {
+    ...next,
+    history: p.history.map((h) =>
+      h.stage >= stage ? { ...h, stale: true } : h,
+    ),
+  }
+}
+function num(a: Answers | undefined, k: string) {
+  const n = a?.[k]
+  return typeof n === 'number' && Number.isFinite(n) ? n : null
+}
+export function cash(p: Plan) {
+  const a = p.answers['16'],
+    balance = num(a, 'balance'),
+    due = num(a, 'due'),
+    price = num(a, 'price'),
+    cost = num(a, 'cost'),
+    fixed = num(a, 'fixed')
+  const contribution =
+    p.answers['00']?.mode !== 'Ücretsiz hizmet' &&
+    price !== null &&
+    cost !== null
+      ? price - cost
+      : null
+  return {
+    gap: balance !== null && due !== null ? Math.max(0, due - balance) : null,
+    contribution,
+    breakEven:
+      contribution !== null && contribution > 0 && fixed !== null
+        ? Math.ceil(fixed / contribution)
+        : null,
+  }
+}
+export function currentStage(p: Plan) {
+  const index = stages.findIndex((_, i) => !approved(p, i))
+  return index < 0 ? 7 : index
+}
+export function approved(p: Plan, i: number) {
+  const h = p.history.findLast((h) => h.stage === i)
+  return !!h && !h.stale && h.outcome === 'İlerleyin'
+}
+export function effective(h: Decision): Outcome {
+  return h.outcome === 'Koşullu ilerleyin' && (!h.date || h.date < today())
+    ? 'Bekletin'
+    : h.outcome
+}
+type Advice = { outcome: Outcome; reason: string; hard: boolean }
+export function recommend(p: Plan, i: number): Advice {
+  const a = p.answers,
+    b = a['02'] || {}
+  const hold = (reason: string, hard = true): Advice => ({
+    outcome: 'Bekletin',
+    reason,
+    hard,
+  })
+  const change = (reason: string): Advice => ({
+    outcome: 'Yön değiştirin',
+    reason,
+    hard: false,
+  })
+  const last = p.history.findLast((h) => h.stage === i && !h.stale)
+  if (last?.outcome === 'Durdurun')
+    return { outcome: 'Durdurun', reason: last.reason, hard: true }
+  if (b.danger === 'Var' || b.stopHit === 'Evet')
+    return {
+      outcome: 'Durdurun',
+      reason: 'Zarar tehlikesini ve durma koşulunu inceleyin.',
+      hard: true,
+    }
+  if (b.clearance !== 'Yetki var')
+    return hold('Sıradaki iş için yetkiyi doğrulayın.')
+  if (p.changes?.some((c) => c.needsReview && !c.reviewer))
+    return hold('Değişen sınır için ikinci görüş kaydedin.')
+  if (!calendar(b.end) || b.end < today())
+    return hold('Araştırmanın geçerli bitiş tarihini yazın.')
+  if (
+    num(b, 'budget') === null ||
+    num(b, 'spent') === null ||
+    Number(b.spent) >= Number(b.budget)
+  )
+    return hold('Kalan bütçeyi doğrulayın.')
+  const allowed = i === 5 ? Math.min(3, Number(b.attempts)) : Number(b.attempts)
+  const remaining =
+    allowed -
+    p.history.filter((h) => h.stage === i && h.outcome === 'Yeniden deneyin')
+      .length
+  if (!Number.isFinite(remaining) || remaining <= 0)
+    return hold('Kalan deneme hakkını kontrol edin.')
+  if (i > currentStage(p)) return hold('Önce açık olan kararı tamamlayın.')
+  const fields = steps.filter(
+    (s) => s.stage === i && activeSteps(p).includes(s.id),
+  )
+  if (
+    i === 3 &&
+    (a['14']?.authorization !== 'Karşılandı' ||
+      a['14']?.[
+        a['00']?.mode === 'Ücretsiz hizmet' ? 'budgetAuthority' : 'billing'
+      ] !== 'Karşılandı')
+  )
+    return hold('Ödeme veya bütçe düzenini ve uygulama yetkisini doğrulayın.')
+  if (i === 4 && (cash(p).gap ?? 0) > 0)
+    return hold('Ödeme gününde nakit açığı var.')
+  if (
+    i === 4 &&
+    (a['00']?.mode === 'Ücretsiz hizmet'
+      ? Number(a['16']?.fund) < Number(a['16']?.serviceCost)
+      : (cash(p).contribution ?? 1) <= 0)
+  )
+    return hold('Teslimin gelirini ve giderini yeniden inceleyin.')
+  if (fields.some((s) => !complete(p, s)))
+    return hold('Açık alanları tamamlayın. Eksik kanıtı deftere yazın.', false)
+  if (i === 1) {
+    const values = ['repeat', 'effort', 'loss'].map((k) => a['07'][k])
+    if (values.includes('Bilinmiyor'))
+      return hold('Sorunun üç ölçüsü için kanıt toplayın.', false)
+    const count = values.filter((v) => v === 'Karşılandı').length
+    if (count === 2)
+      return {
+        outcome: 'Yeniden deneyin',
+        reason: 'Eksik ölçü için ek görüşme yapın.',
+        hard: false,
+      }
+    if (count === 0)
+      return {
+        outcome: 'Durdurun',
+        reason: 'Geçerli ölçümde üç koşul da karşılanmadı.',
+        hard: true,
+      }
+    if (count < 2) return change('Hedef grubu ve son olayı tekrar inceleyin.')
+  }
+  if (i === 2 && (Number(a['09'].capacity) <= 0 || Number(a['09'].demand) <= 0))
+    return change('Erişilebilir bir grup ve uygulanabilir bir yol seçin.')
+  if (
+    i === 2 &&
+    a['11'].risk === 'Yüksek' &&
+    (a['11'].options as unknown[]).length < 3 &&
+    !(
+      (a['11'].options as unknown[]).length === 1 &&
+      a['11'].exception === 'Evet' &&
+      a['11'].review
+    )
+  )
+    return hold(
+      'Üç seçeneği veya bağımsız incelemeyle onaylanan istisnayı belgeleyin.',
+    )
+  if (
+    i === 2 &&
+    activeSteps(p).includes('12') &&
+    a['12'].ready !== 'Karşılandı'
+  )
+    return hold('Teslim kapasitesi için dayanak bekleniyor.', false)
+  if (
+    i === 3 &&
+    (Number(a['15'].committed) > Number(a['15'].offered) ||
+      Number(a['15'].threshold) <= 0)
+  )
+    return hold('Teklif sayısını, taahhüdü ve yazılı eşiği düzeltin.')
+  if (
+    i === 3 &&
+    Number(a['15'][a['00'].mode === 'Ücretsiz hizmet' ? 'attended' : 'paid']) >
+      Number(a['15'].offered)
+  )
+    return hold('Katılan veya ödeyen kişi teklif sayısını aşamaz.')
+  if (
+    i === 3 &&
+    a['00'].buyer === 'İki taraflı pazar' &&
+    (Number(a['15'].otherCount) < 1 || Number(a['15'].matches) < 1)
+  )
+    return hold(
+      'Her iki tarafın davranışını ve tamamlanan eşleşmeyi doğrulayın.',
+    )
+  if (
+    i === 3 &&
+    a['00'].mode === 'Ücretsiz hizmet' &&
+    Number(a['15'].attended) < Number(a['15'].threshold)
+  )
+    return change('Fiilî katılım yazılı eşiğin altında.')
+  if (
+    i === 3 &&
+    a['00'].mode === 'Ücretli satış' &&
+    (a['00'].product === 'Hizmet' ||
+      (a['00'].product === 'Dijital ürün' && a['00'].buyer === 'Tüketici')) &&
+    Number(a['15'].paid) < Number(a['15'].threshold)
+  )
+    return change('Gerçek ödeme sayısı yazılı eşiğin altında.')
+  if (i === 3 && Number(a['15'].committed) < Number(a['15'].threshold))
+    return change('Geçerli taahhüt sayısı yazılı eşiğin altında.')
+  if (i === 4 && a['20'].ready !== 'Karşılandı')
+    return hold('Kaynak ve risk sınırını doğrulayın.')
+  if (i === 5 && (a['22'].metrics as unknown[]).length !== 3)
+    return hold('Üç işletme ölçüsü tanımlayın.')
+  if (
+    i === 5 &&
+    (Number(a['23'].completed) > Number(a['23'].total) ||
+      Number(a['23'].total) < 1)
+  )
+    return hold('Başlayan ve yardımsız bitiren kişi sayılarını doğrulayın.')
+  if (i === 5 && a['25'].benefit === 'Karşılanmadı')
+    return change('İlk teslim doğrudan fayda sağlamadı.')
+  if (
+    i === 5 &&
+    [a['25'].operating, a['25'].benefit].some((v) => v !== 'Karşılandı')
+  )
+    return hold('Teslim ölçülerini ve faydayı doğrulayın.', false)
+  if (
+    i === 6 &&
+    [a['28'].mature, a['29'].sustainable].some((v) => v !== 'Karşılandı')
+  )
+    return hold('Tam gözlem dönemini ve kaynak dengesini bekleyin.')
+  if (i === 7 && a['33']?.direction === 'Kapat')
+    return {
+      outcome: 'Durdurun',
+      reason: 'Açık siparişleri, ödemeleri ve bakım işlerini kapatın.',
+      hard: true,
+    }
+  if (
+    i === 7 &&
+    activeSteps(p).includes('34') &&
+    a['34'].accepted !== 'Karşılandı'
+  )
+    return hold('Açık işler için yazılı kabul bekleniyor.')
+  return {
+    outcome: 'İlerleyin',
+    reason: 'Alanlar tamamlandı. Yetkili kişi kanıtları inceleyebilir.',
+    hard: false,
+  }
+}
+export function openGaps(p: Plan, stage: number) {
+  return steps
+    .filter((s) => s.stage === stage && activeSteps(p).includes(s.id))
+    .flatMap((s) =>
+      visibleFields(p, s)
+        .filter(
+          (f) =>
+            !present(p.answers[s.id]?.[f.key], f) ||
+            p.answers[s.id]?.[f.key] === 'Bilinmiyor' ||
+            p.answers[s.id]?.[f.key] === 'Karşılanmadı',
+        )
+        .map((f) => ({
+          value: s.id + '.' + f.key,
+          label: s.id + '. ' + f.label,
+          step: s.id,
+        })),
+    )
+}
+export function recordDecision(
+  p: Plan,
+  stage: number,
+  input: DecisionInput,
+): Plan {
+  if (
+    (input.outcome === 'Koşullu ilerleyin' ||
+      input.outcome === 'İlerleyin' ||
+      input.outcome === 'Yeniden deneyin') &&
+    stage > currentStage(p)
+  )
+    throw Error('Önce açık olan kararı tamamlayın.')
+  if (!input.reason.trim() || !input.owner.trim())
+    throw Error('Gerekçeyi ve karar sahibini yazın.')
+  const advice = recommend(p, stage)
+  if (advice.outcome === 'Durdurun' && input.outcome !== 'Durdurun')
+    throw Error(advice.reason)
+  if (input.outcome === 'İlerleyin' && advice.outcome !== 'İlerleyin')
+    throw Error(advice.reason)
+  if (
+    (input.outcome === 'Koşullu ilerleyin' ||
+      input.outcome === 'Yeniden deneyin') &&
+    advice.hard
+  )
+    throw Error(advice.reason)
+  if (input.outcome === 'Koşullu ilerleyin') {
+    if (
+      !input.task?.trim() ||
+      !input.proof?.trim() ||
+      !calendar(input.date) ||
+      input.date < today() ||
+      input.date > String(p.answers['02'].end) ||
+      input.limit === undefined ||
+      !Number.isFinite(input.limit) ||
+      input.limit < 0 ||
+      input.limit >
+        Number(p.answers['02'].budget) - Number(p.answers['02'].spent)
+    )
+      throw Error(
+        'Kapsamı, geçerli tarihi, kalan bütçeyi ve kapanış kanıtını yazın.',
+      )
+    const gap = openGaps(p, stage).find((g) => g.value === input.gapKey)
+    if (!gap) throw Error('Koşullu izin için açık bir kanıt alanı seçin.')
+    if (
+      p.history.some(
+        (h) =>
+          h.stage === stage &&
+          h.outcome === input.outcome &&
+          (!h.gapKey || h.gapKey === gap.step || h.gapKey === gap.value),
+      )
+    )
+      throw Error('Bu eksik için koşullu izin daha önce kullanıldı.')
+  }
+  const history = p.history.map((h) =>
+    h.stage > stage ? { ...h, stale: true } : h,
+  )
+  return {
+    ...p,
+    history: [
+      ...history,
+      { ...input, id: crypto.randomUUID(), stage, at: now(), stale: false },
+    ],
+  }
+}
+export function money(n: number | null) {
+  return n === null
+    ? 'Bilinmiyor'
+    : new Intl.NumberFormat('tr-TR', {
+        style: 'currency',
+        currency: 'TRY',
+        maximumFractionDigits: 0,
+      }).format(n)
+}
+export function dateLabel(v: string) {
+  const d = new Date(v.length === 10 ? v + 'T12:00:00' : v)
+  return Number.isNaN(+d)
+    ? 'Bilinmiyor'
+    : d.toLocaleDateString('tr-TR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        weekday: 'long',
+      })
+}
+export function freezeReports(p: Plan): Plan {
+  const pair = {
+    id: crypto.randomUUID(),
+    revision: p.revision,
+    at: now(),
+    executive: report(p, 'executive'),
+    action: report(p, 'action'),
+  }
+  return { ...p, publications: [...(p.publications || []), pair] }
+}
+export function report(p: Plan, kind: 'executive' | 'action') {
+  const stage = currentStage(p),
+    advice = recommend(p, stage),
+    c = cash(p)
+  const head = [
+    '# ' +
+      (kind === 'executive' ? 'Yönetici raporu' : 'Girişimci aksiyon planı'),
+    p.name + (p.example ? ' (örnek plan)' : ''),
+    'Kayıt sürümü ' + p.revision + ' · ' + dateLabel(p.updatedAt),
+  ]
+  const a = p.answers
+  const val = (id: string, k: string) =>
+    typeof a[id]?.[k] === 'string' || typeof a[id]?.[k] === 'number'
+      ? String(a[id][k]) || 'Bilinmiyor'
+      : 'Bilinmiyor'
+  const rows = (id: string, k: string) =>
+    Array.isArray(a[id]?.[k])
+      ? (a[id][k] as Record<string, string>[])
+          .map((row) => Object.values(row).filter(Boolean).join(' · '))
+          .filter(Boolean)
+      : []
+  const last = p.history.at(-1)
+  const free = a['00']?.mode === 'Ücretsiz hizmet'
+  const budget = num(a['02'], 'budget'),
+    spent = num(a['02'], 'spent')
+  if (kind === 'executive') {
+    return [
+      ...head,
+      '## Karar özeti',
+      stages[stage].question,
+      'Öneri: ' + advice.outcome + '. ' + advice.reason,
+      'Son kayıt: ' +
+        (last
+          ? effective(last) +
+            '. ' +
+            last.reason +
+            (last.stale ? ' Yeniden inceleyin.' : '')
+          : 'Henüz karar yok.'),
+      '## Sorun ve talep',
+      val('05', 'event'),
+      'Teklif alan: ' +
+        val('15', 'offered') +
+        '. Taahhüt veren: ' +
+        val('15', 'committed') +
+        '. ' +
+        (free
+          ? 'Katılan: ' + val('15', 'attended')
+          : 'Ödeyen: ' + val('15', 'paid')),
+      '## Kaynaklar',
+      'Kalan araştırma bütçesi: ' +
+        money(budget !== null && spent !== null ? budget - spent : null),
+      'İlk ödeme günü açığı: ' + money(c.gap),
+      ...(free
+        ? [
+            'Hizmet bütçesi: ' + money(num(a['16'], 'fund')),
+            'Hizmet gideri: ' + money(num(a['16'], 'serviceCost')),
+          ]
+        : [
+            'Sipariş başına katkı: ' + money(c.contribution),
+            'Başabaş noktası: ' + (c.breakEven ?? 'Bilinmiyor'),
+          ]),
+      '## Risk ve teslim',
+      ...(rows('17', 'risks').length
+        ? rows('17', 'risks')
+        : ['Risk kaydı bekleniyor.']),
+      'Doğrudan fayda: ' + val('25', 'benefit'),
+      'Tekrar ölçümü: ' + val('28', 'mature'),
+      '## İşin yönü',
+      val('33', 'direction'),
+      'Yeniden bakılacak olay: ' + val('33', 'reopen'),
+      '## Karar geçmişi',
+      ...p.history.map(
+        (h) =>
+          stages[h.stage].name +
+          ' — ' +
+          effective(h) +
+          '. ' +
+          h.reason +
+          ' (' +
+          h.owner +
+          (h.stale ? ', yeniden incelenecek' : '') +
+          ')',
+      ),
+      ...(!p.history.length ? ['Henüz karar kaydı yok.'] : []),
+      '## Dayanaklar',
+      ...(p.evidence.length
+        ? p.evidence.map((e) => e.title + ' — ' + e.source)
+        : ['Henüz dayanak eklenmedi.']),
+    ].join('\n\n')
+  }
+  const binding = p.history.findLast((h) => h.stage === stage && !h.stale)
+  const result = binding ? effective(binding) : advice.outcome
+  const taskMode =
+    result === 'Durdurun'
+      ? 'Açık yükümlülükleri kapatın.'
+      : result === 'Bekletin'
+        ? 'Engeli izleyin. Yeni harcamayı bekletin.'
+        : advice.reason
+  const actionable = p.history.filter(
+    (h) =>
+      !!h.task &&
+      !h.stale &&
+      (result === 'Durdurun' || result === 'Bekletin'
+        ? h.id === binding?.id
+        : p.history.findLast((d) => d.stage === h.stage)?.id === h.id),
+  )
+  const goals = Array.isArray(p.answers['19']?.goals)
+    ? (p.answers['19'].goals as Record<string, string>[])
+    : []
+  return [
+    ...head,
+    '## Sıradaki iş',
+    taskMode,
+    ...(binding ? ['Karar sahibinin gerekçesi: ' + binding.reason] : []),
+    '## Karara bağlı işler',
+    ...actionable.map(
+      (h) =>
+        h.task +
+        ' — ' +
+        h.owner +
+        '. ' +
+        (h.date ? dateLabel(h.date) : 'Tarih belirlenmedi.') +
+        ' ' +
+        (h.proof || 'Kabul ölçüsü bekleniyor.') +
+        (h.stale ? ' Önce kararı yeniden inceleyin.' : ''),
+    ),
+    ...(!actionable.length ? ['Henüz görev kaydı yok.'] : []),
+    result === 'Durdurun' || result === 'Bekletin'
+      ? '## Bekleyen 90 günlük çalışma'
+      : '## 90 günlük çalışma',
+    ...(goals.length
+      ? goals.map((g) => Object.values(g).join(' · '))
+      : ['İş sırasını 19. adımda yazın.']),
+    '## Deneme ve teslim',
+    'Yazılı eşik: ' + val('15', 'threshold'),
+    'Deneme sınırı: ' + val('02', 'attempts'),
+    'Teslim kapsamı: ' + val('21', 'scope'),
+    'Kabul ölçüsü: ' + val('21', 'accept'),
+    '## Sonraki kontrol',
+    'Sorumlu: ' + val('01', 'owner'),
+    'Kontrol olayı: ' + val('33', 'reopen'),
+    ...(activeSteps(p).includes('34')
+      ? ['## Devir ve açık sözler', ...rows('34', 'obligations')]
+      : []),
+    '## Eksik adımlar',
+    ...steps
+      .filter((s) => activeSteps(p).includes(s.id) && !complete(p, s))
+      .map((s) => s.id + '. ' + s.title),
+  ].join('\n\n')
+}
+function object(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === 'object' && !Array.isArray(v)
+}
+const iso = (v: unknown) =>
+  typeof v === 'string' && !Number.isNaN(Date.parse(v))
+export function validatePlan(v: unknown): v is Plan {
+  if (
+    !object(v) ||
+    v.schemaVersion !== 1 ||
+    typeof v.id !== 'string' ||
+    !v.id ||
+    typeof v.name !== 'string' ||
+    !v.name.trim() ||
+    typeof v.example !== 'boolean' ||
+    !Number.isSafeInteger(v.revision) ||
+    Number(v.revision) < 0 ||
+    !iso(v.updatedAt) ||
+    !object(v.answers) ||
+    !Array.isArray(v.history) ||
+    !Array.isArray(v.evidence)
+  )
+    return false
+  const answers = Object.entries(v.answers).every(([id, row]) => {
+    const s = steps.find((s) => s.id === id)
+    return (
+      !!s &&
+      object(row) &&
+      Object.entries(row).every(([k, val]) => {
+        const f = s.fields.find((f) => f.key === k)
+        if (!f) return false
+        if (val === '') return true
+        if (f.kind === 'list')
+          return (
+            Array.isArray(val) &&
+            val.every(
+              (r) =>
+                object(r) &&
+                Object.entries(r).every(
+                  ([c, x]) => f.columns?.includes(c) && typeof x === 'string',
+                ),
+            )
+          )
+        if (f.kind === 'date') return calendar(val)
+        return f.kind === 'number'
+          ? present(val, f)
+          : typeof val === 'string' && (!f.choices || f.choices.includes(val))
+      })
+    )
+  })
+  const changes =
+    v.changes === undefined ||
+    (Array.isArray(v.changes) &&
+      v.changes.every(
+        (c) =>
+          object(c) &&
+          typeof c.id === 'string' &&
+          typeof c.key === 'string' &&
+          steps.some((s) => s.id === c.step) &&
+          ['string', 'number'].includes(typeof c.before) &&
+          ['string', 'number'].includes(typeof c.after) &&
+          typeof c.needsReview === 'boolean' &&
+          (c.reviewer === undefined || typeof c.reviewer === 'string') &&
+          iso(c.at),
+      ))
+  return (
+    answers &&
+    changes &&
+    (v.publications === undefined ||
+      (Array.isArray(v.publications) &&
+        v.publications.every(
+          (r) =>
+            object(r) &&
+            typeof r.id === 'string' &&
+            Number.isSafeInteger(r.revision) &&
+            Number(r.revision) >= 0 &&
+            iso(r.at) &&
+            typeof r.executive === 'string' &&
+            typeof r.action === 'string',
+        ))) &&
+    v.history.every(
+      (h) =>
+        object(h) &&
+        typeof h.id === 'string' &&
+        Number.isInteger(h.stage) &&
+        Number(h.stage) >= 0 &&
+        Number(h.stage) < 8 &&
+        outcomes.includes(h.outcome as Outcome) &&
+        typeof h.reason === 'string' &&
+        typeof h.owner === 'string' &&
+        typeof h.stale === 'boolean' &&
+        iso(h.at) &&
+        ['task', 'date', 'proof'].every(
+          (k) => h[k] === undefined || typeof h[k] === 'string',
+        ) &&
+        (!h.date || calendar(h.date)) &&
+        (h.gapKey === undefined ||
+          steps.some(
+            (s) =>
+              s.id === h.gapKey ||
+              s.fields.some((f) => s.id + '.' + f.key === h.gapKey),
+          )) &&
+        (h.limit === undefined || typeof h.limit === 'number'),
+    ) &&
+    v.evidence.every(
+      (e) =>
+        object(e) &&
+        typeof e.id === 'string' &&
+        typeof e.title === 'string' &&
+        typeof e.source === 'string' &&
+        steps.some((s) => s.id === e.step) &&
+        iso(e.at),
+    )
+  )
+}
