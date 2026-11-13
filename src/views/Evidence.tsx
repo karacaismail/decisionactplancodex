@@ -2,14 +2,22 @@ import { useState } from 'react'
 import { Alert, Button, Input, Modal, Select } from 'antd'
 import { Plus, Notebook, Trash } from '@phosphor-icons/react'
 import { steps } from '../data/steps'
+import { evidenceKinds, type EvidenceKind } from '../operations'
 import { dateLabel, now, type Plan } from '../domain'
 export default function Evidence({
   p,
   change,
+  readOnly,
 }: {
+  readOnly: boolean
   p: Plan
   change: (fn: (p: Plan) => Plan) => void
 }) {
+  const [kind, setKind] = useState<EvidenceKind>('Gözlem'),
+    [filter, setFilter] = useState('Tümü')
+  const rows = p.evidence.filter(
+    (e) => filter === 'Tümü' || (e.kind || 'Sınıflandırılmadı') === filter,
+  )
   const [open, setOpen] = useState(false),
     [title, setTitle] = useState(''),
     [source, setSource] = useState(''),
@@ -27,6 +35,7 @@ export default function Evidence({
         ...prev.evidence,
         {
           id: crypto.randomUUID(),
+          kind,
           title: title.trim(),
           source: source.trim(),
           step,
@@ -46,25 +55,43 @@ export default function Evidence({
           <h2>Gözlem kayıtları</h2>
           <p>{p.evidence.length} kayıt</p>
         </div>
-        <Button type="primary" icon={<Plus />} onClick={() => setOpen(true)}>
+        <Button
+          disabled={readOnly}
+          type="primary"
+          icon={<Plus />}
+          onClick={() => setOpen(true)}
+        >
           Kanıt ekle
         </Button>
       </div>
-      {p.evidence.length ? (
+      <div className="evidence-filter">
+        <Select
+          aria-label="Kanıt türüne göre süz"
+          value={filter}
+          onChange={setFilter}
+          options={['Tümü', 'Sınıflandırılmadı', ...evidenceKinds].map((v) => ({
+            value: v,
+            label: v,
+          }))}
+        />
+      </div>
+      {rows.length ? (
         <div className="ledger">
-          {p.evidence.toReversed().map((e) => (
+          {rows.toReversed().map((e) => (
             <article key={e.id}>
               <span className="icon-tile teal">
                 <Notebook size={20} />
               </span>
               <div>
                 <small>
-                  Adım {e.step} · {dateLabel(e.at)}
+                  {e.kind || 'Sınıflandırılmadı'} · Adım {e.step} ·{' '}
+                  {dateLabel(e.at)}
                 </small>
                 <h3>{e.title}</h3>
                 <p>{e.source}</p>
               </div>
               <Button
+                disabled={readOnly}
                 type="text"
                 icon={<Trash />}
                 aria-label={e.title + ' kaydını sil'}
@@ -74,7 +101,11 @@ export default function Evidence({
           ))}
         </div>
       ) : (
-        <p>İlk gözlemi ve kaynağını ekleyin.</p>
+        <p>
+          {p.evidence.length
+            ? 'Bu türde kayıt yok.'
+            : 'Henüz gözlem kaydı yok.'}
+        </p>
       )}
       <Modal
         title="Kanıt ekle"
@@ -105,6 +136,14 @@ export default function Evidence({
             <Input.TextArea
               value={source}
               onChange={(e) => setSource(e.target.value)}
+            />
+          </label>
+          <label>
+            <span>Kanıt türü</span>
+            <Select
+              value={kind}
+              onChange={setKind}
+              options={evidenceKinds.map((v) => ({ value: v, label: v }))}
             />
           </label>
           {err && <Alert type="error" title={err} />}

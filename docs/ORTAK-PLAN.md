@@ -1,5 +1,7 @@
 # Karar Atlası için ortak uygulama planı
 
+Bu belge ilk yerel sürümün kararlarını kaydeder. Sonraki sürüme kurum hesabı ve sunucuda sürüm onayı eklendi. [Güncel kullanım kılavuzu](../README.md#kurumda-çalışma)
+
 ## Hangi kararlar birleşti?
 
 | Konu | Claude önerisi | Codex önerisi | Uygulama kararı |

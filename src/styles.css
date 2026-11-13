@@ -1035,3 +1035,62 @@ html[data-keyboard='on'] :is(.ant-select, .ant-picker) input:focus-visible {
     display: none;
   }
 }
+
+:root {
+  --atlas-map-bg: #2e4b50;
+  --atlas-map-complete: #a9d4c4;
+}
+.session-mark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--teal);
+  font-size: 14px;
+  margin-block: 10px;
+}
+.context-row .ant-select {
+  min-width: 0;
+}
+.launch-path {
+  display: grid;
+  gap: 4px;
+}
+.launch-path .ant-radio-wrapper {
+  min-height: var(--hit);
+  align-items: center;
+}
+.evidence-filter {
+  margin: 12px 0;
+}
+.evidence-filter .ant-select {
+  min-width: 175px;
+}
+.workspace-launch {
+  display: grid;
+  gap: 10px;
+  margin-block: var(--gap);
+}
+.workspace-launch button {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 13px;
+  color: var(--ink);
+}
+.workspace-launch button > span:nth-child(2) {
+  flex: 1;
+}
+.workspace-launch b,
+.workspace-launch small {
+  display: block;
+}
+@media (min-width: 46rem) {
+  .workspace-launch {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

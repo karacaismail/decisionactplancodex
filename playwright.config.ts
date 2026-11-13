@@ -1,11 +1,16 @@
 import { defineConfig } from '@playwright/test'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { mkdtempSync } from 'node:fs'
+const testPort = 4187
+const baseURL = 'http://127.0.0.1:' + testPort
 export default defineConfig({
   testDir: './tests/browser',
   timeout: 40000,
   fullyParallel: true,
   workers: 3,
   use: {
-    baseURL: 'http://127.0.0.1:4177',
+    baseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
@@ -14,8 +19,12 @@ export default defineConfig({
     { name: 'WebKit', use: { browserName: 'webkit' } },
   ],
   webServer: {
-    command: 'npm run preview -- --port 4177 --strictPort',
-    url: 'http://127.0.0.1:4177',
-    reuseExistingServer: true,
+    command: 'npm start',
+    env: {
+      ATLAS_PORT: String(testPort),
+      ATLAS_DATA_DIR: mkdtempSync(join(tmpdir(), 'atlas-qa-')),
+    },
+    url: baseURL,
+    reuseExistingServer: false,
   },
 })

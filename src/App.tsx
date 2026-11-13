@@ -13,6 +13,7 @@ import {
   Dropdown,
   Input,
   Modal,
+  Radio,
   Select,
   theme,
 } from 'antd'
@@ -30,10 +31,15 @@ import {
   SlidersHorizontal,
 } from '@phosphor-icons/react'
 import { usePlans } from './usePlans'
-import { createPlan, currentStage, validatePlan } from './domain'
+import { currentStage, validatePlan } from './domain'
 import { download } from './store'
 import { navigation, type Page } from './ui/navigation'
+import { launchPlan, type Launch } from './operations'
+import { teamRequest, roleLabel, type Session } from './team'
 import Dashboard from './views/Dashboard'
+const Team = lazy(() => import('./views/Team')),
+  Portfolio = lazy(() => import('./views/Portfolio')),
+  Work = lazy(() => import('./views/Work'))
 const Wide = lazy(() => import('./ui/WideRail')),
   Small = lazy(() => import('./ui/SmallNav'))
 const Editor = lazy(() => import('./views/Editor')),
@@ -47,6 +53,10 @@ const subscribe = (cb: () => void) => {
   return () => width.removeEventListener('change', cb)
 }
 const descriptions: Record<Page, string> = {
+  team: 'Üyeleri, yetkileri ve kurum kayıtlarını yönetin.',
+  work: 'Karardan doğan işleri sorumlusu ve kapanış kanıtıyla izleyin.',
+  portfolio:
+    'Planları, açık işleri ve kaynak ihtiyaçlarını birlikte inceleyin.',
   dashboard: 'Planın durumunu ve sıradaki kararı görün.',
   editor: 'İşinize uyan adımları doldurun. Yanıtlarınız otomatik kaydedilir.',
   evidence: 'Her gözlemi kaynağıyla birlikte saklayın.',
@@ -64,7 +74,56 @@ function initialDark() {
   }
 }
 export default function App() {
-  const store = usePlans(),
+  const [session, setSession] = useState<Session | null>(null)
+  const [ready, setReady] = useState(false)
+  const [failed, setFailed] = useState(false)
+  async function check() {
+    try {
+      setSession(await teamRequest<Session | null>('session'))
+      setReady(true)
+      setFailed(false)
+    } catch {
+      setFailed(true)
+    }
+  }
+  useEffect(() => {
+    void check()
+  }, [])
+  if (!ready && !failed) return <p role="status">Çalışma alanı açılıyor.</p>
+  if (!ready && failed)
+    return (
+      <section className="panel">
+        <h2>Kurum hizmetine ulaşılamadı.</h2>
+        <button onClick={check}>Tekrar dene</button>{' '}
+        <button
+          onClick={() => {
+            setReady(true)
+            setSession(null)
+          }}
+        >
+          Kişisel planlarımı aç
+        </button>
+      </section>
+    )
+  return (
+    <Workspace
+      key={session?.user.id || 'local'}
+      session={session}
+      switchMode={setSession}
+    />
+  )
+}
+function Workspace({
+  session,
+  switchMode,
+}: {
+  session: Session | null
+  switchMode: (s: Session | null) => void
+}) {
+  const readOnly =
+    !!session && ['reader', 'reviewer'].includes(session.user.role)
+  const [launch, setLaunch] = useState<Launch>('new')
+  const store = usePlans(session),
     p = store.plan
   const [page, setPage] = useState<Page>(fromHash),
     [dark, setDark] = useState(initialDark),
@@ -153,11 +212,16 @@ export default function App() {
       setNameError('Plan adını yazın.')
       return
     }
-    const newPlan = createPlan(name)
+    const newPlan = launchPlan(name, launch)
     store.write(newPlan)
     store.select(newPlan.id)
     setDialog(false)
     setName('')
+    if (launch === 'danger') {
+      try {
+        localStorage.setItem('atlas-step-' + newPlan.id + '-0', '02')
+      } catch {}
+    }
     setStage(0)
     go('editor')
   }
@@ -196,7 +260,7 @@ export default function App() {
       <div className={wide ? 'shell wide' : 'shell narrow'}>
         {wide && (
           <Suspense fallback={null}>
-            <Wide page={page} go={go} />
+            <Wide page={page} go={go} scope={session?.workspace.name} />
           </Suspense>
         )}
         <div className="workspace">
@@ -204,7 +268,7 @@ export default function App() {
             {wide ? (
               <div className="breadcrumb">
                 <FolderOpen size={20} />
-                <span>Çalışma alanı</span>
+                <span>{session?.workspace.name || 'Çalışma alanı'}</span>
                 <span aria-hidden="true">/</span>
                 <b>{title}</b>
               </div>
@@ -237,6 +301,7 @@ export default function App() {
                       disabled: !p,
                     },
                     {
+                      disabled: readOnly,
                       key: 'import',
                       label: 'JSON dosyasını aç',
                       icon: <UploadSimple />,
@@ -267,16 +332,18 @@ export default function App() {
               />
             </div>
           </header>
-          <main id="main-content" tabIndex={-1}>
+          <main data-page={page} id="main-content" tabIndex={-1}>
             <div className="page-heading">
               <div>
                 <h1>{title}</h1>
                 <p>{descriptions[page]}</p>
               </div>
               <Button
+                disabled={readOnly}
                 type="primary"
                 icon={<Plus size={18} weight="bold" />}
                 onClick={() => {
+                  setLaunch('new')
                   setDialog(true)
                   setNameError('')
                 }}
@@ -301,7 +368,39 @@ export default function App() {
                 }
               />
             )}
-            {p ? (
+            {session && (
+              <div className="session-mark">
+                {session.workspace.name} · {session.user.name} ·{' '}
+                {roleLabel[session.user.role]}
+                {page !== 'team' && (
+                  <Button type="link" onClick={() => go('team')}>
+                    Üyelik
+                  </Button>
+                )}
+              </div>
+            )}
+            {page === 'team' ? (
+              <Suspense fallback={<p>Üyelik açılıyor.</p>}>
+                <Team
+                  plan={p}
+                  session={session}
+                  switchMode={switchMode}
+                  blocked={store.hasDraft}
+                />
+              </Suspense>
+            ) : page === 'portfolio' ? (
+              <Suspense fallback={<p>Planlar açılıyor.</p>}>
+                <Portfolio
+                  plans={store.plans}
+                  canRefresh={!store.hasDraft}
+                  refresh={store.refresh}
+                  open={(plan) => {
+                    store.select(plan.id)
+                    go('dashboard')
+                  }}
+                />
+              </Suspense>
+            ) : p ? (
               <>
                 <div className="context-row">
                   <span className="context-icon">
@@ -339,22 +438,43 @@ export default function App() {
                         go('editor')
                       }}
                     />
+                  ) : page === 'work' ? (
+                    <Work
+                      key={p.id}
+                      p={p}
+                      change={store.change}
+                      readOnly={!!readOnly}
+                      openStage={(i) => {
+                        visitStage(i)
+                        go('editor')
+                      }}
+                    />
                   ) : page === 'editor' ? (
                     <Editor
                       key={p.id + '-' + store.generation}
                       p={p}
                       change={store.change}
+                      readOnly={!!readOnly}
                       stage={stage}
                       setStage={visitStage}
                     />
                   ) : page === 'evidence' ? (
-                    <Evidence key={p.id} p={p} change={store.change} />
+                    <Evidence
+                      readOnly={!!readOnly}
+                      key={p.id}
+                      p={p}
+                      change={store.change}
+                    />
                   ) : page === 'reports' ? (
                     <Reports
                       key={p.id}
                       p={p}
                       change={store.change}
-                      saved={store.status === 'Kaydedildi' && !store.busy}
+                      saved={
+                        !readOnly &&
+                        store.status === 'Kaydedildi' &&
+                        !store.busy
+                      }
                     />
                   ) : page === 'methods' ? (
                     <Methods />
@@ -364,7 +484,15 @@ export default function App() {
                 </Suspense>
               </>
             ) : (
-              !store.error && <p role="status">Planlar açılıyor.</p>
+              !store.error && (
+                <p role="status">
+                  {store.status === 'Yükleniyor'
+                    ? 'Planlar açılıyor.'
+                    : readOnly
+                      ? 'Bu kurumda henüz plan yok.'
+                      : 'İlk kurum planınızı “Yeni plan” ile açın.'}
+                </p>
+              )
             )}
           </main>
           <footer>
@@ -398,6 +526,20 @@ export default function App() {
               onChange={(e) => setName(e.target.value)}
             />
           </label>
+          <div className="field">
+            <label id="start-path">Nereden başlıyorsunuz?</label>
+            <Radio.Group
+              aria-labelledby="start-path"
+              className="launch-path"
+              value={launch}
+              onChange={(e) => setLaunch(e.target.value)}
+              options={[
+                { value: 'new', label: 'Yeni iş fikri' },
+                { value: 'takeover', label: 'Bir işi devralıyorum' },
+                { value: 'danger', label: 'Acil zarar tehlikesi' },
+              ]}
+            />
+          </div>
           {nameError && <Alert type="error" title={nameError} />}
         </div>
       </Modal>

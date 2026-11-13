@@ -3,7 +3,13 @@ import { readPlans, savePlan } from './store'
 import { demonstration } from './demo'
 import type { Plan } from './domain'
 
-export function usePlans() {
+import { teamRequest, type Session } from './team'
+export function usePlans(session: Session | null) {
+  const list = () =>
+    session ? teamRequest<Plan[]>('list', undefined, session) : readPlans()
+  const persist = (p: Plan) =>
+    session ? teamRequest<Plan>('save', { plan: p }, session) : savePlan(p)
+  const lastKey = session ? 'atlas-last-' + session.workspace.id : 'atlas-plan'
   const [plans, setPlans] = useState<Plan[]>([]),
     [selected, select] = useState(''),
     [status, setStatus] = useState('Yükleniyor')
@@ -17,9 +23,12 @@ export function usePlans() {
   function render() {
     setPlans([...data.current.values()])
   }
+  const loadId = useRef(0)
   async function load() {
-    const rows = await readPlans()
-    if (!rows.length) {
+    const token = ++loadId.current
+    const before = new Map(data.current)
+    const rows = await list()
+    if (!rows.length && !session) {
       try {
         rows.push(await savePlan(demonstration()))
       } catch (e) {
@@ -28,12 +37,20 @@ export function usePlans() {
         rows.push(...concurrent)
       }
     }
-    data.current = new Map(rows.map((p) => [p.id, p]))
-    pending.current.clear()
-    blocked.current.clear()
+    if (token !== loadId.current) return
+    for (const p of rows) {
+      const current = data.current.get(p.id)
+      if (
+        !pending.current.has(p.id) &&
+        !blocked.current.has(p.id) &&
+        current === before.get(p.id) &&
+        (!current || p.revision >= current.revision)
+      )
+        data.current.set(p.id, p)
+    }
     let last = ''
     try {
-      last = localStorage.getItem('atlas-plan') || ''
+      last = localStorage.getItem(lastKey) || ''
     } catch {}
     render()
     select((prev) =>
@@ -41,15 +58,15 @@ export function usePlans() {
         ? prev
         : data.current.has(last)
           ? last
-          : rows.find((p) => !p.example)?.id || rows[0].id,
+          : rows.find((p) => !p.example)?.id || rows[0]?.id || '',
     )
     setError('')
-    setStatus('Kaydedildi')
+    if (!running.current) setStatus('Kaydedildi')
   }
   useEffect(() => {
     if (selected)
       try {
-        localStorage.setItem('atlas-plan', selected)
+        localStorage.setItem(lastKey, selected)
       } catch {}
   }, [selected])
   useEffect(() => {
@@ -78,7 +95,7 @@ export function usePlans() {
         if (!id) break
         const snapshot = data.current.get(id)!
         try {
-          const saved = await savePlan(snapshot),
+          const saved = await persist(snapshot),
             latest = data.current.get(id)!
           if (latest === snapshot) {
             data.current.set(id, saved)
@@ -105,7 +122,7 @@ export function usePlans() {
   const [generation, setGeneration] = useState(0)
   async function reload() {
     if (!selected) return load()
-    const saved = (await readPlans()).find((p) => p.id === selected)
+    const saved = (await list()).find((p) => p.id === selected)
     if (!saved)
       throw Error(
         'Bu planın kaydedilmiş sürümü bulunamadı. JSON kopyanızı indirin.',
@@ -122,6 +139,11 @@ export function usePlans() {
     render()
   }
   function write(plan: Plan) {
+    if (session && ['reader', 'reviewer'].includes(session.user.role)) {
+      setError('Bu hesap yalnız okuyabilir.')
+      return
+    }
+
     data.current.set(plan.id, plan)
     pending.current.add(plan.id)
     render()
@@ -137,12 +159,14 @@ export function usePlans() {
   }
   return {
     plans,
+    refresh: load,
     plan: plans.find((p) => p.id === selected),
     select,
     write,
     change,
     status: failures[selected] ? 'Kaydedilemedi' : status,
     busy,
+    hasDraft: busy || pending.current.size > 0,
     generation,
     error: failures[selected] || loadError,
     reload,

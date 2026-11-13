@@ -1,5 +1,8 @@
 import { Button } from 'antd'
 import {
+  Buildings,
+  ClipboardText,
+  Briefcase,
   ArrowRight,
   ArrowUpRight,
   Check,
@@ -95,6 +98,39 @@ export default function Dashboard({
               <span>{unit}</span>
             </div>
             <small>{note}</small>
+          </button>
+        ))}
+      </div>
+      <div className="workspace-launch">
+        {[
+          {
+            page: 'portfolio',
+            title: 'Plan portföyü',
+            detail: 'Planları karşılaştır',
+            icon: Briefcase,
+          },
+          {
+            page: 'work',
+            title: 'Görevler',
+            detail: 'Sorumluları ve teslimleri izle',
+            icon: ClipboardText,
+          },
+          {
+            page: 'team',
+            title: 'Kurum alanı',
+            detail: 'Üyeleri ve yetkileri yönet',
+            icon: Buildings,
+          },
+        ].map(({ page, title, detail, icon: Icon }) => (
+          <button key={page} onClick={() => go(page as Page)}>
+            <span className="icon-tile teal">
+              <Icon size={20} />
+            </span>
+            <span>
+              <b>{title}</b>
+              <small>{detail}</small>
+            </span>
+            <ArrowRight size={16} />
           </button>
         ))}
       </div>

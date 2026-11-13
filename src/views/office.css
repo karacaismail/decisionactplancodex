@@ -1,0 +1,447 @@
+.office-layout,
+.compare-grid {
+  display: grid;
+  gap: var(--gap);
+  align-items: start;
+}
+.office-heading,
+.office-kicker,
+.ops-actions,
+.desk-review > div,
+.map-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.office-heading {
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+.office-heading svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.office-kicker {
+  color: var(--teal);
+  font-size: 14px;
+  font-weight: 600;
+}
+.key-box,
+.office-empty,
+.compare article {
+  background: var(--canvas);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin: 14px 0;
+}
+.key-box {
+  display: grid;
+  gap: 8px;
+}
+.key-box code {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.ops-dl {
+  display: grid;
+  gap: 5px;
+  margin: 14px 0;
+}
+.ops-dl dt,
+.task-row small,
+.audit-row small {
+  color: var(--muted);
+  font-size: 14px;
+}
+.ops-dl dd {
+  margin: 0 0 10px;
+}
+.ops-actions,
+.ops-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ops-filters {
+  padding: 13px 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+.ops-filters .ant-input-search {
+  flex: 1 1 180px;
+}
+.ops-filters .ant-select,
+.ops-actions .ant-select {
+  flex: 0 1 200px;
+  min-width: 135px;
+}
+.person-row,
+.task-row,
+.portfolio-row,
+.audit-row {
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+.person-row,
+.portfolio-row,
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.task-row > div,
+.portfolio-row > div {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.task-row > div p {
+  overflow-wrap: break-word;
+}
+.task-row h3,
+.portfolio-row h3 {
+  font-size: 19px;
+}
+.office-empty {
+  text-align: center;
+  color: var(--muted);
+}
+.office-empty h3 {
+  margin: 7px 0;
+}
+.person-row {
+  justify-content: space-between;
+}
+.audit {
+  grid-column: 1/-1;
+}
+.folio-head,
+.desk-banner {
+  color: var(--hero-text);
+  background: var(--hero);
+  border-radius: var(--radius-panel);
+  padding: clamp(19px, 3vw, 36px);
+  display: grid;
+  align-items: center;
+  gap: 20px;
+}
+.folio-head {
+  margin-bottom: var(--gap);
+}
+.folio-head h2,
+.desk-banner h2 {
+  font-size: clamp(28px, 3.1vw, 44px);
+  font-weight: 520;
+  margin: 8px 0;
+}
+.folio-head p,
+.desk-banner p {
+  color: var(--hero-muted);
+}
+.folio-head .office-kicker,
+.desk-banner .office-kicker {
+  color: var(--hero-action);
+}
+.folio-head dl {
+  margin: 0;
+  color: var(--hero-muted);
+}
+.folio-head dd {
+  margin: 0;
+  font-size: 32px;
+  color: var(--hero-text);
+}
+.office-chip {
+  background: var(--tint);
+  color: var(--accent);
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.compare {
+  margin-top: var(--gap);
+}
+.compare article {
+  margin: 0;
+}
+.mini-route {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+.mini-route button {
+  border: 0;
+  border-radius: 5px;
+  background: var(--atlas-map-bg);
+  color: var(--hero-muted);
+  height: var(--hit);
+  display: grid;
+  place-items: center;
+}
+.mini-route button.complete {
+  color: var(--atlas-map-complete);
+}
+.mini-route button[aria-current='step'] {
+  color: var(--hero-action-ink);
+  background: var(--hero-action);
+  font-weight: 650;
+}
+.map-link {
+  color: var(--hero-action);
+  background: transparent;
+  border: 0;
+  padding: 8px 0;
+  min-height: var(--hit);
+  font-size: 14px;
+}
+.desk-banner .office-kicker span {
+  font-variant-numeric: tabular-nums;
+}
+.limits-strip {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+}
+.limits-strip > div {
+  background: var(--paper);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+}
+.limits-strip small,
+.limits-strip b {
+  display: block;
+}
+.limits-strip b {
+  color: var(--ink);
+  font-weight: 570;
+}
+.desk-review {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+.desk-review > div {
+  color: var(--accent);
+}
+.desk-review p {
+  flex: 1 1 210px;
+}
+.map-list {
+  margin: 0;
+  padding-left: 21px;
+}
+.map-list button,
+.gap-button {
+  background: var(--paper);
+  color: var(--ink);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  min-height: var(--hit);
+  width: 100%;
+}
+.gap-button svg {
+  flex-shrink: 0;
+}
+.inspect-title {
+  margin: 23px 0 12px;
+}
+.desk-map {
+  min-width: 0;
+}
+.editor-wrap .read-fields {
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.office-layout .fields {
+  min-width: 0;
+}
+.office-layout .panel {
+  min-width: 0;
+}
+@media (min-width: 43rem) {
+  .limits-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .folio-head,
+  .desk-banner {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  }
+  .compare-grid,
+  .office-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mini-route {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  .desk-map {
+    justify-self: stretch;
+  }
+  .folio-head dl {
+    justify-self: end;
+  }
+}
+.packet-text {
+  padding: 16px;
+  background: var(--canvas);
+  border-radius: var(--radius);
+  max-height: 45dvh;
+  overflow: auto;
+}
+.packet-text h3 {
+  margin: 12px 0 6px;
+}
+.queue-plan {
+  margin-block: 12px;
+  color: var(--muted);
+}
+.handover-list {
+  display: grid;
+  gap: 10px;
+}
+.handover-list > div {
+  display: grid;
+  gap: 8px;
+  background: var(--canvas);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+.handover-list .ant-select {
+  width: 100%;
+}
+.handover-list button {
+  justify-self: start;
+}
+
+.resume-step,
+.limits-toggle {
+  min-height: var(--hit);
+  display: inline-flex;
+  gap: 9px;
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius);
+  font-weight: 550;
+}
+.resume-step {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--hero-action);
+  color: var(--hero-action-ink);
+}
+.limits-toggle {
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 10px 13px;
+  justify-content: space-between;
+}
+.limits-toggle b {
+  color: var(--teal);
+}
+@media (max-width: 42.99rem) {
+  .mini-route,
+  .limits-strip {
+    display: none;
+  }
+  .desk-banner {
+    gap: 4px;
+  }
+  .desk-banner .desk-map .map-link {
+    min-height: 40px;
+  }
+  .desk-review {
+    gap: 8px;
+    padding: 0;
+  }
+  .desk-review p {
+    font-size: 14px;
+  }
+  .desk-review > .ant-btn {
+    flex: 1 1 120px;
+  }
+  .desk-review > div {
+    padding: 3px 0;
+  }
+  .desk-banner .desk-intro p {
+    display: none;
+  }
+  main[data-page='editor'] .page-heading p {
+    display: none;
+  }
+  main[data-page='editor'] .page-heading {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  main[data-page='editor'] .page-heading h1 {
+    font-size: 28px;
+  }
+  main[data-page='editor'] .context-row {
+    margin-block: 8px;
+  }
+  .editor-wrap {
+    gap: 10px;
+  }
+  .desk-banner h2 {
+    margin: 5px 0;
+  }
+}
+@media (min-width: 43rem) {
+  .limits-toggle,
+  .resume-step {
+    display: none;
+  }
+}
+@media (min-width: 78rem) {
+  .editor-wrap:not(.has-handover) {
+    display: grid;
+    grid-template-columns: minmax(0, 2.25fr) minmax(235px, 1fr);
+    align-items: start;
+  }
+  .editor-wrap:not(.has-handover) > .desk-banner {
+    grid-column: 1/-1;
+  }
+  .editor-wrap:not(.has-handover) > .stage-switch {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .editor-wrap:not(.has-handover) > .desk-side {
+    grid-column: 2;
+    grid-row: 2/4;
+    display: grid;
+    gap: var(--gap);
+    align-content: start;
+  }
+  .desk-side .limits-strip {
+    grid-template-columns: 1fr;
+  }
+  .desk-side .desk-review {
+    padding: 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+  }
+  .desk-side .desk-review > p {
+    flex-basis: 100%;
+  }
+  .editor-wrap:not(.has-handover) > .editor-panel {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .editor-wrap:not(.has-handover) > .ant-collapse {
+    grid-column: 1/-1;
+  }
+}

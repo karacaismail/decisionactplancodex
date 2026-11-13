@@ -1,3 +1,14 @@
+import {
+  activeWork,
+  workLabel,
+  workItems,
+  validWork,
+  evidenceKinds,
+  type Work,
+  type EvidenceKind,
+  handoverChecks,
+  type HandoverCheck,
+} from './operations.ts'
 import { steps, stages } from './data/steps.ts'
 import type { Answers, Field, Step, Value } from './data/steps.ts'
 
@@ -27,6 +38,7 @@ export interface Decision extends DecisionInput {
   stale: boolean
 }
 export interface Evidence {
+  kind?: EvidenceKind
   id: string
   title: string
   source: string
@@ -41,6 +53,8 @@ export interface ReportPair {
   action: string
 }
 export interface Plan {
+  handover?: Record<string, HandoverCheck>
+  work?: Work[]
   publications?: ReportPair[]
   schemaVersion: 1
   id: string
@@ -655,7 +669,10 @@ export function report(p: Plan, kind: 'executive' | 'action') {
       ...(!p.history.length ? ['Henüz karar kaydı yok.'] : []),
       '## Dayanaklar',
       ...(p.evidence.length
-        ? p.evidence.map((e) => e.title + ' — ' + e.source)
+        ? p.evidence.map(
+            (e) =>
+              e.title + ' — ' + e.source + (e.kind ? ' (' + e.kind + ')' : ''),
+          )
         : ['Henüz dayanak eklenmedi.']),
     ].join('\n\n')
   }
@@ -667,13 +684,12 @@ export function report(p: Plan, kind: 'executive' | 'action') {
       : result === 'Bekletin'
         ? 'Engeli izleyin. Yeni harcamayı bekletin.'
         : advice.reason
-  const actionable = p.history.filter(
-    (h) =>
-      !!h.task &&
-      !h.stale &&
+  const actionable = activeWork(p).filter(
+    (w) =>
+      w.decision &&
       (result === 'Durdurun' || result === 'Bekletin'
-        ? h.id === binding?.id
-        : p.history.findLast((d) => d.stage === h.stage)?.id === h.id),
+        ? w.decision === binding?.id
+        : true),
   )
   const goals = Array.isArray(p.answers['19']?.goals)
     ? (p.answers['19'].goals as Record<string, string>[])
@@ -685,15 +701,12 @@ export function report(p: Plan, kind: 'executive' | 'action') {
     ...(binding ? ['Karar sahibinin gerekçesi: ' + binding.reason] : []),
     '## Karara bağlı işler',
     ...actionable.map(
-      (h) =>
-        h.task +
-        ' — ' +
-        h.owner +
-        '. ' +
-        (h.date ? dateLabel(h.date) : 'Tarih belirlenmedi.') +
-        ' ' +
-        (h.proof || 'Kabul ölçüsü bekleniyor.') +
-        (h.stale ? ' Önce kararı yeniden inceleyin.' : ''),
+      (w) =>
+        w.title +
+        ' · ' +
+        w.owner +
+        ' · ' +
+        (w.due ? dateLabel(w.due) : 'Tarih belirlenmedi.'),
     ),
     ...(!actionable.length ? ['Henüz görev kaydı yok.'] : []),
     result === 'Durdurun' || result === 'Bekletin'
@@ -702,6 +715,21 @@ export function report(p: Plan, kind: 'executive' | 'action') {
     ...(goals.length
       ? goals.map((g) => Object.values(g).join(' · '))
       : ['İş sırasını 19. adımda yazın.']),
+    ...(workItems(p).length
+      ? [
+          '## Görev takibi',
+          ...workItems(p).map(
+            (w) =>
+              w.title +
+              ' · ' +
+              workLabel(p, w) +
+              ' · ' +
+              w.owner +
+              (w.due ? ' · ' + dateLabel(w.due) : '') +
+              (w.proof ? ' · ' + w.proof : ''),
+          ),
+        ]
+      : []),
     '## Deneme ve teslim',
     'Yazılı eşik: ' + val('15', 'threshold'),
     'Deneme sınırı: ' + val('02', 'attempts'),
@@ -712,6 +740,19 @@ export function report(p: Plan, kind: 'executive' | 'action') {
     'Kontrol olayı: ' + val('33', 'reopen'),
     ...(activeSteps(p).includes('34')
       ? ['## Devir ve açık sözler', ...rows('34', 'obligations')]
+      : []),
+    ...(p.answers['00']?.start === 'Devralınan iş'
+      ? [
+          '## Devir kontrolü',
+          ...handoverChecks.map(
+            ([id, label]) =>
+              label +
+              ' · ' +
+              (p.handover?.[id]?.status || 'Bilinmiyor') +
+              ' · ' +
+              (p.handover?.[id]?.source || 'Dayanak bekleniyor.'),
+          ),
+        ]
       : []),
     '## Eksik adımlar',
     ...steps
@@ -785,6 +826,18 @@ export function validatePlan(v: unknown): v is Plan {
       ))
   return (
     answers &&
+    (v.handover === undefined ||
+      (object(v.handover) &&
+        Object.entries(v.handover).every(
+          ([k, c]) =>
+            handoverChecks.some(([id]) => id === k) &&
+            object(c) &&
+            ['Bilinmiyor', 'Kayıt var', 'Kayıt eksik'].includes(
+              String(c.status),
+            ) &&
+            typeof c.source === 'string',
+        ))) &&
+    validWork(v.work, v.history as Decision[]) &&
     changes &&
     (v.publications === undefined ||
       (Array.isArray(v.publications) &&
@@ -828,6 +881,8 @@ export function validatePlan(v: unknown): v is Plan {
         typeof e.id === 'string' &&
         typeof e.title === 'string' &&
         typeof e.source === 'string' &&
+        (e.kind === undefined ||
+          evidenceKinds.includes(e.kind as EvidenceKind)) &&
         steps.some((s) => s.id === e.step) &&
         iso(e.at),
     )

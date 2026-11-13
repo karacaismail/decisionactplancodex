@@ -255,7 +255,7 @@ test('dokunma, yön değişimi ve yeniden açılan seçim', async ({ browser }) 
     hasTouch: true,
   })
   const p = await context.newPage()
-  await p.goto('http://127.0.0.1:4177')
+  await p.goto(String(test.info().project.use.baseURL))
   await p.getByRole('button', { name: 'Kararı incele', exact: true }).tap()
   await p
     .getByRole('spinbutton', { name: 'Ödeme günü kasadaki para' })

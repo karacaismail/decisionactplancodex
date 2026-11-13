@@ -64,3 +64,17 @@
 .rail-bottom b {
   color: var(--ink);
 }
+
+.wide-rail {
+  overflow-y: auto;
+}
+.wide-rail .rail-group {
+  margin-top: 26px;
+}
+.wide-rail nav button {
+  min-height: 44px;
+  padding-block: 8px;
+}
+.rail-bottom {
+  padding-top: 14px;
+}

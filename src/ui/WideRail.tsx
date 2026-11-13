@@ -1,7 +1,7 @@
 import { HardDrives } from '@phosphor-icons/react'
 import { navigation, Brand, type NavProps } from './navigation'
 import './wide.css'
-export default function WideRail({ page, go }: NavProps) {
+export default function WideRail({ page, go, scope }: NavProps) {
   return (
     <aside className="wide-rail">
       <Brand />
@@ -21,8 +21,10 @@ export default function WideRail({ page, go }: NavProps) {
       <div className="rail-bottom">
         <HardDrives size={23} />
         <div>
-          <b>Yerel çalışma alanı</b>
-          <small>Bu tarayıcıda saklanır</small>
+          <b>{scope || 'Kişisel alan'}</b>
+          <small>
+            {scope ? 'Bu Mac’te saklanır' : 'Bu tarayıcıda saklanır'}
+          </small>
         </div>
       </div>
     </aside>

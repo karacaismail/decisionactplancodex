@@ -1,5 +1,13 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
-import { Alert, Button, Collapse, Input, InputNumber, Select } from 'antd'
+import {
+  ConfigProvider,
+  Alert,
+  Button,
+  Collapse,
+  Input,
+  InputNumber,
+  Select,
+} from 'antd'
 import {
   ArrowLeft,
   ArrowRight,
@@ -25,15 +33,19 @@ import {
 } from '../domain'
 import guide from '../data/guide.json'
 import stepHelp from '../data/stepHelp.json'
+import DecisionDesk from './DecisionDesk'
 import FieldInput from './Fields'
 import StepSummary from './StepSummary'
+const Takeover = lazy(() => import('./Takeover'))
 const Methods = lazy(() => import('./Methods'))
 export default function Editor({
   p,
   change,
   stage,
   setStage,
+  readOnly,
 }: {
+  readOnly: boolean
   p: Plan
   change: (f: (p: Plan) => Plan) => void
   stage: number
@@ -133,7 +145,57 @@ export default function Editor({
     </label>
   )
   return (
-    <div className="editor-wrap">
+    <div
+      className={
+        'editor-wrap' +
+        (p.answers['00']?.start === 'Devralınan iş' && stage === 0
+          ? ' has-handover'
+          : '')
+      }
+    >
+      <DecisionDesk
+        p={p}
+        stage={stage}
+        setStage={(n) => {
+          setStage(n)
+          setSelected('')
+          setMode('step')
+          setNotice('')
+          error('')
+        }}
+        review={review}
+        openGap={(id, key) => {
+          const i = items.findIndex((s) => s.id === id)
+          if (i >= 0) {
+            choose(i)
+            requestAnimationFrame(() =>
+              document.getElementById('field-' + key)?.focus(),
+            )
+          }
+        }}
+      />
+      {p.answers['00']?.start === 'Devralınan iş' && stage === 0 && (
+        <Suspense fallback={<p>Devir kaydı açılıyor.</p>}>
+          <Takeover
+            p={p}
+            change={change}
+            readOnly={readOnly}
+            visit={(id) => {
+              const dest = steps.find((s) => s.id === id)!
+              try {
+                localStorage.setItem(
+                  'atlas-step-' + p.id + '-' + dest.stage,
+                  id,
+                )
+              } catch {}
+              setStage(dest.stage)
+              setSelected(id)
+              setMode('step')
+              focusQuestion()
+            }}
+          />
+        </Suspense>
+      )}
       <div className="stage-switch">
         <label htmlFor="stage-select">Kararı seçin</label>
         <Select
@@ -181,13 +243,16 @@ export default function Editor({
                 ))}
             </ul>
             <Input
+              disabled={readOnly}
               aria-label="İkinci görüş sahibi"
               value={reviewer}
               onChange={(e) => setReviewer(e.target.value)}
             />
             <Button
               disabled={
-                !reviewer.trim() || reviewer.trim() === p.answers['01']?.owner
+                readOnly ||
+                !reviewer.trim() ||
+                reviewer.trim() === p.answers['01']?.owner
               }
               onClick={() => {
                 change((prev) => ({
@@ -247,19 +312,21 @@ export default function Editor({
                 ),
               )}
             </details>
-            <div className="fields">
-              {visibleFields(p, step).map((f) => (
-                <div className="field" key={f.key}>
-                  <label htmlFor={'field-' + f.key}>{f.label}</label>
-                  <FieldInput
-                    f={f}
-                    v={p.answers[step.id]?.[f.key]}
-                    id={'field-' + f.key}
-                    onChange={(v) => edit(f.key, v)}
-                  />
-                </div>
-              ))}
-            </div>
+            <ConfigProvider componentDisabled={readOnly}>
+              <fieldset disabled={readOnly} className="fields read-fields">
+                {visibleFields(p, step).map((f) => (
+                  <div className="field" key={f.key}>
+                    <label htmlFor={'field-' + f.key}>{f.label}</label>
+                    <FieldInput
+                      f={f}
+                      v={p.answers[step.id]?.[f.key]}
+                      id={'field-' + f.key}
+                      onChange={(v) => edit(f.key, v)}
+                    />
+                  </div>
+                ))}
+              </fieldset>
+            </ConfigProvider>
             <StepSummary id={step.id} p={p} />
             <div className="editor-controls">
               <Button
@@ -346,7 +413,7 @@ export default function Editor({
               )}
             </div>
             {err && <Alert type="error" title={err} showIcon />}
-            <Button type="primary" onClick={record}>
+            <Button disabled={readOnly} type="primary" onClick={record}>
               Karar kaydını ekle
             </Button>
           </>

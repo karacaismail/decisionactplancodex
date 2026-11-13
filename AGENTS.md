@@ -8,3 +8,8 @@
 - Gerekli izinleri, zarar sınırını ve önceki kararları koruyun. Örnek veriyi gerçek plandan ayırın.
 - Gerçek plan dosyalarını depoya eklemeyin. GitHub Pages yayını kurmayın.
 - Değişikliği önce ilgili başarısız testle gösterin. Sonra `npm test`, `npm run build` ve `npm run test:ui` komutlarını çalıştırın.
+
+- Kişisel planları tarayıcıda, kurum kayıtlarını yerel SQLite dosyasında saklayın.
+- Her kurum isteğinde oturumu, üyeliği ve alanı sunucuda doğrulayın.
+- İncelemeyi açan üye kendi isteğini onaylayamaz. Onay yalnız gönderilen sürümü kapsar.
+- Tarayıcı denemeleri ayrı bir veritabanı kullanmalıdır.

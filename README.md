@@ -9,7 +9,7 @@ Node.js 24 ve npm gereklidir. Proje klasöründe şu komutları sırayla çalı�
 ```sh
 npm ci
 npm run build
-npm run preview -- --port 4177 --strictPort
+npm start
 ```
 
 Tarayıcıda [Karar Atlası’nı açın](http://127.0.0.1:4177/). Geliştirme sırasında `npm run dev` komutunu kullanabilirsiniz.
@@ -23,13 +23,40 @@ Tarayıcıda [Karar Atlası’nı açın](http://127.0.0.1:4177/). Geliştirme s
 5. “İki raporu sabitle” düğmesi o sürümün iki belgesini saklar.
 6. Raporu Markdown olarak indirin veya yazdırın. Tüm planı “Dosya işlemleri” menüsünden JSON olarak indirin.
 
-Tarayıcı her planı kendi yerel veritabanında saklar. Adres, port veya tarayıcı profili değişirse farklı bir kayıt alanı açılır. JSON dosyasını içe aktardığınızda yeni bir kopya oluşur. Başka bir sekme daha yeni kayıt oluşturmuşsa uygulama farkı bildirir. Yerel kopyanızı indirdikten sonra kayıtlı sürümü açabilirsiniz.
+Kişisel alanda tarayıcı planları kendi veritabanında saklar. Adres, port veya tarayıcı profili değişirse farklı bir kayıt alanı açılır. JSON dosyasını içe aktardığınızda yeni bir kopya oluşur. Başka bir sekme daha yeni kayıt oluşturmuşsa uygulama farkı bildirir. Yerel kopyanızı indirdikten sonra kayıtlı sürümü açabilirsiniz.
 
 ## Kapsam
 
 Sekiz karar altında 35 adım vardır. İşinize uygun adımlar açılır. Kanıtlar, kaynak sınırları ve karar sahipleri aynı plana bağlanır. Karar Kitabı’nda 128 yöntem bulunur. “Göstergeler” bölümünde grafikler ve sayısal karşılıkları birlikte sunulur.
 
-Kurucu ve onaylayan kişi adları planın içindeki kayıtlardır. Kullanıcı girişi ve kurumlar arası veri paylaşımı ayrı bir sunucu uygulaması gerektirir. Bu sürüm verileri yerel tarayıcıda işler.
+## Kurumda çalışma
+
+1. “Kurum alanı” menüsünden “Kurum aç” seçeneğini açın.
+2. Kurumun adını, kullanıcı adınızı ve parolanızı yazın.
+3. Sonraki giriş için ekrandaki kurum kodunu saklayın.
+4. Her üye için yetki seçip ayrı davet oluşturun.
+5. Üye başka bir tarayıcı profilinde “Davetle katıl” seçeneğini kullanır.
+
+Yönetici üye davet eder ve erişimi kaldırır. Düzenleyen kişi planı günceller. Okuyucu planları ve raporları görür. İnceleyen kişi gönderilen sürümü onaylar veya düzeltme ister. Bir kişi kendi inceleme isteğini onaylayamaz.
+
+“Plan portföyü” iki planı karşılaştırır. “Görevler” ekranı kararları sorumlu kişiye bağlar. Görevi kapatırken kanıt yazılır. Önceki bir kararın görevi geçmişte kalır.
+
+Kurum kayıtları bu Mac üzerinde SQLite veritabanında saklanır. Varsayılan dosya `~/Library/Application Support/Karar Atlasi/workspace.sqlite` konumundadır. `ATLAS_DATA_DIR` başka bir veri klasörü seçer. Sunucu yalnız bu bilgisayardan bağlantı kabul eder. Kişisel planı kuruma taşımak için JSON kopyasını içe aktarın.
+
+### Sürüm incelemesi
+
+1. Kurum planını seçin. Kaydın tamamlanmasını bekleyin.
+2. “Kurum alanı” bölümünde seçili planı incelemeye gönderin.
+3. Başka bir yetkili üye “Dosyayı aç” düğmesine basar.
+4. Üye iki raporu okuyup gerekçesiyle sonucu kaydeder.
+
+Bekleyen inceleme sırasında plan değişirse eski istek kapanır. Yeni sürüm ayrı incelemeye gönderilir. Kurum günlüğü kişiyi, işlemi ve ilgili sürümü gösterir. İş planındaki ilerleme kararı ayrıca alınır.
+
+## Claude sürümünden alınan fikirler
+
+Üç giriş yolu, görev takibi ve görünür kaynak sınırları uygulandı. Devir yolunda açık sözler ve kaynaklar incelenir. Kanıt türü seçimi görüş, ödeme ve gerçekleşen kullanımı ayırır. Ücretsiz hizmetlerde doğrudan kullanım da kanıt olarak kaydedilir.
+
+[İncelenen Claude uygulaması](https://karacaismail.github.io/decisionactplanclaude/)
 
 [Claude ve Codex önerilerinden oluşturulan ortak plan](docs/ORTAK-PLAN.md)
 
@@ -43,4 +70,4 @@ npm run build
 npm run test:ui
 ```
 
-Tarayıcı denemeleri kurulu Google Chrome’u ve Playwright WebKit’i kullanır. WebKit eksikse `npx playwright install webkit` komutunu çalıştırın. Denemeler ayrı bir tarayıcı profili açar.
+Tarayıcı denemeleri kurulu Google Chrome’u ve Playwright WebKit’i kullanır. WebKit eksikse `npx playwright install webkit` komutunu çalıştırın. Denemeler ayrı tarayıcı profilleri ve geçici bir kurum veritabanı kullanır. Test sunucusu 4187 numaralı portu kullanır.
