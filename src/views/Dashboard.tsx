@@ -1,14 +1,16 @@
-import { Button } from 'antd'
+import { useState } from 'react'
+import { Select } from 'antd'
 import {
   ArrowRight,
   ArrowUpRight,
-  Flag,
-  Path,
-  Notebook,
+  ChartBar,
+  CheckCircle,
   ClipboardText,
-  ClockCounterClockwise,
   Files,
-  BookOpenText,
+  Flag,
+  HourglassMedium,
+  Notebook,
+  Wallet,
 } from '@phosphor-icons/react'
 import {
   activeSteps,
@@ -17,13 +19,16 @@ import {
   currentStage,
   dateLabel,
   effective,
+  money,
+  openGaps,
+  recommend,
   type Plan,
 } from '../domain'
 import { activeWork } from '../operations'
 import { steps, stages } from '../data/steps'
-import Relief from '../ui/Relief'
 import type { Page } from '../ui/navigation'
 
+type Filter = 'all' | 'approved' | 'waiting'
 export default function Dashboard({
   p,
   go,
@@ -33,187 +38,420 @@ export default function Dashboard({
   go: (v: Page) => void
   openStage: (n: number) => void
 }) {
-  const stage = currentStage(p),
-    active = activeSteps(p),
-    approvedCount = stages.filter((_, i) => approved(p, i)).length
-  const done = steps.filter(
-    (s) => active.includes(s.id) && complete(p, s),
-  ).length
-  const metrics = [
-    {
-      label: 'Onaylı karar',
-      value: approvedCount,
-      unit: '/ 8',
-      icon: Flag,
-      page: 'editor',
-    },
-    {
-      label: 'Tamamlanan adım',
-      value: done,
-      unit: '/ ' + active.length,
-      icon: Path,
-      page: 'editor',
-    },
-    {
-      label: 'Kanıt kaydı',
-      value: p.evidence.length,
-      unit: '',
-      icon: Notebook,
-      page: 'evidence',
-    },
-    {
-      label: 'Açık görev',
-      value: activeWork(p).length,
-      unit: '',
-      icon: ClipboardText,
-      page: 'work',
-    },
-  ] as const
+  const current = currentStage(p)
+  const [selection, setSelection] = useState<number | null>(null),
+    [filter, setFilter] = useState<Filter>('all'),
+    [measure, setMeasure] = useState<'steps' | 'evidence'>('steps')
+  const selected = selection ?? current
+  const active = activeSteps(p)
+  const rows = stages.map((s, i) => {
+    const entries = steps.filter((x) => x.stage === i && active.includes(x.id)),
+      total = entries.length,
+      done = entries.filter((x) => complete(p, x)).length
+    const latest = p.history.findLast((h) => h.stage === i),
+      pass = approved(p, i),
+      open = i === current && !pass
+    const status = pass
+      ? 'Onaylandı'
+      : latest?.stale
+        ? 'Yeniden incele'
+        : latest
+          ? effective(latest)
+          : open
+            ? 'Açık'
+            : 'Sırada'
+    return {
+      ...s,
+      i,
+      total,
+      done,
+      status,
+      pass,
+      open,
+      latest,
+      evidence: p.evidence.filter(
+        (e) => steps.find((x) => x.id === e.step)?.stage === i,
+      ).length,
+    }
+  })
+  const done = rows.reduce((n, r) => n + r.done, 0),
+    passed = rows.filter((r) => r.pass).length,
+    work = activeWork(p).length
+  const budget = p.answers['02']?.budget,
+    spent = p.answers['02']?.spent
+  const balance =
+    typeof budget === 'number' && typeof spent === 'number'
+      ? budget - spent
+      : null
+  const usage =
+    typeof budget === 'number' && budget > 0 && typeof spent === 'number'
+      ? Math.round((spent / budget) * 100)
+      : null
+  const row = rows[selected],
+    advice = recommend(p, selected),
+    gaps = openGaps(p, selected)
+  const max =
+    measure === 'steps'
+      ? Math.max(1, ...rows.map((r) => r.total))
+      : Math.max(1, ...rows.map((r) => r.evidence))
+  const filtered = rows.filter(
+    (r) => filter === 'all' || (filter === 'approved' ? r.pass : !r.pass),
+  )
+  const selectRow = (i: number) => setSelection(i)
+  const source = row.latest
   return (
-    <>
-      <div className="dashboard-hero atlas-cover">
-        <Relief />
-        <div className="atlas-cover-copy">
-          <div className="cover-kicker">
-            <i />
-            {approvedCount === 8 ? 'Son karar' : 'Açık karar'}
-            <span>{String(stage + 1).padStart(2, '0')} / 08</span>
+    <div className="council">
+      <section className="balance-summary" aria-label="Plan göstergeleri">
+        <div className="balance-metric">
+          <span>
+            <Wallet />
+            Kalan bütçe
+          </span>
+          <strong>{money(balance)}</strong>
+          <small>
+            {usage !== null
+              ? 'Bütçenin %' + usage + ' kadarı kullanıldı'
+              : 'Harcama sınırı bekleniyor'}
+          </small>
+          <div className="budget-scale" aria-hidden="true">
+            <i
+              style={{
+                width:
+                  usage === null
+                    ? '0%'
+                    : Math.max(0, Math.min(100, usage)) + '%',
+              }}
+            />
           </div>
-          <h2>{stages[stage].name}</h2>
-          <p>{stages[stage].question}</p>
-          <Button className="cover-action" onClick={() => openStage(stage)}>
-            Kararı incele <ArrowRight size={18} />
-          </Button>
         </div>
-      </div>
-      <section className="metric-band" aria-label="Plan göstergeleri">
-        {metrics.map(({ label, value, unit, icon: Icon, page }) => (
-          <button key={label} onClick={() => go(page)}>
-            <span>
-              <Icon size={17} />
-              {label}
-            </span>
-            <strong>
-              {value} <small>{unit}</small>
-            </strong>
-          </button>
-        ))}
+        <button className="book-metric" onClick={() => openStage(current)}>
+          <span>
+            <Flag />
+            Onaylı karar
+          </span>
+          <strong>
+            {passed}
+            <em>/ 8</em>
+          </strong>
+          <span className="mini-ticks" aria-hidden="true">
+            {rows.map((r) => (
+              <i key={r.i} className={r.pass ? 'filled' : ''} />
+            ))}
+          </span>
+        </button>
+        <button className="book-metric" onClick={() => go('evidence')}>
+          <span>
+            <Notebook />
+            Kanıt kaydı
+          </span>
+          <strong>{p.evidence.length}</strong>
+          <small>
+            Kanıt defteri <ArrowUpRight />
+          </small>
+        </button>
+        <button className="book-metric" onClick={() => go('work')}>
+          <span>
+            <ClipboardText />
+            Açık görev
+          </span>
+          <strong>{work}</strong>
+          <small>
+            Görevleri gör <ArrowUpRight />
+          </small>
+        </button>
       </section>
-      <div className="overview-columns">
-        <section className="panel decision-register">
-          <div className="surface-title">
-            <h2>Karar rotası</h2>
-            <span>{approvedCount} / 8 onay</span>
+      <div className="analysis-split">
+        <section className="decision-brief" aria-label="Seçili karar">
+          <div className="brief-meta">
+            <span>
+              <span className="signal-dot" />
+              {row.open ? 'Açık karar' : 'Seçili karar'}
+            </span>
+            <span>{String(selected + 1).padStart(2, '0')} / 08</span>
           </div>
-          <div
-            className="table-scroll"
-            role="region"
-            aria-label="Karar listesi"
-            tabIndex={0}
-          >
-            <table aria-label="Karar rotası">
-              <thead>
-                <tr>
-                  <th scope="col">Karar</th>
-                  <th scope="col">Adımlar</th>
-                  <th scope="col">Durum</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stages.map((s, i) => {
-                  const related = steps.filter(
-                      (x) => x.stage === i && active.includes(x.id),
-                    ),
-                    count = related.filter((x) => complete(p, x)).length,
-                    pass = approved(p, i),
-                    current = i === stage && !pass,
-                    last = p.history.findLast((h) => h.stage === i)
-                  return (
-                    <tr key={s.name} className={current ? 'row-current' : ''}>
-                      <th scope="row">
-                        <button onClick={() => openStage(i)}>
-                          <span className="row-index">
-                            {String(i + 1).padStart(2, '0')}
-                          </span>
-                          {s.name}
-                        </button>
-                      </th>
-                      <td>
-                        {count} / {related.length}
-                      </td>
-                      <td>
+          <h2>{row.name}</h2>
+          <p>{row.question}</p>
+          <div className="brief-verdict">
+            <span>
+              <HourglassMedium size={17} />
+              {row.pass ? 'Kayıtlı karar' : 'Öneri'}
+            </span>
+            <b>{row.pass ? row.status : advice.outcome}</b>
+          </div>
+          <small>{row.pass ? source?.reason : advice.reason}</small>
+          <div className="brief-trace">
+            {row.pass ? (
+              <span>
+                Karar sahibi <b>{source?.owner}</b>
+              </span>
+            ) : (
+              <>
+                <span>
+                  Açık alan <b>{gaps.length}</b>
+                </span>
+                <span>
+                  Bağlı kanıt <b>{row.evidence}</b>
+                </span>
+              </>
+            )}
+          </div>
+          <button className="brief-open" onClick={() => openStage(selected)}>
+            Kararı incele
+            <ArrowRight size={17} />
+          </button>
+        </section>
+        <section className="coverage-sheet" aria-label="Aşama analizi">
+          <div className="sheet-heading">
+            <div>
+              <span className="section-key">
+                <ChartBar size={18} />
+                Aşama analizi
+              </span>
+              <h2>{measure === 'steps' ? 'Adım kapsamı' : 'Kanıt dağılımı'}</h2>
+            </div>
+            <div
+              className="choice-switch"
+              role="group"
+              aria-label="Grafik ölçüsü"
+            >
+              <button
+                aria-label="Adım kapsamı"
+                aria-pressed={measure === 'steps'}
+                onClick={() => setMeasure('steps')}
+              >
+                Adımlar
+              </button>
+              <button
+                aria-label="Kanıt dağılımı"
+                aria-pressed={measure === 'evidence'}
+                onClick={() => setMeasure('evidence')}
+              >
+                Kanıtlar
+              </button>
+            </div>
+          </div>
+          <label className="plot-picker">
+            <span>Aşama seç</span>
+            <Select
+              aria-label="Grafikte aşama seç"
+              value={selected}
+              onChange={selectRow}
+              options={rows.map((r) => ({
+                value: r.i,
+                label: String(r.i + 1).padStart(2, '0') + '. ' + r.name,
+              }))}
+            />
+          </label>
+          <div className="coverage-plot">
+            <div className="plot-axis" aria-hidden="true">
+              <span>{max}</span>
+              <span>0</span>
+            </div>
+            <div className="plot-series">
+              {rows.map((r) => {
+                const amount = measure === 'steps' ? r.done : r.evidence,
+                  capacity = measure === 'steps' ? r.total : r.evidence
+                return (
+                  <button
+                    key={r.i}
+                    aria-pressed={selected === r.i}
+                    aria-label={
+                      r.i +
+                      1 +
+                      '. ' +
+                      r.name +
+                      ', ' +
+                      (measure === 'steps'
+                        ? r.done + ' / ' + r.total + ' adım'
+                        : amount + ' kanıt')
+                    }
+                    title={
+                      r.name +
+                      ' · ' +
+                      (measure === 'steps' ? r.done + ' / ' + r.total : amount)
+                    }
+                    onClick={() => selectRow(r.i)}
+                  >
+                    <span className="plot-lane">
+                      <span
+                        className="plot-column"
+                        style={{ height: (capacity / max) * 100 + '%' }}
+                      >
                         <span
-                          className={
-                            'status-text ' +
-                            (pass ? 'positive' : current ? 'live' : '')
-                          }
-                        >
-                          <i />
-                          {pass
-                            ? 'Onaylandı'
-                            : last?.stale
-                              ? 'İncelenecek'
-                              : last
-                                ? effective(last)
-                                : current
-                                  ? 'Açık'
-                                  : 'Sırada'}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                          style={{
+                            height:
+                              (capacity ? (amount / capacity) * 100 : 0) + '%',
+                          }}
+                        />
+                      </span>
+                    </span>
+                    <span className="axis-number">
+                      {String(r.i + 1).padStart(2, '0')}
+                    </span>
+                    <span aria-hidden="true" className="axis-label">
+                      {
+                        [
+                          'Yetki',
+                          'Sorun',
+                          'Erişim',
+                          'Taahhüt',
+                          'Kaynak',
+                          'Fayda',
+                          'Tekrar',
+                          'Gelecek',
+                        ][r.i]
+                      }
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div className="plot-readout" aria-live="polite" aria-atomic="true">
+            <span>
+              {String(selected + 1).padStart(2, '0')}. {row.name}
+            </span>
+            <b>
+              {measure === 'steps'
+                ? row.done + ' / ' + row.total + ' adım'
+                : row.evidence + ' kanıt'}
+            </b>
+          </div>
+          <div className="plot-caption">
+            <span>
+              <i />
+              {measure === 'steps' ? 'Tamamlanan' : 'Kanıt kaydı'}
+            </span>
+            <span className="key-selected">
+              <i />
+              Seçili karar
+            </span>
+            {measure === 'steps' && (
+              <span className="key-remaining">
+                <i />
+                Kalan adım
+              </span>
+            )}
+            <b>
+              {measure === 'steps'
+                ? done + ' / ' + active.length + ' adım'
+                : p.evidence.length + ' kayıt'}
+            </b>
           </div>
         </section>
-        <div className="aside-stack">
-          <section className="panel event-register">
-            <div className="surface-title">
-              <h2>Son kararlar</h2>
-              <ClockCounterClockwise size={21} />
-            </div>
-            {p.history.length ? (
-              <ol>
-                {p.history
-                  .slice(-3)
-                  .reverse()
-                  .map((h) => (
-                    <li key={h.id}>
-                      <span
-                        className={'event-mark ' + (h.stale ? 'archived' : '')}
-                      >
-                        <Flag size={17} />
-                      </span>
-                      <div>
-                        <b>{stages[h.stage].name}</b>
-                        <p>
-                          {effective(h)}
-                          {h.stale ? ' · İnceleme bekliyor' : ''}
-                        </p>
-                        <small>{dateLabel(h.at)}</small>
-                      </div>
-                    </li>
-                  ))}
-              </ol>
-            ) : (
-              <p className="empty-entry">Henüz karar kaydı yok.</p>
-            )}
-          </section>
-          <div className="desk-links">
-            <button onClick={() => go('reports')}>
-              <Files />
-              Plan raporları
-              <ArrowUpRight />
-            </button>
-            <button onClick={() => go('methods')}>
-              <BookOpenText />
-              Karar Kitabı
-              <ArrowUpRight />
-            </button>
+      </div>
+      <section className="decision-book">
+        <div className="book-toolbar">
+          <h2>Karar rotası</h2>
+          <div
+            className="choice-switch"
+            role="group"
+            aria-label="Karar süzgeci"
+          >
+            {(
+              [
+                { value: 'all', label: 'Tümü', name: 'Tüm kararları göster' },
+                {
+                  value: 'approved',
+                  label: 'Onaylı',
+                  name: 'Onaylananları göster',
+                },
+                {
+                  value: 'waiting',
+                  label: 'Onaysız',
+                  name: 'Onaylanmamış kararları göster',
+                },
+              ] as const
+            ).map((f) => (
+              <button
+                key={f.value}
+                aria-label={f.name}
+                aria-pressed={filter === f.value}
+                onClick={() => setFilter(f.value)}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
-    </>
+        <div
+          className="table-scroll"
+          role="region"
+          aria-label="Karar listesi"
+          tabIndex={0}
+        >
+          <table aria-label="Karar rotası">
+            <thead>
+              <tr>
+                <th scope="col">Karar</th>
+                <th scope="col">Durum</th>
+                <th scope="col">Tamamlanan adım</th>
+                <th scope="col">Kanıt</th>
+                <th scope="col">Son karar sahibi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r) => (
+                <tr key={r.i} data-current={r.open || undefined}>
+                  <th scope="row">
+                    <button onClick={() => openStage(r.i)}>
+                      <span>{String(r.i + 1).padStart(2, '0')}</span>
+                      {r.name}
+                      <ArrowUpRight size={15} />
+                    </button>
+                  </th>
+                  <td>
+                    <span
+                      className="ledger-status"
+                      data-tone={r.pass ? 'good' : r.open ? 'open' : 'idle'}
+                    >
+                      {r.pass ? <CheckCircle size={14} /> : <i />}
+                      {r.status}
+                    </span>
+                  </td>
+                  <td className="numeric">
+                    {r.done} / {r.total}
+                  </td>
+                  <td className="numeric">{r.evidence}</td>
+                  <td>{r.latest?.owner || 'Kayıt yok'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {!filtered.length && (
+          <p className="empty-entry">Bu seçimde karar yok.</p>
+        )}
+      </section>
+      <section className="decision-feed">
+        <div className="book-toolbar">
+          <h2>Son kararlar</h2>
+          <button onClick={() => go('reports')}>
+            <Files size={17} />
+            Raporları aç
+            <ArrowUpRight size={15} />
+          </button>
+        </div>
+        {p.history.length ? (
+          <ol>
+            {p.history
+              .slice(-3)
+              .reverse()
+              .map((h) => (
+                <li key={h.id}>
+                  <b>{stages[h.stage].name}</b>
+                  <span>
+                    {effective(h)}
+                    {h.stale ? ' · Yeniden incele' : ''}
+                  </span>
+                  <small>{dateLabel(h.at)}</small>
+                </li>
+              ))}
+          </ol>
+        ) : (
+          <p>Henüz karar kaydı yok.</p>
+        )}
+      </section>
+    </div>
   )
 }

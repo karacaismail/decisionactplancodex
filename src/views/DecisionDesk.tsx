@@ -20,7 +20,6 @@ import {
   type Plan,
 } from '../domain'
 import { stages, steps } from '../data/steps'
-import Relief from '../ui/Relief'
 import './office.css'
 export default function DecisionDesk({
   p,
@@ -29,7 +28,9 @@ export default function DecisionDesk({
   review,
   openGap,
   children,
+  indexPanel,
 }: {
+  indexPanel: ReactNode
   children: ReactNode
   p: Plan
   stage: number
@@ -65,33 +66,27 @@ export default function DecisionDesk({
     )
   return (
     <>
-      <section className="desk-banner">
-        <Relief />
-        <div className="desk-intro">
-          <div className="cover-kicker">
-            <i /> Karar dosyası{' '}
-            <span>{String(stage + 1).padStart(2, '0')} / 08</span>
-          </div>
+      <section className="case-mast">
+        <div className="case-id">
+          <Flag size={17} />
+          <span>Karar {String(stage + 1).padStart(2, '0')} / 08</span>
+        </div>
+        <div>
           <h2>{stages[stage].name}</h2>
           <p>{stages[stage].question}</p>
         </div>
-        <div className="desk-index">
-          <div className="index-dashes" aria-hidden="true">
-            {stages.map((s, i) => (
-              <i
-                key={s.name}
-                className={
-                  stage === i ? 'current' : approved(p, i) ? 'done' : ''
-                }
-              />
-            ))}
-          </div>
-          <button className="map-link" onClick={() => show('map')}>
-            <Path size={18} />
-            Karar haritasını aç <ArrowRight size={15} />
-          </button>
-        </div>
+        <button
+          className="case-map"
+          aria-label="Karar haritasını aç"
+          onClick={() => show('map')}
+        >
+          <Path size={18} />
+          <span className="long-map-label">Karar haritasını aç</span>
+          <span className="short-map-label">Harita</span>
+          <ArrowRight size={16} />
+        </button>
       </section>
+      {indexPanel}
       {children}
       <aside className="desk-side">
         <button className="limits-toggle" onClick={() => show('limits')}>

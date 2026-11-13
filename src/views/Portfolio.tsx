@@ -115,46 +115,80 @@ export default function Portfolio({
             ].map(([value, label]) => ({ value, label }))}
           />
         </div>
-        {shown.map(({ p, stage, advice }) => (
-          <div className="portfolio-row" key={p.id}>
-            <Checkbox
-              aria-label={p.name + ' karşılaştır'}
-              checked={ids.includes(p.id)}
-              disabled={ids.length >= 2 && !ids.includes(p.id)}
-              onChange={(e) =>
-                choose(
-                  e.target.checked
-                    ? [...ids, p.id]
-                    : ids.filter((v) => v !== p.id),
-                )
-              }
-            />
-            <div>
-              <h3>{p.name}</h3>
-              <small>
-                {p.example ? 'Örnek plan · ' : ''}
-                {stages[stage].name}
-              </small>
-            </div>
-            <span
-              className="office-chip"
-              data-tone={
-                advice.outcome === 'Durdurun'
-                  ? 'negative'
-                  : advice.outcome === 'Bekletin'
-                    ? 'warning'
-                    : advice.outcome === 'İlerleyin'
-                      ? 'positive'
-                      : undefined
-              }
-            >
-              {advice.outcome}
-            </span>
-            <Button onClick={() => open(p)}>
-              Planı aç <ArrowRight />
-            </Button>
-          </div>
-        ))}
+        <div
+          className="table-scroll"
+          tabIndex={0}
+          role="region"
+          aria-label="Plan kayıtları"
+        >
+          <table className="register-table" aria-label="Plan portföyü">
+            <thead>
+              <tr>
+                <th scope="col">Seç</th>
+                <th scope="col">Plan</th>
+                <th scope="col">Açık karar</th>
+                <th scope="col">Öneri</th>
+                <th scope="col" className="numeric">
+                  Açık görev
+                </th>
+                <th scope="col" className="numeric">
+                  Nakit açığı
+                </th>
+                <th scope="col">Dosya</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map(({ p, stage, advice, tasks }) => (
+                <tr key={p.id}>
+                  <td>
+                    {' '}
+                    <Checkbox
+                      aria-label={p.name + ' karşılaştır'}
+                      checked={ids.includes(p.id)}
+                      disabled={ids.length >= 2 && !ids.includes(p.id)}
+                      onChange={(e) =>
+                        choose(
+                          e.target.checked
+                            ? [...ids, p.id]
+                            : ids.filter((v) => v !== p.id),
+                        )
+                      }
+                    />
+                  </td>
+                  <th scope="row">
+                    {p.name}
+                    {p.example && <small>Örnek plan</small>}
+                  </th>
+                  <td>{stages[stage].name}</td>
+                  <td>
+                    {' '}
+                    <span
+                      className="office-chip"
+                      data-tone={
+                        advice.outcome === 'Durdurun'
+                          ? 'negative'
+                          : advice.outcome === 'Bekletin'
+                            ? 'warning'
+                            : advice.outcome === 'İlerleyin'
+                              ? 'positive'
+                              : undefined
+                      }
+                    >
+                      {advice.outcome}
+                    </span>
+                  </td>
+                  <td className="numeric">{tasks}</td>
+                  <td className="numeric">{money(cash(p).gap)}</td>
+                  <td>
+                    <Button type="link" onClick={() => open(p)}>
+                      Planı aç <ArrowRight />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {!shown.length && (
           <div className="office-empty">
             <FunnelSimple size={26} />

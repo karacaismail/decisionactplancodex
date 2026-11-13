@@ -32,30 +32,6 @@ export default function Reports({
   }
   return (
     <section className="panel reports">
-      <div className="report-version">
-        <Select
-          aria-label="Rapor sürümü"
-          value={selected}
-          onChange={select}
-          options={[
-            { value: '', label: 'Güncel taslak' },
-            ...(p.publications || []).map((r) => ({
-              value: r.id,
-              label: 'Sabit sürüm ' + r.revision,
-            })),
-          ]}
-        />
-        <Button
-          disabled={!saved || !!pair}
-          onClick={() => {
-            const next = freezeReports(p)
-            change(() => next)
-            select(next.publications!.at(-1)!.id)
-          }}
-        >
-          İki raporu sabitle
-        </Button>
-      </div>
       <Tabs
         activeKey={kind}
         onChange={(v) => setKind(v as typeof kind)}
@@ -64,27 +40,53 @@ export default function Reports({
           { key: 'action', label: 'Girişimci aksiyon planı' },
         ]}
       />
-      <div className="report-actions">
-        <Button
-          icon={<DownloadSimple />}
-          onClick={() =>
-            download(
-              p.name +
-                '-' +
-                kind +
-                '-v' +
-                (pair?.revision ?? p.revision) +
-                '.md',
-              content,
-              'text/markdown;charset=utf-8',
-            )
-          }
-        >
-          Markdown indir
-        </Button>
-        <Button icon={<Printer />} onClick={() => window.print()}>
-          Yazdır
-        </Button>
+      <div className="document-bar">
+        <div className="report-version">
+          <Select
+            aria-label="Rapor sürümü"
+            value={selected}
+            onChange={select}
+            options={[
+              { value: '', label: 'Güncel taslak' },
+              ...(p.publications || []).map((r) => ({
+                value: r.id,
+                label: 'Sabit sürüm ' + r.revision,
+              })),
+            ]}
+          />
+          <Button
+            disabled={!saved || !!pair}
+            onClick={() => {
+              const next = freezeReports(p)
+              change(() => next)
+              select(next.publications!.at(-1)!.id)
+            }}
+          >
+            İki raporu sabitle
+          </Button>
+        </div>
+        <div className="report-actions">
+          <Button
+            icon={<DownloadSimple />}
+            onClick={() =>
+              download(
+                p.name +
+                  '-' +
+                  kind +
+                  '-v' +
+                  (pair?.revision ?? p.revision) +
+                  '.md',
+                content,
+                'text/markdown;charset=utf-8',
+              )
+            }
+          >
+            Markdown indir
+          </Button>
+          <Button icon={<Printer />} onClick={() => window.print()}>
+            Yazdır
+          </Button>
+        </div>
       </div>
       {outline.length > 0 && (
         <div className="report-jump">
@@ -113,15 +115,41 @@ export default function Reports({
               <small>{lines[2]}</small>
             </div>
           </header>
-          {lines.slice(3).map((line, i) =>
-            line.startsWith('## ') ? (
-              <h3 tabIndex={-1} id={'doc-section-' + (i + 3)} key={i}>
-                {line.slice(3)}
-              </h3>
-            ) : (
-              <p key={i}>{line}</p>
-            ),
-          )}
+          {lines.slice(3, outline[0]?.index ?? lines.length).map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+          {outline.map((section, i) => {
+            const body = lines.slice(
+              section.index + 1,
+              outline[i + 1]?.index ?? lines.length,
+            )
+            return (
+              <section className="report-section" key={section.index}>
+                <h3 tabIndex={-1} id={'doc-section-' + section.index}>
+                  {section.text.slice(3)}
+                </h3>
+                {kind === 'executive' && section.text === '## Kaynaklar' ? (
+                  <dl className="report-balances">
+                    {body.map((line, j) => {
+                      const pivot = line.indexOf(': ')
+                      return pivot < 0 ? (
+                        <div key={j}>
+                          <dt>{line}</dt>
+                        </div>
+                      ) : (
+                        <div key={j}>
+                          <dt>{line.slice(0, pivot)}</dt>
+                          <dd>{line.slice(pivot + 2)}</dd>
+                        </div>
+                      )
+                    })}
+                  </dl>
+                ) : (
+                  body.map((line, j) => <p key={j}>{line}</p>)
+                )}
+              </section>
+            )
+          })}
         </article>
         <nav className="report-index" aria-label="Rapordaki bölümler">
           <h3>

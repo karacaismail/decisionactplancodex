@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Alert, Button, Input, Modal, Select } from 'antd'
-import { Plus, Notebook, Trash } from '@phosphor-icons/react'
+import { Plus, Trash } from '@phosphor-icons/react'
 import { steps } from '../data/steps'
 import { evidenceKinds, type EvidenceKind } from '../operations'
 import { dateLabel, now, type Plan } from '../domain'
@@ -14,9 +14,15 @@ export default function Evidence({
   change: (fn: (p: Plan) => Plan) => void
 }) {
   const [kind, setKind] = useState<EvidenceKind>('Gözlem'),
-    [filter, setFilter] = useState('Tümü')
+    [filter, setFilter] = useState('Tümü'),
+    [query, search] = useState('')
   const rows = p.evidence.filter(
-    (e) => filter === 'Tümü' || (e.kind || 'Sınıflandırılmadı') === filter,
+    (e) =>
+      (filter === 'Tümü' || (e.kind || 'Sınıflandırılmadı') === filter) &&
+      [e.title, e.source, e.step]
+        .join(' ')
+        .toLocaleLowerCase('tr')
+        .includes(query.trim().toLocaleLowerCase('tr')),
   )
   const [open, setOpen] = useState(false),
     [title, setTitle] = useState(''),
@@ -64,7 +70,13 @@ export default function Evidence({
           Kanıt ekle
         </Button>
       </div>
-      <div className="evidence-filter">
+      <div className="evidence-filter ops-filters">
+        <Input.Search
+          aria-label="Kanıt veya kaynak ara"
+          placeholder="Kanıt veya kaynak ara"
+          value={query}
+          onChange={(e) => search(e.target.value)}
+        />
         <Select
           aria-label="Kanıt türüne göre süz"
           value={filter}
@@ -76,34 +88,53 @@ export default function Evidence({
         />
       </div>
       {rows.length ? (
-        <div className="ledger">
-          {rows.toReversed().map((e) => (
-            <article key={e.id}>
-              <span className="icon-tile teal">
-                <Notebook size={20} />
-              </span>
-              <div>
-                <small>
-                  {e.kind || 'Sınıflandırılmadı'} · Adım {e.step} ·{' '}
-                  {dateLabel(e.at)}
-                </small>
-                <h3>{e.title}</h3>
-                <p>{e.source}</p>
-              </div>
-              <Button
-                disabled={readOnly}
-                type="text"
-                icon={<Trash />}
-                aria-label={e.title + ' kaydını sil'}
-                onClick={() => setRemove(e.id)}
-              />
-            </article>
-          ))}
+        <div
+          className="table-scroll"
+          role="region"
+          tabIndex={0}
+          aria-label="Kanıt kayıtları"
+        >
+          <table className="register-table" aria-label="Kanıt defteri">
+            <thead>
+              <tr>
+                <th scope="col">Gözlem</th>
+                <th scope="col">Kaynak</th>
+                <th scope="col">Kanıt türü</th>
+                <th scope="col">Plan adımı</th>
+                <th scope="col">Kayıt tarihi</th>
+                <th scope="col">İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.toReversed().map((e) => (
+                <tr key={e.id}>
+                  <th scope="row">
+                    <h3>{e.title}</h3>
+                  </th>
+                  <td>{e.source}</td>
+                  <td>{e.kind || 'Sınıflandırılmadı'}</td>
+                  <td>
+                    {e.step}. {steps.find((s) => s.id === e.step)?.title}
+                  </td>
+                  <td>{dateLabel(e.at)}</td>
+                  <td>
+                    <Button
+                      disabled={readOnly}
+                      type="text"
+                      icon={<Trash />}
+                      aria-label={e.title + ' kaydını sil'}
+                      onClick={() => setRemove(e.id)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <p>
           {p.evidence.length
-            ? 'Bu türde kayıt yok.'
+            ? 'Bu seçimde kayıt yok.'
             : 'Henüz gözlem kaydı yok.'}
         </p>
       )}

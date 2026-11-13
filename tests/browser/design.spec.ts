@@ -32,7 +32,7 @@ test('karar rotası veri tablosunda sekiz kararı gösterir', async ({ page }) =
   ).toBeVisible()
 })
 
-test('bölüm bul klavyeyle çalışır, yalnız uygun görsel yüklenir', async ({
+test('bölüm bul klavyeyle çalışır, pano yalnız gerekli kaynakları yükler', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 740 })
@@ -40,17 +40,14 @@ test('bölüm bul klavyeyle çalışır, yalnız uygun görsel yüklenir', async
   await expect(
     page.getByRole('button', { name: 'Kararı incele', exact: true }),
   ).toBeVisible()
-  await page
-    .locator('.atlas-relief img')
-    .evaluate(async (el: HTMLImageElement) => el.decode())
   const resources = await page.evaluate(() =>
     performance
       .getEntriesByType('resource')
       .map((r) => r.name)
       .join(' '),
   )
-  expect(resources).toContain('atlas-relief-small')
-  expect(resources).not.toContain('atlas-relief-wide')
+  expect(resources).toContain('SmallNav-')
+  expect(resources).not.toMatch(/WideRail-|atlas-relief|Insights-/)
   await page.setViewportSize({ width: 1440, height: 960 })
   await page.keyboard.press('Control+k')
   await page.getByRole('textbox', { name: 'Bölüm adı' }).fill('Rapor')
@@ -66,7 +63,7 @@ test('bölüm bul klavyeyle çalışır, yalnız uygun görsel yüklenir', async
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
   await expect(
     page.getByRole('button', { name: 'Yeni plan', exact: true }),
-  ).toHaveCSS('color', 'rgb(16, 45, 40)')
+  ).toHaveCSS('color', 'rgb(27, 32, 64)')
   await page
     .getByRole('navigation', { name: 'Rapordaki bölümler' })
     .getByRole('button', { name: 'Kaynaklar' })
@@ -76,6 +73,11 @@ test('bölüm bul klavyeyle çalışır, yalnız uygun görsel yüklenir', async
   ).toBeFocused()
   await page.emulateMedia({ media: 'print' })
   await expect(page.locator('.report-index')).not.toBeVisible()
+  await expect(page.locator('.report-balances')).toHaveCSS(
+    'background-color',
+    'rgb(255, 255, 255)',
+    { timeout: 1200 },
+  )
   await expect(page.locator('.report-body h2')).toHaveCSS(
     'color',
     'rgb(16, 28, 24)',
@@ -97,4 +99,45 @@ test('telefon formunun klavye sırası ve rapor içindekiler menüsü', async ({
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('Enter')
   await expect(page.locator('.report-body h3:focus')).toHaveCount(1)
+})
+
+test('karar panosunda kanıt dağılımı ve karar süzgeci aynı plana bağlıdır', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
+  await page.goto('/')
+  await page
+    .getByRole('button', { name: 'Kanıt dağılımı', exact: true })
+    .click({ timeout: 3500 })
+  await page
+    .getByRole('button', { name: /^4\. Talep ve taahhüt.*1 kanıt/ })
+    .click()
+  await expect(
+    page.getByRole('region', { name: 'Seçili karar' }),
+  ).toContainText('Talep ve taahhüt')
+  await page.getByRole('button', { name: 'Onaylananları göster' }).click()
+  await expect(
+    page.getByRole('table', { name: 'Karar rotası' }).getByRole('row'),
+  ).toHaveCount(5)
+})
+
+test('geniş ekranda adım dizini çalışır ve üst çubuk yüksek kontrastlıdır', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
+  await page.goto('/#editor')
+  const index = page.getByRole('navigation', { name: 'Kararın adımları' })
+  await expect(index).toBeVisible()
+  await index.getByRole('button', { name: /17. Risk ve önlem/ }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Risk ve önlem', exact: true }),
+  ).toBeFocused()
+  await page.setViewportSize({ width: 320, height: 740 })
+  await expect(index).not.toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'Plan adımı' })).toBeVisible()
+  await page.setViewportSize({ width: 1440, height: 960 })
+  await expect(page.locator('.topbar')).toHaveCSS(
+    'background-color',
+    'rgb(21, 26, 48)',
+  )
 })

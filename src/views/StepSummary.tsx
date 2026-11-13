@@ -77,10 +77,33 @@ export default function StepSummary({ p, id }: { p: Plan; id: string }) {
       </aside>
     )
   }
-  if (id === '16')
+  if (id === '16') {
+    const balance = number(a.balance),
+      due = number(a.due)
+    const max = Math.max(balance ?? 0, due ?? 0, 1)
     return (
-      <aside className="step-summary">
+      <aside className="step-summary cash-comparison">
         <h3>Ödeme günü hesabı</h3>
+        <dl className="cash-lines">
+          {[
+            { label: 'Kasadaki para', value: balance },
+            { label: 'Ödenecek tutar', value: due },
+          ].map((r) => (
+            <div key={r.label}>
+              <dt>{r.label}</dt>
+              <dd>
+                <span className="cash-track" aria-hidden="true">
+                  <i
+                    style={{
+                      width: (Math.max(0, r.value ?? 0) / max) * 100 + '%',
+                    }}
+                  />
+                </span>
+                <b>{money(r.value)}</b>
+              </dd>
+            </div>
+          ))}
+        </dl>
         <div className="live-stats">
           <Stat label="Nakit açığı" value={money(c.gap)} />
           {free ? (
@@ -99,6 +122,7 @@ export default function StepSummary({ p, id }: { p: Plan; id: string }) {
         </div>
       </aside>
     )
+  }
   if (id === '10' && a.impact && a.strength)
     return (
       <Alert

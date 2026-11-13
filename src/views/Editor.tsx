@@ -10,6 +10,9 @@ import {
 } from 'antd'
 import {
   ArrowLeft,
+  CheckCircle,
+  Circle,
+  Stamp,
   ArrowRight,
   BookOpenText,
   ListBullets,
@@ -18,6 +21,7 @@ import {
 import { steps, type Value } from '../data/steps'
 import {
   activeSteps,
+  complete,
   applyEdit,
   currentStage,
   outcomes,
@@ -70,6 +74,27 @@ export default function Editor({
     items = steps.filter((s) => s.stage === stage && route.includes(s.id)),
     step = items.find((x) => x.id === selected) ?? items[0],
     index = items.indexOf(step)
+  const fields = visibleFields(p, step)
+  const fieldGroups =
+    step.id === '16'
+      ? [
+          {
+            label: 'Ödeme günü',
+            fields: fields.filter(
+              (f) => f.key === 'balance' || f.key === 'due',
+            ),
+          },
+          {
+            label:
+              p.answers['00']?.mode === 'Ücretsiz hizmet'
+                ? 'Hizmet bütçesi'
+                : 'Sipariş hesabı',
+            fields: fields.filter(
+              (f) => f.key !== 'balance' && f.key !== 'due',
+            ),
+          },
+        ]
+      : [{ label: '', fields }]
   const advice = recommend(p, stage)
   function focusQuestion() {
     requestAnimationFrame(() => {
@@ -161,6 +186,52 @@ export default function Editor({
           setNotice('')
           error('')
         }}
+        indexPanel={
+          <nav className="case-index" aria-label="Kararın adımları">
+            <div className="case-index-head">
+              <ListBullets size={19} />
+              <h3>Adım dizini</h3>
+            </div>
+            <p>
+              {items.filter((s) => complete(p, s)).length} / {items.length} adım
+              tamamlandı
+            </p>
+            <ol>
+              {items.map((s, i) => (
+                <li key={s.id}>
+                  <button
+                    aria-label={
+                      s.id +
+                      '. ' +
+                      s.title +
+                      (complete(p, s) ? ', tamamlandı' : '')
+                    }
+                    aria-current={
+                      mode === 'step' && s.id === step.id ? 'step' : undefined
+                    }
+                    onClick={() => choose(i)}
+                  >
+                    <span>{s.id}</span>
+                    <b>{s.title}</b>
+                    {complete(p, s) ? (
+                      <CheckCircle size={16} />
+                    ) : (
+                      <Circle size={13} />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <button
+              className="index-decision"
+              aria-pressed={mode === 'decision'}
+              onClick={review}
+            >
+              <Stamp size={18} />
+              Karar kaydı
+            </button>
+          </nav>
+        }
         review={review}
         openGap={(id, key) => {
           const i = items.findIndex((s) => s.id === id)
@@ -290,19 +361,28 @@ export default function Editor({
                 )}
               </details>
               <ConfigProvider componentDisabled={readOnly}>
-                <fieldset disabled={readOnly} className="fields read-fields">
-                  {visibleFields(p, step).map((f) => (
-                    <div className="field" data-kind={f.kind} key={f.key}>
-                      <label htmlFor={'field-' + f.key}>{f.label}</label>
-                      <FieldInput
-                        f={f}
-                        v={p.answers[step.id]?.[f.key]}
-                        id={'field-' + f.key}
-                        onChange={(v) => edit(f.key, v)}
-                      />
-                    </div>
-                  ))}
-                </fieldset>
+                {fieldGroups.map((group) => (
+                  <fieldset
+                    key={group.label}
+                    disabled={readOnly}
+                    className={
+                      'fields read-fields' + (group.label ? ' money-group' : '')
+                    }
+                  >
+                    {group.label && <legend>{group.label}</legend>}
+                    {group.fields.map((f) => (
+                      <div className="field" data-kind={f.kind} key={f.key}>
+                        <label htmlFor={'field-' + f.key}>{f.label}</label>
+                        <FieldInput
+                          f={f}
+                          v={p.answers[step.id]?.[f.key]}
+                          id={'field-' + f.key}
+                          onChange={(v) => edit(f.key, v)}
+                        />
+                      </div>
+                    ))}
+                  </fieldset>
+                ))}
               </ConfigProvider>
               <StepSummary id={step.id} p={p} />
               <div className="editor-controls">

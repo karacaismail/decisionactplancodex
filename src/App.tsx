@@ -35,7 +35,7 @@ import { usePlans } from './usePlans'
 import { currentStage, validatePlan } from './domain'
 import { download } from './store'
 import { identity } from './ui/identity'
-import { navigation, type Page } from './ui/navigation'
+import { Brand, navigation, type Page } from './ui/navigation'
 import { launchPlan, type Launch } from './operations'
 import { teamRequest, roleLabel, type Session } from './team'
 import Dashboard from './views/Dashboard'
@@ -292,19 +292,16 @@ function Workspace({
         İçeriğe geç
       </a>
       <div className={wide ? 'shell wide' : 'shell narrow'}>
-        {wide && (
-          <Suspense fallback={null}>
-            <Wide page={page} go={go} scope={session?.workspace.name} />
-          </Suspense>
-        )}
         <div className="workspace">
           <header className="topbar">
             {wide ? (
-              <div className="breadcrumb">
-                <FolderOpen size={20} />
-                <span>{session?.workspace.name || 'Çalışma alanı'}</span>
-                <span aria-hidden="true">/</span>
-                <b>{title}</b>
+              <div className="masthead-identity">
+                <Brand />
+                <span className="masthead-divider" />
+                <span className="workspace-name">
+                  <FolderOpen size={17} />
+                  {session?.workspace.name || 'Kişisel alan'}
+                </span>
               </div>
             ) : (
               <Suspense fallback={null}>
@@ -378,11 +375,18 @@ function Workspace({
               />
             </div>
           </header>
+          {wide && (
+            <Suspense fallback={null}>
+              <Wide page={page} go={go} />
+            </Suspense>
+          )}
           <main data-page={page} id="main-content" tabIndex={-1}>
             <div className="page-heading">
               <div>
                 <h1>{title}</h1>
-                {page !== 'editor' && <p>{descriptions[page]}</p>}
+                {page !== 'editor' && page !== 'dashboard' && (
+                  <p>{descriptions[page]}</p>
+                )}
               </div>
               <Button
                 disabled={readOnly}
@@ -478,6 +482,7 @@ function Workspace({
                 <Suspense fallback={<p role="status">Bölüm açılıyor.</p>}>
                   {page === 'dashboard' ? (
                     <Dashboard
+                      key={p.id}
                       p={p}
                       go={go}
                       openStage={(i) => {

@@ -4,6 +4,7 @@ import 'dayjs/locale/tr'
 import dayjs from 'dayjs'
 import App from './App'
 import './styles.css'
+import './views/council.css'
 dayjs.locale('tr')
 const root = document.documentElement
 window.addEventListener(

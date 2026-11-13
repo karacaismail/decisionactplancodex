@@ -17,3 +17,5 @@
 - Ortak tema renklerini `src/ui/identity.ts` dosyasından alın. Ant Design ve grafikler aynı renkleri kullanır.
 - Telefonda form, kaynak panelinden önce gelir. Klavye sırası ekrandaki sırayı izler.
 - Görsel kabul için `tests/browser/design.spec.ts` dosyasını kullanın.
+- Pano gerçek aşama, kanıt ve bütçe kayıtlarını özetler. Grafikteki seçim ilgili karar dosyasını açar.
+- Geniş ekranda adım dizini, form ve kaynaklar ayrı sütunlarda yer alır. Telefonda form tek sütunda ilerler.
