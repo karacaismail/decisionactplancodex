@@ -10,6 +10,7 @@ export type ResearchId =
   | 'cross'
   | 'budget'
   | 'capacity'
+  | 'dependency'
   | 'group'
   | 'marketplace'
   | 'service'
@@ -245,6 +246,23 @@ export const researchMethods: Method[] = [
     ],
   },
   {
+    id: 'dependency',
+    title: 'Yolların ortak engelini incele',
+    book: 'Ortak bağımlılık',
+    steps: ['11', '12', '17'],
+    hint: 'Aynı izin, kişi veya kaynağa bağlı yolları birlikte seçin.',
+    fields: [
+      name('Ortak izin, kişi veya kaynak'),
+      ['routeIds', 'Bu kaynağa bağlı yollar', 'routes'],
+      ['consequence', 'Kaynak çekilirse ne olur?'],
+      ['unaffected', 'Bağımsız olduğu incelenen yollar', 'routes'],
+      ['independent', 'Bağımsızlığı gösteren kayıt', 'proof'],
+      proof,
+      owner,
+      day,
+    ],
+  },
+  {
     id: 'group',
     title: 'Ortak kaynağı ve yetkiyi incele',
     book: 'Birden fazla iş birimi',
@@ -258,6 +276,10 @@ export const researchMethods: Method[] = [
       ['customer', 'İşin müşteriye katkısı'],
       ['internal', 'Grup içinden gelen talep'],
       ['external', 'Bağımsız müşterilerin talebi'],
+      ['commonTerms', 'İki alım için aynı iş, miktar ve dönem'],
+      ['internalCost', 'Grup içinden alım bedeli ve para birimi'],
+      ['outsideCost', 'Bağımsız alım bedeli ve para birimi'],
+      ['outsideProof', 'Bağımsız teklifin kaynağı', 'proof'],
       proof,
     ],
   },

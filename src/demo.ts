@@ -1,4 +1,5 @@
-import { createPlan, now } from './domain.ts'
+import { offerBasis } from './proofReview.ts'
+import { createPlan, now, today } from './domain.ts'
 export function demonstration() {
   const p = createPlan('Atölye kapasite yatırımı')
   p.id = 'ornek-atolye'
@@ -118,7 +119,12 @@ export function demonstration() {
   }))
   p.foundation = {
     version: 1,
-    inputs: { expectedSignal: 'Yazılı taahhüt' },
+    inputs: {
+      expectedSignal: 'Yazılı taahhüt',
+      trialStart: today(),
+      trialPeriod: 'İş günü',
+      trialPlace: 'Atölye',
+    },
     decisions: [],
   }
   p.evidence = [
@@ -135,7 +141,17 @@ export function demonstration() {
           side: 'Müşteri' as const,
           participants: ['A', 'B', 'C', 'D', 'E'],
           stance: 'Destek' as const,
-          observed: now().slice(0, 10),
+          observed: today(),
+          customerGroup: 'Yerel üreticiler',
+          period: 'İş günü',
+          place: 'Atölye',
+          review: {
+            owner: 'Atölye yöneticisi',
+            rule: 'Teklif koşulları değişirse yeniden kontrol et.',
+            checked: today(),
+            observation: today(),
+            offer: offerBasis(p),
+          },
         }
       : {}),
     title,

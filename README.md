@@ -26,8 +26,10 @@ Tarayıcıda [Karar Atlası’nı açın](http://127.0.0.1:4177/). Geliştirme s
 3. Müşterinin attığı somut adımı kaynağıyla kaydedin. “Bağlı ölçütler” alanında “Müşteri davranışı” seçin.
 4. Riskleri yazdıktan sonra 17. adımda “Geçişi incele” düğmesini seçin.
 5. Karar sahibi öneriyi ve dayanakları inceler. Gerekçeyi yazıp geçiş kararını kaydeder.
-6. Koşullu kararda yalnız seçilen alan açılır. Süre dolunca yazım kapanır.
-7. “Raporlar” bölümünden “Temel belgesi” sekmesini açın. Belgeyi indirin veya yazdırın.
+6. Koşullu kararda karar sahibi izin verdiği konuyu seçer. “Yol seçimi ve gerekçesi” seçilirse ekip yolu ve gerekçesini kaydeder. Ardından karar sahibi 90 günlük plan için ayrı izin verebilir.
+7. “Raporlar” bölümünden “Strateje devir raporu” sekmesini açın. İlk soruyu ve kanıt bekleyen kararları inceleyin. Raporu indirin veya yazdırın.
+
+Talep kaydında müşteri grubunu, yeri ve dönemi belirtin. Fiyat değişirse yeni teklif için ayrı kaynak ekleyin. Beklenmeyen olayları “Kanıt defteri” bölümünde “Bunu beklemiyorduk” düğmesiyle kaydedin. Ciddi zarar işareti varsa açık gözlem geçişi durdurur.
 
 Ödeme genel bir geçiş şartı değildir. Örneğin yazılı ön sipariş müşteri davranışını gösterebilir.
 Karşı kanıt gelirse karar sahibi dayanağı yeniden inceler. Önceki belge geçmişte saklanır.

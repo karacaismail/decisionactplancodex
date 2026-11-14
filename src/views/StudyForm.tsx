@@ -550,6 +550,7 @@ export default function StudyForm({
               'barrier',
               'cross',
               'inherited',
+              'dependency',
               'group',
               'dissent',
             ].includes(method.id)

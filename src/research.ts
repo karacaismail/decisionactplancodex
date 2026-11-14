@@ -1,3 +1,4 @@
+import { reviewIssue } from './proofReview.ts'
 import { calendar, today, dateLabel, type Plan } from './domain.ts'
 import { routes, claimEvidence, sourceLine, routeLabels } from './dossier.ts'
 import type { FieldKind, MethodId, Study } from './preparationMethods.ts'
@@ -18,6 +19,10 @@ function amount(v: unknown) {
 export function eligible(p: Plan, id: MethodId) {
   const profile = p.answers['00'] ?? {}
   switch (id) {
+    case 'dependency':
+      return (
+        routes(p).length > 1 || books(p).some((s) => s.method === 'dependency')
+      )
     case 'group':
       return profile.groupLink === 'Evet'
     case 'budget':
@@ -57,6 +62,13 @@ export function suggestResearch(p: Plan, id: MethodId, step: string) {
     case 'fit':
     case 'cross':
       return routes(p).length > 1 && step === '11'
+    case 'dependency':
+      return (
+        routes(p).length > 1 &&
+        (a['11']?.risk === 'Yüksek' ||
+          !!a['12']?.resources ||
+          a['00']?.permit === 'Gerekiyor')
+      )
     case 'capacity':
       return !!a['12']?.resources
     case 'alternative': {
@@ -134,6 +146,7 @@ export const datedProof = (p: Plan, id: string, stance?: string) =>
     (e) =>
       e.id === id &&
       e.step <= '17' &&
+      ((!e.review && !e.criteria?.length) || !reviewIssue(p, e)) &&
       e.source.trim() &&
       calendar(e.observed) &&
       e.observed <= today() &&
@@ -637,6 +650,48 @@ function capacityResult(p: Plan, v: Study['values']) {
 export function researchResult(p: Plan, s: Study): string[] {
   const v = s.values
   switch (s.method) {
+    case 'dependency': {
+      const affected = selectedIds(v.routeIds)
+      const hasIndependentProof = !!datedProof(p, v.independent, 'Destek')
+      const independent = selectedIds(v.unaffected).filter(
+        (id) => !affected.includes(id),
+      )
+      const paths = routes(p)
+      const names = (ids: string[]) =>
+        ids
+          .map((id) => paths.find((r) => r.id === id)?.name || 'Kaldırılan yol')
+          .join(', ') || 'Belirlenmedi'
+      return [
+        'Ortak bağımlılık: ' + (v.name || 'İsim bekleniyor'),
+        'Etkilenen yollar: ' + names(affected),
+        'Beklenen sonuç: ' + (v.consequence || 'İncelenmedi'),
+        'Bağımsızlığı belgelenen yollar: ' +
+          names(hasIndependentProof ? independent : []),
+        'Bağımsızlığı henüz doğrulanmayan yollar: ' +
+          names(
+            paths
+              .filter(
+                (r) =>
+                  !affected.includes(r.id) &&
+                  !(hasIndependentProof && independent.includes(r.id)),
+              )
+              .map((r) => r.id),
+          ),
+      ]
+    }
+    case 'group':
+      return [
+        'Grubun katkısı: ' + (v.parent || 'Bilinmiyor'),
+        'Müşterinin yararı: ' + (v.customer || 'Bilinmiyor'),
+        'Bağımsız alım karşılaştırması: ' +
+          (v.commonTerms &&
+          v.internalCost &&
+          v.outsideCost &&
+          datedProof(p, v.outsideProof, 'Destek') &&
+          datedProof(p, v.proof, 'Destek')
+            ? [v.commonTerms, v.internalCost, v.outsideCost].join(', ')
+            : 'Aynı kapsamı, iki bedeli ve kaynaklarını doğrulayın.'),
+      ]
     case 'experiment': {
       const related = books(p).find(
         (r) => r.id === v.test && ['compare', 'learning'].includes(r.method),

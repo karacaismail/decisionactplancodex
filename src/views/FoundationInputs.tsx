@@ -27,6 +27,9 @@ const groups: Record<string, InputKey[]> = {
   '12': ['skills'],
   '16': ['costPeriod'],
   '15': [
+    'trialStart',
+    'trialPeriod',
+    'trialPlace',
     'expectedSignal',
     'price',
     'offered',
@@ -133,7 +136,13 @@ export default function FoundationInputs({
               ) : (
                 <Input
                   aria-label={inputLabels[k]}
-                  type={digits.includes(k) ? 'number' : 'text'}
+                  type={
+                    k === 'trialStart'
+                      ? 'date'
+                      : digits.includes(k)
+                        ? 'number'
+                        : 'text'
+                  }
                   min={digits.includes(k) ? 0 : undefined}
                   disabled={disabled}
                   value={data[k] || ''}

@@ -1,9 +1,12 @@
+import { proofIssue, surpriseLines } from './proofReview.ts'
 import { researchSummary, researchOptions, situation } from './research.ts'
 import { calendar, cash, dateLabel, money, today, type Plan } from './domain.ts'
 import {
   evaluate,
   access,
   scopeFields,
+  pendingCommitments,
+  demandParticipants,
   foundation,
   type Criterion,
   type DecisionForm,
@@ -373,6 +376,7 @@ function datedProof(p: Plan, id: string | undefined, day: string) {
   return p.evidence.find(
     (e) =>
       e.id === id &&
+      ((!e.review && !e.criteria?.length) || !proofIssue(p, e, day)) &&
       !!clean(e.source) &&
       calendar(e.observed) &&
       e.observed <= day,
@@ -592,15 +596,33 @@ export function dossierDoc(p: Plan, decision?: DecisionForm, at?: string) {
       '. Son gün: ' +
       dateLabel(String(a['02']?.end ?? '')) +
       '.',
+    ...pendingCommitments(p).map(
+      (a) =>
+        'Kanıt bekleyen taahhüt: ' +
+        (a.commitment || a.impact) +
+        '. İlgili yol: ' +
+        (paths.find((r) => r.id === a.route)?.name ||
+          'Yol eşleştirmesi gerekiyor') +
+        '. Soru: ' +
+        (questions.find((q) => q.id === a.question)?.question ||
+          (a.question === 'first'
+            ? firstQuestion
+            : 'Karar sorusunu yeniden eşleştirin.')) +
+        '. Beklenen bulgu: ' +
+        a.refute,
+    ),
     'Aday yollar: ' + (paths.map((r) => r.name).join(' veya ') || blank) + '.',
-    get('15', 'offered') +
+    'Kaydedilen sonuç: ' +
+      get('15', 'offered') +
       ' teklif, ' +
       get('15', 'committed') +
       ' taahhüt, ' +
       (free
         ? get('15', 'attended') + ' katılım'
         : get('15', 'paid') + ' ödeme') +
-      '. Sayılan davranış: ' +
+      '. Bu denemede kanıtla doğrulanan müşteri sayısı: ' +
+      demandParticipants(p).buyers.size +
+      '. Aranan davranış: ' +
       get('15', 'signal') +
       '.',
     'Seçimi değiştirecek bilinmeyen: ' +
@@ -659,6 +681,51 @@ export function dossierDoc(p: Plan, decision?: DecisionForm, at?: string) {
             'Geri dönüş bedeli: ' + display(q.reversal),
           ]),
         ]
+      : []),
+    ...(rec?.materialSupports?.length
+      ? [
+          'Eksik desteğin karara etkisi: ' +
+            rec.materialSupports.join(', ') +
+            '. ' +
+            rec.supportReason,
+        ]
+      : []),
+    '## Talep denemesinin kapsamı',
+    'Grup: ' +
+      get('08', 'target') +
+      '. Yer: ' +
+      display(g.trialPlace) +
+      '. Dönem: ' +
+      display(g.trialPeriod) +
+      '. Başlangıç: ' +
+      dateLabel(g.trialStart || '') +
+      '.',
+    ...p.evidence
+      .filter((e) => e.criteria?.length)
+      .map(
+        (e) =>
+          e.title +
+          ' (' +
+          e.source +
+          '). ' +
+          (proofIssue(p, e) || 'Geçerliliği incelendi.') +
+          (e.review
+            ? ' İnceleyen: ' +
+              e.review.owner +
+              '. Koşul: ' +
+              e.review.rule +
+              (e.review.replacement
+                ? '. Yeni kaynak: ' +
+                  (p.evidence.find((x) => x.id === e.review?.replacement)
+                    ?.title ?? 'Kaynak kaldırıldı') +
+                  '. Gerekçe: ' +
+                  e.review.reason
+                : '') +
+              (e.review.until ? ' Son gün: ' + dateLabel(e.review.until) : '')
+            : ''),
+      ),
+    ...(p.evidence.some((e) => e.surprise)
+      ? ['## Beklenmeyen gözlemler', ...surpriseLines(p)]
       : []),
     ...researchSummary(p),
     '## Amaç ve sınırlar',

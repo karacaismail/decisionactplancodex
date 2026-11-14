@@ -655,6 +655,7 @@ function Workspace({
                     )
                   ) : page === 'evidence' ? (
                     <Evidence
+                      actor={session?.user.name}
                       recordId={evidenceRecord}
                       clearRecord={() => setEvidenceRecord(undefined)}
                       initialCriterion={proofId}

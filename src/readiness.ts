@@ -1,6 +1,13 @@
 import {
+  proofIssue,
+  trialIssue,
+  validReview,
+  validSurprise,
+} from './proofReview.ts'
+import {
   compareReady,
   comparison,
+  routes,
   validComparison,
   type ComparisonRow,
   criticalClaimsOK,
@@ -32,6 +39,7 @@ export type Result = (typeof results)[number]
 export const scopeFields = [
   ['18.choice', 'Seçilen yol'],
   ['18.excluded', 'Vazgeçilen seçenek'],
+  ['18.route', 'Yol seçimi ve gerekçesi'],
   ['19.goals', '90 günlük iş sırası'],
 ] as const
 export const levels = [
@@ -158,6 +166,8 @@ export type EvidenceLink = {
   stance?: 'Destek' | 'Karşı bulgu'
 }
 export type DecisionForm = {
+  materialSupports?: Criterion[]
+  supportReason?: string
   outcome: Result
   owner: string
   reason: string
@@ -179,6 +189,9 @@ export type Transition = DecisionForm & {
   revoked?: boolean
 }
 export const inputLabels = {
+  trialPlace: 'Denemenin teklif yeri veya kanalı',
+  trialPeriod: 'Denemenin dönemi veya vardiyası',
+  trialStart: 'Denemenin başladığı gün',
   period: 'Talep ve satış hedefinin dönemi',
   capacityPeriod: 'Teslim kapasitesinin dönemi',
   costPeriod: 'Sabit giderin veya hizmet bütçesinin dönemi',
@@ -210,6 +223,10 @@ export const inputLabels = {
 } as const
 export type InputKey = keyof typeof inputLabels
 export type Assumption = {
+  route?: string
+  question?: string
+  commitment?: string
+  exposure?: 'Araştırma' | 'Taahhüt'
   id: string
   claim: string
   impact: string
@@ -270,9 +287,10 @@ export function bound(e: Evidence, id: Criterion, day = today()) {
     e.observed <= day
   )
 }
-export function usable(e: Evidence, id: Criterion, day = today()) {
+export function usable(p: Plan, e: Evidence, id: Criterion, day = today()) {
   return (
     bound(e, id, day) &&
+    !proofIssue(p, e, day) &&
     e.stance === 'Destek' &&
     !!e.kind &&
     (id === 'Z6'
@@ -280,19 +298,37 @@ export function usable(e: Evidence, id: Criterion, day = today()) {
       : !(['Z2', 'Z4', 'Z7', 'D1', 'D3'].includes(id) && e.kind === 'Görüş'))
   )
 }
-export function demandProof(p: Plan, day = today()) {
-  const t = p.answers['15'] ?? {},
-    g = foundation(p).inputs,
-    free = p.answers['00']?.mode === 'Ücretsiz hizmet',
-    paired = p.answers['00']?.buyer === 'İki taraflı pazar'
-  const notes = p.evidence.filter((e) => usable(e, 'Z6', day))
+function activeCounter(p: Plan, e: Evidence, id: Criterion, day: string) {
+  if (!bound(e, id, day) || e.stance !== 'Karşı bulgu') return false
+  if (
+    e.criteria?.includes('Z6') &&
+    (id === 'Z6' || id === 'D1') &&
+    e.customerGroup &&
+    e.period &&
+    e.place &&
+    trialIssue(p, e)
+  )
+    return false
+  const r = e.review
+  if (
+    r?.replacement &&
+    r.reason?.trim() &&
+    proofIssue(p, e, day) &&
+    p.evidence.some((x) => x.id === r.replacement && usable(p, x, id, day))
+  )
+    return false
+  return true
+}
+export function demandParticipants(p: Plan, day = today()) {
+  const g = foundation(p).inputs,
+    free = p.answers['00']?.mode === 'Ücretsiz hizmet'
+  const notes = p.evidence.filter((e) => usable(p, e, 'Z6', day))
   const expected: Record<string, EvidenceKind[]> = {
     Ödeme: ['Ödeme'],
     'Yazılı taahhüt': ['Yazılı taahhüt', 'Ödeme'],
     'Ayrılan kaynak': ['Kaynak ayrıldı', 'Ödeme'],
     'Fiilî kullanım': ['Teslim veya kullanım'],
   }
-  if (!free && !Object.hasOwn(expected, g.expectedSignal ?? '')) return false
   const participants = (side: EvidenceLink['side'], kinds?: EvidenceKind[]) =>
     new Set(
       notes
@@ -303,8 +339,22 @@ export function demandProof(p: Plan, day = today()) {
     )
   const buyers = participants(
     'Müşteri',
-    free ? ['Teslim veya kullanım'] : expected[g.expectedSignal ?? ''],
+    free
+      ? ['Teslim veya kullanım']
+      : Object.hasOwn(expected, g.expectedSignal ?? '')
+        ? expected[g.expectedSignal!]
+        : [],
   )
+  return {
+    buyers,
+    others: participants('Diğer taraf'),
+    matches: participants('Eşleşme'),
+  }
+}
+export function demandProof(p: Plan, day = today()) {
+  const t = p.answers['15'] ?? {},
+    paired = p.answers['00']?.buyer === 'İki taraflı pazar'
+  const { buyers, others, matches } = demandParticipants(p, day)
   const minimum = Number(t.threshold)
   if (
     !Number.isInteger(minimum) ||
@@ -312,12 +362,10 @@ export function demandProof(p: Plan, day = today()) {
     buyers.size < minimum ||
     buyers.size > Number(t.offered) ||
     buyers.size < Number(t.committed) ||
-    p.evidence.some((e) => bound(e, 'Z6', day) && e.stance === 'Karşı bulgu')
+    p.evidence.some((e) => activeCounter(p, e, 'Z6', day))
   )
     return false
   if (!paired) return true
-  const others = participants('Diğer taraf'),
-    matches = participants('Eşleşme')
   const linked = [...matches].filter((pair) => {
     const [buyer, seller, extra] = pair.split('/')
     return !extra && buyers.has(buyer) && others.has(seller)
@@ -379,7 +427,7 @@ function testSignals(p: Plan, day: string): Record<Criterion, boolean> {
         (e) =>
           e.id === g.assumptionEvidence &&
           e.stance === 'Destek' &&
-          bound(e, 'Z8', day),
+          usable(p, e, 'Z8', day),
       ))
   return {
     Z1:
@@ -420,7 +468,7 @@ function testSignals(p: Plan, day: string): Record<Criterion, boolean> {
       (g.expectedSignal !== 'Ödeme' ||
         (Number(t.paid) >= Number(t.threshold) &&
           p.evidence.some(
-            (e) => usable(e, 'Z6', day) && e.kind === 'Ödeme',
+            (e) => usable(p, e, 'Z6', day) && e.kind === 'Ödeme',
           ))) &&
       (!free || Number(t.attended) >= Number(t.threshold)) &&
       (!paired ||
@@ -428,7 +476,7 @@ function testSignals(p: Plan, day: string): Record<Criterion, boolean> {
           Number(t.matches) > 0 &&
           Number(t.matches) <=
             Math.min(Number(signal), Number(t.otherCount)))) &&
-      (!p.evidence.some((e) => usable(e, 'Z6', day) && e.kind === 'Ödeme') ||
+      (!p.evidence.some((e) => usable(p, e, 'Z6', day) && e.kind === 'Ödeme') ||
         Number(t.paid) > 0),
     Z7:
       enough(p, '16') &&
@@ -450,7 +498,7 @@ function testSignals(p: Plan, day: string): Record<Criterion, boolean> {
           a.status === 'Denenmedi' ||
           (a.status === 'Desteklendi' &&
             p.evidence.some(
-              (e) => e.id === a.evidence && usable(e, 'Z8', day),
+              (e) => e.id === a.evidence && usable(p, e, 'Z8', day),
             )),
       ),
     Z9:
@@ -458,6 +506,9 @@ function testSignals(p: Plan, day: string): Record<Criterion, boolean> {
       consent &&
       a['00']?.permit !== 'Bilinmiyor' &&
       b.danger === 'Yok' &&
+      !p.evidence.some(
+        (e) => e.surprise?.danger && e.surprise.status !== 'Kapandı',
+      ) &&
       b.stopHit === 'Hayır' &&
       b.clearance === 'Yetki var' &&
       (!active.includes('04') || enough(p, '04')) &&
@@ -497,11 +548,26 @@ function testSignals(p: Plan, day: string): Record<Criterion, boolean> {
       g.reviewVersion === reviewBasis(p),
   }
 }
+export function pendingCommitments(p: Plan) {
+  return (foundation(p).assumptions ?? []).filter(
+    (a) =>
+      a.critical &&
+      a.status === 'Denenmedi' &&
+      (a.exposure !== 'Araştırma' ||
+        !!a.commitment?.trim() ||
+        !routes(p).some((r) => r.id === a.route) ||
+        (a.question !== 'first' &&
+          !(foundation(p).brief?.openDecisions ?? []).some(
+            (q) => q.id === a.question && q.question.trim(),
+          ))),
+  )
+}
+
 export function evaluate(p: Plan, day = today()) {
   const signals = testSignals(p, day)
   const rows = criteria.map(([id, title, step, hint]) => {
     const evidence = p.evidence.filter((e) => bound(e, id, day)),
-      against = evidence.some((e) => e.stance === 'Karşı bulgu')
+      against = evidence.some((e) => activeCounter(p, e, id, day))
     return {
       id,
       title,
@@ -513,14 +579,18 @@ export function evaluate(p: Plan, day = today()) {
         signals[id] &&
         criticalClaimsOK(p, id, day) &&
         !against &&
-        evidence.some((e) => usable(e, id, day)),
+        evidence.some((e) => usable(p, e, id, day)),
     }
   })
   const ok = (id: Criterion) => rows.find((r) => r.id === id)!.ok
   const required = rows.slice(0, 9).filter((r) => r.ok).length,
     support = rows.slice(9).filter((r) => r.ok).length
   const outcome: Result =
-    required < 9 ? results[0] : support < 4 ? results[1] : results[2]
+    required < 9
+      ? results[0]
+      : support < 4 || pendingCommitments(p).length
+        ? results[1]
+        : results[2]
   const levelsMet = [
     ok('Z1'),
     ok('Z2'),
@@ -582,11 +652,28 @@ function signature(p: Plan, withBrief = true) {
           e.criteria,
           e.side,
           e.participants,
+          ...(e.place || e.review || e.surprise
+            ? [e.place, e.review, e.surprise]
+            : []),
           ...(e.customerGroup || e.period
             ? [e.customerGroup ?? '', e.period ?? '']
             : []),
         ])
         .sort(([a], [b]) => String(a).localeCompare(String(b), 'en')),
+      ...(p.evidence.some((e) => e.surprise)
+        ? [
+            p.evidence
+              .filter((e) => e.surprise)
+              .map((e) => [
+                e.id,
+                e.title,
+                e.source,
+                e.observed,
+                e.place,
+                e.surprise,
+              ]),
+          ]
+        : []),
       ...(withBrief
         ? [
             foundation(p).brief ?? {},
@@ -600,6 +687,9 @@ function signature(p: Plan, withBrief = true) {
                 e.stance,
                 e.kind,
                 e.step,
+                ...(e.place || e.review || e.surprise
+                  ? [e.place, e.review, e.surprise]
+                  : []),
                 ...(e.customerGroup || e.period
                   ? [e.customerGroup ?? '', e.period ?? '']
                   : []),
@@ -636,8 +726,21 @@ export function allows(p: Plan, step: string, key: string, day = today()) {
   if (step < '18') return true
   const { active, last } = access(p, day)
   if (!active || !last) return false
-  if (last.outcome === results[1]) return step + '.' + key === last.field
-  if (last.dossier && step >= '19' && !enough(p, '18')) return false
+  if (step >= '19' && !enough(p, '18')) return false
+  if (last.outcome === results[1]) {
+    if (last.field === '18.route')
+      return (
+        step === '18' &&
+        [
+          'choice',
+          'rationale',
+          'excluded',
+          'reconsider',
+          'newComparison',
+        ].includes(key)
+      )
+    return step + '.' + key === last.field
+  }
   if (last.dossier && step >= '20' && !enough(p, '19')) return false
   if (step > '20') {
     const gate = p.history.findLast((h) => h.stage === 4)
@@ -837,7 +940,19 @@ export function decide(p: Plan, input: DecisionForm) {
     results.indexOf(input.outcome) > results.indexOf(r.outcome)
   )
     throw Error('Dayanaklar bu kapsamı açmıyor.')
+  if (
+    input.outcome !== results[0] &&
+    input.materialSupports?.length &&
+    (!meaningful(input.supportReason) ||
+      input.materialSupports.some(
+        (id) =>
+          !r.rows.some((row) => row.id === id && id.startsWith('D') && !row.ok),
+      ))
+  )
+    throw Error('Eksik desteğin seçilecek yolu nasıl etkilediğini açıklayın.')
   if (input.outcome === results[1]) {
+    if (input.field === '19.goals' && !enough(p, '18'))
+      throw Error('Önce 18. adımda yolu ve gerekçesini kaydedin.')
     if (
       !scopeFields.some(([field]) => field === input.field) ||
       ![input.question, input.assignee, input.proof].every(meaningful) ||
@@ -866,7 +981,10 @@ export function decide(p: Plan, input: DecisionForm) {
     previous.signature === signature(p) &&
     previous.outcome === input.outcome &&
     previous.owner === input.owner &&
-    previous.reason === input.reason
+    previous.reason === input.reason &&
+    JSON.stringify(previous.materialSupports ?? []) ===
+      JSON.stringify(input.materialSupports ?? []) &&
+    previous.supportReason === input.supportReason
   )
     return p
   const at = now(),
@@ -923,6 +1041,13 @@ export function validFoundation(v: unknown) {
             meaningful(a.id) &&
             meaningful(a.claim) &&
             typeof a.critical === 'boolean' &&
+            ['route', 'question', 'commitment'].every(
+              (k) =>
+                a[k as keyof Assumption] === undefined ||
+                typeof a[k as keyof Assumption] === 'string',
+            ) &&
+            (a.exposure === undefined ||
+              ['Araştırma', 'Taahhüt'].includes(a.exposure)) &&
             ['impact', 'refute', 'evidence'].every(
               (k) => typeof a[k as keyof Assumption] === 'string',
             ) &&
@@ -935,6 +1060,13 @@ export function validFoundation(v: unknown) {
       (d) =>
         d &&
         results.includes(d.outcome) &&
+        (d.materialSupports === undefined ||
+          (Array.isArray(d.materialSupports) &&
+            d.materialSupports.every((id) =>
+              criteria.slice(9).some((c) => c[0] === id),
+            ))) &&
+        (d.supportReason === undefined ||
+          typeof d.supportReason === 'string') &&
         results.includes(d.recommendation) &&
         (d.dossier === undefined || meaningful(d.dossier)) &&
         (d.comparison === undefined || validComparison(d.comparison)) &&
@@ -968,6 +1100,9 @@ export function validLink(e: Record<string, unknown>) {
       ['Müşteri', 'Diğer taraf', 'Eşleşme'].includes(String(e.side))) &&
     (e.participants === undefined ||
       (Array.isArray(e.participants) && e.participants.every(meaningful))) &&
+    validSurprise(e) &&
+    validReview(e.review) &&
+    (e.place === undefined || typeof e.place === 'string') &&
     (e.customerGroup === undefined || typeof e.customerGroup === 'string') &&
     (e.period === undefined || typeof e.period === 'string') &&
     (e.observed === undefined || calendar(e.observed)) &&

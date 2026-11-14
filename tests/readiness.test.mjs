@@ -193,7 +193,13 @@ test('aynı alıcı iki kez sayılmaz. Ödeme ve iki taraflı deneme ayrı kanı
   Object.assign(p.answers['15'], { otherCount: 1, matches: 1 })
   assert.equal(valid(p), false)
   p.evidence.push(
-    { ...proof, id: 'ikinci', side: 'Diğer taraf', participants: ['S1'] },
+    {
+      ...proof,
+      id: 'ikinci',
+      customerGroup: 'Kahve sağlayanlar',
+      side: 'Diğer taraf',
+      participants: ['S1'],
+    },
     { ...proof, id: 'eşleşme', side: 'Eşleşme', participants: ['K1/S1'] },
   )
   assert.equal(valid(p), true)

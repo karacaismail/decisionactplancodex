@@ -1,3 +1,4 @@
+import { proofIssue } from '../proofReview'
 import { useState } from 'react'
 import { Alert, Button, Checkbox, Collapse, Input, Select, Tabs } from 'antd'
 import {
@@ -8,6 +9,7 @@ import {
   levels,
   results,
   scopeFields,
+  pendingCommitments,
   type Criterion,
   type DecisionForm,
 } from '../readiness'
@@ -66,6 +68,14 @@ export default function Foundation({
     permission = access(p),
     data = foundation(p),
     owner = String(p.answers['01']?.owner ?? '')
+  const [material, setMaterial] = useState<Criterion[]>([]),
+    [supportReason, setSupportReason] = useState('')
+  const missingSupports = r.rows.filter(
+    (row) => row.id.startsWith('D') && !row.ok,
+  )
+  const affected = material.filter((id) =>
+    missingSupports.some((row) => row.id === id),
+  )
   const [selected, select] = useState(''),
     [reason, setReason] = useState(''),
     [checked, check] = useState(false),
@@ -95,6 +105,8 @@ export default function Foundation({
         )
       const input: DecisionForm = {
         ...form,
+        materialSupports: affected,
+        supportReason: affected.length ? supportReason : undefined,
         owner,
         reason,
         reviewed: checked,
@@ -109,7 +121,10 @@ export default function Foundation({
     }
   }
   const counts =
-    r.required + ' / 9 zorunlu ölçüt. ' + r.support + ' / 6 destekleyici ölçüt.'
+    r.required +
+    ' / 9 zorunlu ölçüt. ' +
+    r.support +
+    ' / 6 destekleyici ölçüt. Tam geçiş için en az dört destek gerekir.'
   const rows = (mandatory: boolean) =>
     r.rows
       .filter((x) => x.id.startsWith(mandatory ? 'Z' : 'D'))
@@ -129,6 +144,7 @@ export default function Foundation({
                 <strong>{e.title}</strong>
                 <br />
                 {e.source} · {dateLabel(e.observed!)} · {e.stance}
+                {proofIssue(p, e) && <strong> {proofIssue(p, e)}</strong>}
               </p>
             ))}
             <div className="foundation-actions">
@@ -293,8 +309,47 @@ export default function Foundation({
                 onChange={(e) => setReason(e.target.value)}
               />
             </label>
+            {pendingCommitments(p).map((a) => (
+              <p key={a.id}>
+                Kanıt bekleyen taahhüt: {a.commitment || a.impact}. Araştırma
+                sorusu açık kalır.
+              </p>
+            ))}
+            {result !== results[0] && !!missingSupports.length && (
+              <label>
+                <span>
+                  Eksik desteklerden hangileri seçilecek yolu etkiliyor?
+                </span>
+                <Select
+                  mode="multiple"
+                  aria-label="Yolu etkileyen eksik destekler"
+                  value={affected}
+                  disabled={!canSign}
+                  options={missingSupports.map((row) => ({
+                    value: row.id,
+                    label: row.title,
+                  }))}
+                  onChange={setMaterial}
+                />
+              </label>
+            )}
+            {affected.length > 0 && result !== results[0] && (
+              <label>
+                <span>Bu eksikler seçilecek yolu nasıl etkiler?</span>
+                <Input.TextArea
+                  disabled={!canSign}
+                  value={supportReason}
+                  onChange={(e) => setSupportReason(e.target.value)}
+                />
+              </label>
+            )}
             {result === results[1] && (
               <>
+                <p>
+                  Koşullu izin yalnız açık soruyu kapsar. Yol kaydedilince 90
+                  günlük iş sırası için ayrı izin verilebilir. Seçimi tamamlamak
+                  için “Yol seçimi ve gerekçesi” konusunu kullanın.
+                </p>
                 <label>
                   <span>Planlanacak konu</span>
                   <Select
@@ -305,6 +360,13 @@ export default function Foundation({
                     options={scopeFields.map(([v, label]) => ({
                       value: v,
                       label,
+                      disabled:
+                        v === '19.goals' &&
+                        !complete(
+                          p,
+                          steps.find((s) => s.id === '18')!,
+                          false,
+                        ),
                     }))}
                   />
                 </label>

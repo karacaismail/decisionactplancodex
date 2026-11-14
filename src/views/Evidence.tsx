@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Alert, Button, Input, Modal, Select } from 'antd'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { Alert, Button, Checkbox, Input, Modal, Select } from 'antd'
 import { Plus, Trash } from '@phosphor-icons/react'
 import { steps } from '../data/steps'
 import { evidenceKinds, type EvidenceKind } from '../operations'
-import { criteria, type Criterion } from '../readiness'
+import { criteria, usable, type Criterion } from '../readiness'
 import {
   calendar,
   today,
@@ -12,11 +12,14 @@ import {
   type Evidence as Proof,
   type Plan,
 } from '../domain'
+import { offerBasis, proofIssue } from '../proofReview'
+const SurpriseEditor = lazy(() => import('./SurpriseEditor'))
 export default function Evidence({
   p,
   change,
   readOnly,
   initialCriterion,
+  actor,
   recordId,
   clearRecord,
   closeContext,
@@ -24,6 +27,7 @@ export default function Evidence({
   recordId?: string
   clearRecord: () => void
   initialCriterion?: Criterion
+  actor?: string
   closeContext: () => void
   readOnly: boolean
   p: Plan
@@ -61,7 +65,30 @@ export default function Evidence({
     [remove, setRemove] = useState('')
   const [side, setSide] = useState<NonNullable<Proof['side']>>('Müşteri'),
     [codes, setCodes] = useState('')
+  const [surpriseId, showSurprise] = useState<string | undefined>()
+  const [replacement, setReplacement] = useState(''),
+    [reason, setReason] = useState('')
+  const [place, setPlace] = useState(''),
+    [rule, setRule] = useState(''),
+    [reviewer, setReviewer] = useState(''),
+    [until, setUntil] = useState(''),
+    [renew, setRenew] = useState(false),
+    [changed, setChanged] = useState(false)
   function start(existing?: Proof) {
+    if (existing?.surprise) {
+      showSurprise(existing.id)
+      return
+    }
+    setPlace(existing?.place ?? '')
+    setReplacement(existing?.review?.replacement ?? '')
+    setReason(existing?.review?.reason ?? '')
+    setRule(existing?.review?.rule ?? '')
+    setReviewer(
+      actor ?? existing?.review?.owner ?? String(p.answers['01']?.owner ?? ''),
+    )
+    setUntil(existing?.review?.until ?? '')
+    setRenew(false)
+    setChanged(!!existing?.review?.changed)
     setSide(existing?.side ?? 'Müşteri')
     setCodes(existing?.participants?.join(', ') ?? '')
     setGroup(existing?.customerGroup ?? '')
@@ -101,6 +128,42 @@ export default function Evidence({
       error('Gözlemi, kaynağı ve geçerli olay tarihini yazın.')
       return
     }
+    const prior = p.evidence.find((e) => e.id === editing)?.review
+    if (prior?.until && prior.until < today() && until !== prior.until) {
+      error(
+        'Bu belgenin süresi doldu. Yeni belgeyi ayrı bir kanıt olarak ekleyin.',
+      )
+      return
+    }
+    if (replacement && !reason.trim()) {
+      error('Önceki karşı bulgunun neden geçerli olmadığını yazın.')
+      return
+    }
+    if (
+      links.length &&
+      !renew &&
+      (rule !== (prior?.rule ?? '') ||
+        replacement !== (prior?.replacement ?? '') ||
+        reason !== (prior?.reason ?? '') ||
+        until !== (prior?.until ?? '') ||
+        (prior && !actor && reviewer !== prior.owner))
+    ) {
+      error(
+        'Geçerlilik bilgisini değiştirdiniz. Kaynağı inceleyip onay kutusunu seçin.',
+      )
+      return
+    }
+    if (
+      renew &&
+      (!rule.trim() ||
+        !reviewer.trim() ||
+        !calendar(observed) ||
+        observed > today() ||
+        (until && (!calendar(until) || until < observed)))
+    ) {
+      error('İnceleyen kişiyi, geçerlilik koşulunu ve tarihleri kontrol edin.')
+      return
+    }
     change((prev) => {
       const old = prev.evidence.find((e) => e.id === editing)
       const item: Proof = {
@@ -111,6 +174,7 @@ export default function Evidence({
         title: title.trim(),
         source: source.trim(),
         criteria: links,
+        place: place.trim() || undefined,
         ...(customerGroup.trim()
           ? { customerGroup: customerGroup.trim() }
           : {}),
@@ -130,6 +194,41 @@ export default function Evidence({
           : {}),
         observed: observed || undefined,
         stance,
+      }
+      if (renew)
+        item.review = {
+          owner: reviewer.trim(),
+          rule: rule.trim(),
+          until: until || undefined,
+          checked: today(),
+          observation: observed,
+          changed,
+          ...(stance === 'Karşı bulgu' && replacement
+            ? { replacement, reason: reason.trim() }
+            : {}),
+          ...(old?.review?.offer !== undefined ||
+          links.some((id) => id === 'D1' || id === 'Z6')
+            ? { offer: old?.review?.offer ?? offerBasis(prev) }
+            : {}),
+        }
+      else if (old?.review) {
+        const proofChanged =
+          old.observed !== item.observed ||
+          old.source !== item.source ||
+          old.title !== item.title ||
+          old.place !== item.place ||
+          old.customerGroup !== item.customerGroup ||
+          old.period !== item.period ||
+          old.kind !== item.kind ||
+          old.side !== item.side ||
+          old.stance !== item.stance ||
+          JSON.stringify(old.participants) !==
+            JSON.stringify(item.participants) ||
+          JSON.stringify(old.criteria) !== JSON.stringify(item.criteria)
+        item.review = {
+          ...old.review,
+          changed: !!old.review.changed || changed || proofChanged,
+        }
       }
       return {
         ...prev,
@@ -159,6 +258,22 @@ export default function Evidence({
           Kanıt ekle
         </Button>
       </div>
+      <Button disabled={readOnly} onClick={() => showSurprise('')}>
+        Bunu beklemiyorduk
+      </Button>
+      {surpriseId !== undefined && (
+        <Suspense fallback={<p>Gözlem açılıyor.</p>}>
+          <SurpriseEditor
+            actor={actor}
+            key={surpriseId}
+            p={p}
+            item={p.evidence.find((e) => e.id === surpriseId)}
+            close={() => showSurprise(undefined)}
+            readOnly={readOnly}
+            change={change}
+          />
+        </Suspense>
+      )}
       {selectedRecord && (
         <Button onClick={() => setRecord(undefined)}>
           Tüm kanıtları göster
@@ -218,9 +333,17 @@ export default function Evidence({
                 <tr key={e.id}>
                   <th scope="row">
                     <h3>{e.title}</h3>
+                    {e.surprise && (
+                      <p>Beklenmeyen gözlem. {e.surprise.status}</p>
+                    )}
+                    {e.criteria?.length ? (
+                      <p>{proofIssue(p, e) || 'Geçerliliği incelendi.'}</p>
+                    ) : null}
                     {(e.customerGroup || e.period) && (
                       <p>
-                        {[e.customerGroup, e.period].filter(Boolean).join(', ')}
+                        {[e.customerGroup, e.period, e.place]
+                          .filter(Boolean)
+                          .join(', ')}
                       </p>
                     )}
                   </th>
@@ -243,7 +366,11 @@ export default function Evidence({
                       Kaydı incele
                     </Button>
                     <Button
-                      disabled={readOnly}
+                      disabled={
+                        readOnly ||
+                        (!!e.surprise?.danger &&
+                          e.surprise.status !== 'Kapandı')
+                      }
                       type="text"
                       icon={<Trash />}
                       aria-label={e.title + ' kaydını sil'}
@@ -322,6 +449,13 @@ export default function Evidence({
                 />
               </label>
               <label>
+                <span>Teklifin verildiği yer veya kanal</span>
+                <Input
+                  value={place}
+                  onChange={(e) => setPlace(e.target.value)}
+                />
+              </label>
+              <label>
                 <span>Gözlem dönemi</span>
                 <Input
                   value={period}
@@ -389,6 +523,100 @@ export default function Evidence({
               </label>
               <p>Her alıcıya bir kod verin. Aynı kod bir kez sayılır.</p>
             </>
+          )}
+          {links.includes('Z6') && (
+            <p>
+              15. adımdaki denemeyi kontrol edin. Grup:{' '}
+              {String(
+                p.answers['08']?.[
+                  side === 'Diğer taraf' ? 'other' : 'target'
+                ] || 'Eksik',
+              )}
+              . Yer: {p.foundation?.inputs.trialPlace || 'Eksik'}. Dönem:{' '}
+              {p.foundation?.inputs.trialPeriod || 'Eksik'}.
+            </p>
+          )}
+          {(links.length > 0 ||
+            (editing && p.evidence.find((e) => e.id === editing)?.review)) && (
+            <details className="step-help" open>
+              <summary>Kanıtın bugünkü geçerliliği</summary>
+              <div className="fields">
+                <label>
+                  <span>Koşulu doğrulayan kişi</span>
+                  <Input
+                    value={reviewer}
+                    readOnly={!!actor}
+                    onChange={(e) => {
+                      setReviewer(e.target.value)
+                    }}
+                  />
+                </label>
+                <label>
+                  <span>Hangi değişiklik bu kanıtı eskitebilir?</span>
+                  <Input
+                    value={rule}
+                    onChange={(e) => {
+                      setRule(e.target.value)
+                    }}
+                  />
+                </label>
+                <label>
+                  <span>Belgenin son geçerlilik günü varsa yazın</span>
+                  <Input
+                    type="date"
+                    value={until}
+                    onChange={(e) => {
+                      setUntil(e.target.value)
+                    }}
+                  />
+                </label>
+                <Checkbox
+                  checked={changed}
+                  onChange={(e) => setChanged(e.target.checked)}
+                >
+                  Kaynağın koşulu değişti
+                </Checkbox>
+                <Checkbox
+                  checked={renew}
+                  onChange={(e) => setRenew(e.target.checked)}
+                >
+                  Kaynağı bugün yeniden inceledim
+                </Checkbox>
+                {stance === 'Karşı bulgu' && (
+                  <>
+                    <label>
+                      <span>Önceki bulgunun yerini alan kaynak</span>
+                      <Select
+                        aria-label="Önceki bulgunun yerini alan kaynak"
+                        allowClear
+                        value={replacement || undefined}
+                        options={p.evidence
+                          .filter(
+                            (e) =>
+                              e.id !== editing &&
+                              links.some((id) => usable(p, e, id)),
+                          )
+                          .map((e) => ({ value: e.id, label: e.title }))}
+                        onChange={(v) => setReplacement(v ?? '')}
+                      />
+                    </label>
+                    {!!replacement && (
+                      <label>
+                        <span>Önceki bulgu neden geçerliliğini yitirdi?</span>
+                        <Input
+                          value={reason}
+                          onChange={(e) => setReason(e.target.value)}
+                        />
+                      </label>
+                    )}
+                  </>
+                )}
+                <p>
+                  Güncel karar için kaynağı doğrulayın. Eski gözlemi defterde
+                  saklayabilirsiniz.
+                </p>
+              </div>
+            </details>
           )}
           {err && <Alert type="error" title={err} />}
         </div>

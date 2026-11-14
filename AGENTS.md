@@ -43,3 +43,10 @@
 - Harcama izni tavan belirtir. Aynı ödemeye bağlanan tutarı bir kez düşürün.
 - Devir raporunu yetki ve ilk soruyla açın. Önceliği karar sahibi seçer.
 - Aktarım kurallarını `node --test tests/transfer.test.mjs` ile sınayın. Telefon akışlarını `npm run test:ui -- tests/browser/transfer.spec.ts` ile sınayın.
+
+- Talep kanıtını denemenin grubu, yeri, dönemi ve teklifiyle eşleştirin.
+- Eski kanıtı defterde tutun. Geçişte güncel kaynak incelemesini arayın.
+- Kritik varsayımı karara bağlayın. Yol seçiminden sonra iş sırasını açın.
+- Ortak bağımlılıkları ve beklenmeyen gözlemleri strateje devir raporuna ekleyin.
+- Bu kuralları `node --test tests/gaps.test.mjs` ile sınayın.
+- Telefon akışlarını `npm run test:ui -- tests/browser/gaps.spec.ts` ile sınayın.

@@ -1,3 +1,4 @@
+import { offerBasis } from './proofReview.ts'
 import { demonstration } from './demo.ts'
 import { createPlan, today, now, type Plan, type Evidence } from './domain.ts'
 import { foundation, type Criterion } from './readiness.ts'
@@ -39,7 +40,7 @@ export function cafeExample(): Plan {
       threshold: '10 dakika',
     },
     '08': {
-      target: 'Duraktan geçen yolcular',
+      target: 'Yolcular',
       access: 'Durakta yüz yüze teklif',
     },
     '09': {
@@ -161,6 +162,9 @@ export function cafeExample(): Plan {
       period: 'Gün',
       capacityPeriod: 'Gün',
       costPeriod: 'Gün',
+      trialPlace: 'Durak',
+      trialPeriod: 'Sabah',
+      trialStart: today(),
       expectedSignal: 'Yazılı taahhüt',
       people: '100',
       reach: '90',
@@ -190,10 +194,22 @@ export function cafeExample(): Plan {
     step,
     id: crypto.randomUUID(),
     criteria: ids,
+    review: {
+      owner: 'Ayşe',
+      rule: ids.includes('Z6')
+        ? 'Teklif fiyatı veya yeri değişirse.'
+        : 'Kaynak veya dayandığı koşul değişirse.',
+      checked: today(),
+      observation: today(),
+      ...(ids.some((id) => id === 'Z6' || id === 'D1')
+        ? { offer: offerBasis(p) }
+        : {}),
+    },
     ...(ids.includes('Z6')
       ? {
           customerGroup: 'Yolcular',
           period: 'Sabah',
+          place: 'Durak',
           side: 'Müşteri' as const,
           participants: ['K1', 'K2', 'K3', 'K4', 'K5', 'K6', 'K7'],
         }

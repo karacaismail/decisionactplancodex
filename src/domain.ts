@@ -51,6 +51,9 @@ export interface Decision extends DecisionInput {
   stale: boolean
 }
 export interface Evidence extends EvidenceLink {
+  review?: import('./proofReview.ts').ProofReview
+  surprise?: import('./proofReview.ts').Surprise
+  place?: string
   customerGroup?: string
   period?: string
   kind?: EvidenceKind
@@ -394,7 +397,13 @@ export function recommend(p: Plan, i: number): Advice {
   const last = p.history.findLast((h) => h.stage === i && !h.stale)
   if (last?.outcome === 'Durdurun')
     return { outcome: 'Durdurun', reason: last.reason, hard: true }
-  if (b.danger === 'Var' || b.stopHit === 'Evet')
+  if (
+    b.danger === 'Var' ||
+    p.evidence.some(
+      (e) => e.surprise?.danger && e.surprise.status !== 'Kapandı',
+    ) ||
+    b.stopHit === 'Evet'
+  )
     return {
       outcome: 'Durdurun',
       reason: 'Zarar tehlikesini ve durma koşulunu inceleyin.',

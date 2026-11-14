@@ -120,6 +120,12 @@ export default function Reports({
           )}
           {lines[5] && <p>{lines[5]}</p>}
           {lines[6] && <p>{lines[6]}</p>}
+          {lines
+            .slice(7, outline[1]?.index)
+            .filter((line) => line.startsWith('Kanıt bekleyen taahhüt:'))
+            .map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
           {lines[5]?.startsWith('Geçiş kararı bekleniyor') &&
             lines[7]?.startsWith('Karar sahibi:') && <p>{lines[7]}</p>}
         </div>

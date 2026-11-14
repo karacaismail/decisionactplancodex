@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Alert, Button, Checkbox, Input, Modal, Select } from 'antd'
 import { foundation, bound, type Assumption } from '../readiness'
+import { routes } from '../dossier'
+import { proofIssue } from '../proofReview'
 import type { Plan } from '../domain'
 
 const empty = (): Assumption => ({
@@ -34,6 +36,7 @@ export default function Assumptions({
       (e) =>
         e.id === draft.evidence &&
         bound(e, 'Z8') &&
+        !proofIssue(p, e) &&
         e.stance === (draft.status === 'Çürüdü' ? 'Karşı bulgu' : 'Destek'),
     )
     if (
@@ -45,6 +48,17 @@ export default function Assumptions({
       setError(
         'Tahmini, etkisini ve çürütecek bulguyu yazın. Sonucu bir kaynağa bağlayın.',
       )
+      return
+    }
+    if (
+      draft.critical &&
+      draft.status === 'Denenmedi' &&
+      (!draft.question ||
+        !draft.route ||
+        !draft.exposure ||
+        (draft.exposure === 'Taahhüt' && !draft.commitment?.trim()))
+    ) {
+      setError('Karar sorusunu, yolu ve bekleyen taahhüdü belirtin.')
       return
     }
     change((prev) => {
@@ -121,6 +135,78 @@ export default function Assumptions({
             >
               Bu tahmin geçiş kararını etkiler
             </Checkbox>
+            {draft.critical && (
+              <div className="fields">
+                <label>
+                  <span>İlgili karar sorusu</span>
+                  <Select
+                    aria-label="İlgili karar sorusu"
+                    value={draft.question || undefined}
+                    options={[
+                      {
+                        value: 'first',
+                        label:
+                          foundation(p).brief?.openDecisions?.[0]?.question ||
+                          foundation(p).brief?.question ||
+                          'İlk karar sorusu',
+                      },
+                      ...(foundation(p).brief?.openDecisions ?? [])
+                        .filter((q) => q.question.trim())
+                        .map((q) => ({ value: q.id, label: q.question })),
+                    ]}
+                    onChange={(question) => setDraft({ ...draft, question })}
+                  />
+                </label>
+                <label>
+                  <span>Varsayım hangi yolu etkiliyor?</span>
+                  <Select
+                    aria-label="Varsayım hangi yolu etkiliyor?"
+                    value={draft.route || undefined}
+                    options={routes(p).map((r) => ({
+                      value: r.id,
+                      label: r.name,
+                    }))}
+                    onChange={(route) => setDraft({ ...draft, route })}
+                  />
+                </label>
+                <label>
+                  <span>Hangi karar beklemeli?</span>
+                  <Select
+                    aria-label="Hangi karar beklemeli?"
+                    value={draft.exposure}
+                    options={[
+                      {
+                        value: 'Araştırma',
+                        label: 'Yalnız araştırmayı ilgilendiriyor',
+                      },
+                      {
+                        value: 'Taahhüt',
+                        label: 'Geri alınması zor bir karar var',
+                      },
+                    ]}
+                    onChange={(exposure) =>
+                      setDraft({
+                        ...draft,
+                        exposure,
+                        commitment:
+                          exposure === 'Araştırma' ? '' : draft.commitment,
+                      })
+                    }
+                  />
+                </label>
+                {draft.exposure === 'Taahhüt' && (
+                  <label>
+                    <span>Kanıt bekleyen taahhüt</span>
+                    <Input
+                      value={draft.commitment}
+                      onChange={(e) =>
+                        setDraft({ ...draft, commitment: e.target.value })
+                      }
+                    />
+                  </label>
+                )}
+              </div>
+            )}
             <Select
               aria-label="Varsayımın durumu"
               value={draft.status}
