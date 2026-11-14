@@ -6,6 +6,7 @@ import { BarChart } from 'echarts/charts'
 import { GridComponent } from 'echarts/components'
 import { SVGRenderer } from 'echarts/renderers'
 import { identity } from '../ui/identity'
+import { market } from '../readiness'
 import { cash, money, activeSteps, complete, type Plan } from '../domain'
 import { steps, stages } from '../data/steps'
 use([BarChart, GridComponent, SVGRenderer])
@@ -40,10 +41,13 @@ function charts(p: Plan): ChartData[] {
     {
       title: 'Talep ve teslim kapasitesi',
       unit: 'adet',
-      bars: data('09', [
-        ['demand', 'Ulaşılabilir talep', 'Talep'],
-        ['capacity', 'Teslim kapasitesi', 'Kapasite'],
-      ]),
+      bars: [
+        { label: 'Hesaplanan talep', short: 'Tahmin', value: market(p) },
+        ...data('09', [
+          ['demand', 'Ulaşılabilir talep', 'Talep'],
+          ['capacity', 'Teslim kapasitesi', 'Kapasite'],
+        ]),
+      ],
     },
     {
       title: 'Teklif ve gerçek davranış',
@@ -77,7 +81,9 @@ function charts(p: Plan): ChartData[] {
 export default function Insights({ p, dark }: { p: Plan; dark: boolean }) {
   const [tableOpen, setTableOpen] = useState(false)
   const canvas = useRef<HTMLDivElement>(null),
-    [index, setIndex] = useState(0)
+    [index, setIndex] = useState(() =>
+      location.hash === '#insights?pazar' ? 1 : 0,
+    )
   const datasets = useMemo(() => charts(p), [p]),
     chart = datasets[index],
     c = cash(p)

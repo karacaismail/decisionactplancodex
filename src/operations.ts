@@ -1,3 +1,4 @@
+import { access } from './readiness.ts'
 import { calendar, createPlan, effective, now, type Plan } from './domain.ts'
 export const states = ['Açık', 'Yürütülüyor', 'Bekliyor', 'Tamamlandı'] as const
 export type WorkState = (typeof states)[number]
@@ -53,6 +54,10 @@ export function workItems(p: Plan): Work[] {
   return [...saved, ...missing]
 }
 export function retired(p: Plan, w: Work) {
+  if (w.id.startsWith('gecis:')) {
+    const grant = access(p)
+    return !grant.active || w.id !== 'gecis:' + grant.last?.id
+  }
   if (!w.decision) return false
   const last = p.history.findLast((h) => h.stage === w.stage)
   return last?.id !== w.decision || last.stale
@@ -105,6 +110,8 @@ export function updateWork(
   }
 }
 export function workContext(p: Plan, w: Work) {
+  if (w.id.startsWith('gecis:'))
+    return retired(p, w) ? 'Geçmiş geçiş kararı' : 'Koşullu geçiş kararı'
   const h = p.history.find((d) => d.id === w.decision)
   return h
     ? retired(p, w)

@@ -115,6 +115,13 @@ test('karar panosunda kanıt dağılımı ve karar süzgeci aynı plana bağlıd
   await expect(
     page.getByRole('region', { name: 'Seçili karar' }),
   ).toContainText('Talep ve taahhüt')
+  await page
+    .getByRole('button', { name: 'Karara git: Talep ve taahhüt' })
+    .click({ timeout: 1500 })
+  await expect(
+    page.getByRole('heading', { name: 'Talep ve taahhüt', exact: true }),
+  ).toBeVisible()
+  await page.goto('/')
   await page.getByRole('button', { name: 'Onaylananları göster' }).click()
   await expect(
     page.getByRole('table', { name: 'Karar rotası' }).getByRole('row'),
@@ -140,4 +147,38 @@ test('geniş ekranda adım dizini çalışır ve üst çubuk yüksek kontrastlı
     'background-color',
     'rgb(21, 26, 48)',
   )
+})
+
+test('telefonda güncel karar özeti göstergelerden önce gelir ve planın ilerlemesini gösterir', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 640 })
+  await page.goto('/')
+  const decision = page.getByRole('region', { name: 'Seçili karar' })
+  const action = decision.getByRole('button', { name: 'Kararı incele' })
+  await expect(action).toBeVisible()
+  const box = await action.boundingBox()
+  const metrics = await page
+    .getByRole('region', { name: 'Plan göstergeleri' })
+    .boundingBox()
+  expect(box!.y + box!.height).toBeLessThan(metrics!.y)
+  expect(box!.y + box!.height).toBeLessThan(640)
+  await expect(
+    decision.getByRole('progressbar', { name: 'Tamamlanan plan adımları' }),
+  ).toHaveAttribute('aria-valuenow', '16')
+  await action.click()
+  await expect(
+    page.getByRole('heading', { name: 'Para ve iş planı', exact: true }),
+  ).toBeVisible()
+})
+
+test('karar dosyası ilk eksik soruya götürür', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 })
+  await page.goto('/#editor')
+  await page
+    .getByRole('button', { name: 'İlk eksik adımı aç' })
+    .click({ timeout: 2500 })
+  await expect(
+    page.getByRole('heading', { name: 'Risk ve önlem', exact: true }),
+  ).toBeFocused()
 })

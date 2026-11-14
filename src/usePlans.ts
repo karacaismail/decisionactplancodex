@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { invalidate } from './readiness'
 import { readPlans, savePlan } from './store'
 import { demonstration } from './demo'
 import type { Plan } from './domain'
@@ -16,6 +17,7 @@ export function usePlans(session: Session | null) {
   const [loadError, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [failures, setFailures] = useState<Record<string, string>>({})
+  const confirmed = useRef(new Map<string, string | undefined>())
   const data = useRef(new Map<string, Plan>()),
     pending = useRef(new Set<string>()),
     running = useRef(false),
@@ -45,8 +47,10 @@ export function usePlans(session: Session | null) {
         !blocked.current.has(p.id) &&
         current === before.get(p.id) &&
         (!current || p.revision >= current.revision)
-      )
+      ) {
         data.current.set(p.id, p)
+        confirmed.current.set(p.id, p.foundation?.decisions.at(-1)?.id)
+      }
     }
     let last = ''
     try {
@@ -97,6 +101,7 @@ export function usePlans(session: Session | null) {
         try {
           const saved = await persist(snapshot),
             latest = data.current.get(id)!
+          confirmed.current.set(id, saved.foundation?.decisions.at(-1)?.id)
           if (latest === snapshot) {
             data.current.set(id, saved)
             pending.current.delete(id)
@@ -127,6 +132,7 @@ export function usePlans(session: Session | null) {
       throw Error(
         'Bu planın kaydedilmiş sürümü bulunamadı. JSON kopyanızı indirin.',
       )
+    confirmed.current.set(selected, saved.foundation?.decisions.at(-1)?.id)
     data.current.set(selected, saved)
     setGeneration((n) => n + 1)
     pending.current.delete(selected)
@@ -154,11 +160,12 @@ export function usePlans(session: Session | null) {
     const p = data.current.get(selected)
     if (p) {
       const next = fn(p)
-      if (next !== p) write(next)
+      if (next !== p) write(invalidate(p, next))
     }
   }
   return {
     plans,
+    confirmedTransition: confirmed.current.get(selected),
     refresh: load,
     plan: plans.find((p) => p.id === selected),
     select,

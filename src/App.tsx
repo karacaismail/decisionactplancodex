@@ -35,10 +35,13 @@ import { usePlans } from './usePlans'
 import { currentStage, validatePlan } from './domain'
 import { download } from './store'
 import { identity } from './ui/identity'
-import { Brand, navigation, type Page } from './ui/navigation'
+import { navigation, type Page } from './ui/navigation'
 import { launchPlan, type Launch } from './operations'
 import { teamRequest, roleLabel, type Session } from './team'
+import { steps } from './data/steps'
+import type { Criterion } from './readiness'
 import Dashboard from './views/Dashboard'
+const Foundation = lazy(() => import('./views/Foundation'))
 const Team = lazy(() => import('./views/Team')),
   Portfolio = lazy(() => import('./views/Portfolio')),
   Work = lazy(() => import('./views/Work'))
@@ -55,6 +58,8 @@ const subscribe = (cb: () => void) => {
   return () => width.removeEventListener('change', cb)
 }
 const descriptions: Record<Page, string> = {
+  gecis:
+    '17. adımdan sonra dayanakları inceleyin. Stratejiye geçiş kararını kaydedin.',
   team: 'Üyeleri, yetkileri ve kurum kayıtlarını yönetin.',
   work: 'Karardan doğan işleri sorumlusu ve kapanış kanıtıyla izleyin.',
   portfolio:
@@ -67,7 +72,8 @@ const descriptions: Record<Page, string> = {
   methods: 'Kararınızı destekleyen 128 yöntemi keşfedin.',
 }
 const fromHash = (): Page =>
-  navigation.find((n) => n.id === location.hash.slice(1))?.id ?? 'dashboard'
+  navigation.find((n) => n.id === location.hash.slice(1).split('?')[0])?.id ??
+  'dashboard'
 function initialDark() {
   try {
     return localStorage.getItem('atlas-theme') === 'dark'
@@ -135,6 +141,20 @@ function Workspace({
     [error, setError] = useState(''),
     [nameError, setNameError] = useState(''),
     [replacing, setReplacing] = useState(false)
+  const [proofId, setProofId] = useState<Criterion>()
+  const [foundationReport, setFoundationReport] = useState<string | undefined>()
+  const [, clockTick] = useState(0)
+  useEffect(() => {
+    const refresh = () => clockTick((t) => t + 1)
+    const id = window.setInterval(refresh, 15000)
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      window.clearInterval(id)
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refresh)
+    }
+  }, [])
   const wide = useSyncExternalStore(subscribe, () => width.matches)
   useEffect(() => {
     const cb = () => setPage(fromHash())
@@ -180,6 +200,15 @@ function Workspace({
     location.hash = v
     setPage(v)
   }, [])
+  function visitStep(id: string) {
+    const step = steps.find((s) => s.id === id)
+    if (!step || !p) return
+    try {
+      localStorage.setItem('atlas-step-' + p.id + '-' + step.stage, id)
+    } catch {}
+    visitStage(step.stage)
+    go('editor')
+  }
   const exportPlan = () => {
     if (p)
       download(
@@ -197,6 +226,17 @@ function Workspace({
         throw Error('Bu dosya geçerli bir Karar Atlası planı içermiyor.')
       const copy = {
         ...v,
+        ...(v.foundation
+          ? {
+              foundation: {
+                ...v.foundation,
+                decisions: v.foundation.decisions.map((d) => ({
+                  ...d,
+                  revoked: true,
+                })),
+              },
+            }
+          : {}),
         id: crypto.randomUUID(),
         revision: 0,
         name: v.name + ' (kopya)',
@@ -293,11 +333,14 @@ function Workspace({
       </a>
       <div className={wide ? 'shell wide' : 'shell narrow'}>
         <div className="workspace">
+          {wide && (
+            <Suspense fallback={null}>
+              <Wide page={page} go={go} />
+            </Suspense>
+          )}
           <header className="topbar">
             {wide ? (
               <div className="masthead-identity">
-                <Brand />
-                <span className="masthead-divider" />
                 <span className="workspace-name">
                   <FolderOpen size={17} />
                   {session?.workspace.name || 'Kişisel alan'}
@@ -375,15 +418,13 @@ function Workspace({
               />
             </div>
           </header>
-          {wide && (
-            <Suspense fallback={null}>
-              <Wide page={page} go={go} />
-            </Suspense>
-          )}
           <main data-page={page} id="main-content" tabIndex={-1}>
             <div className="page-heading">
               <div>
-                <h1>{title}</h1>
+                {page === 'dashboard' && p && (
+                  <span className="heading-context">{title}</span>
+                )}
+                <h1>{page === 'dashboard' && p ? p.name : title}</h1>
                 {page !== 'editor' && page !== 'dashboard' && (
                   <p>{descriptions[page]}</p>
                 )}
@@ -457,6 +498,16 @@ function Workspace({
                     <FolderOpen size={18} />
                   </span>
                   <Select
+                    labelRender={
+                      page === 'dashboard'
+                        ? ({ label }) => (
+                            <span>
+                              Plan seç
+                              <span className="visually-hidden">: {label}</span>
+                            </span>
+                          )
+                        : undefined
+                    }
                     aria-label="Çalışılan plan"
                     className="plan-picker"
                     variant="borderless"
@@ -482,6 +533,16 @@ function Workspace({
                 <Suspense fallback={<p role="status">Bölüm açılıyor.</p>}>
                   {page === 'dashboard' ? (
                     <Dashboard
+                      visit={visitStep}
+                      confirmed={
+                        !!p.foundation?.decisions.length &&
+                        p.foundation.decisions.at(-1)?.id ===
+                          store.confirmedTransition
+                      }
+                      proof={(id) => {
+                        setProofId(id)
+                        go('evidence')
+                      }}
                       key={p.id}
                       p={p}
                       go={go}
@@ -503,6 +564,9 @@ function Workspace({
                     />
                   ) : page === 'editor' ? (
                     <Editor
+                      actor={session?.user.name}
+                      openTransition={() => go('gecis')}
+                      savedTransition={store.confirmedTransition}
                       key={p.id + '-' + store.generation}
                       p={p}
                       change={store.change}
@@ -510,8 +574,47 @@ function Workspace({
                       stage={stage}
                       setStage={visitStage}
                     />
+                  ) : page === 'gecis' ? (
+                    <Foundation
+                      key={p.id}
+                      p={p}
+                      change={store.change}
+                      readOnly={!!readOnly}
+                      actor={session?.user.name}
+                      saved={
+                        store.status === 'Kaydedildi' &&
+                        !store.hasDraft &&
+                        !store.error
+                      }
+                      visit={visitStep}
+                      reports={(id) => {
+                        setFoundationReport(id ?? '')
+                        go('reports')
+                      }}
+                      proof={(id) => {
+                        setProofId(id)
+                        go('evidence')
+                      }}
+                      example={async () => {
+                        const existing = store.plans.find(
+                          (item) =>
+                            item.example &&
+                            item.name === 'Ayşe’nin mahalle kafesi',
+                        )
+                        if (existing) {
+                          store.select(existing.id)
+                          return
+                        }
+                        const { cafeExample } = await import('./cafe')
+                        const sample = cafeExample()
+                        store.write(sample)
+                        store.select(sample.id)
+                      }}
+                    />
                   ) : page === 'evidence' ? (
                     <Evidence
+                      initialCriterion={proofId}
+                      closeContext={() => setProofId(undefined)}
                       readOnly={!!readOnly}
                       key={p.id}
                       p={p}
@@ -519,6 +622,8 @@ function Workspace({
                     />
                   ) : page === 'reports' ? (
                     <Reports
+                      initialFoundation={foundationReport}
+                      clearInitial={() => setFoundationReport(undefined)}
                       key={p.id}
                       p={p}
                       change={store.change}

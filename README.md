@@ -18,10 +18,15 @@ Tarayıcıda [Karar Atlası’nı açın](http://127.0.0.1:4177/). Geliştirme s
 
 1. Planınıza ad verin. İşi ve hizmetin ücret durumunu seçin.
 2. Açılan adımlara yanıt verin. Gözlemin kaynağını “Kanıt defteri” bölümüne yazın.
-3. “Kararı kaydet” bölümünde öneriyi inceleyin. Karar sahibini ve gerekçeyi yazın.
-4. “Raporlar” bölümünde yönetici raporunu veya girişimci aksiyon planını açın.
-5. “İki raporu sabitle” düğmesi o sürümün iki belgesini saklar.
-6. Raporu Markdown olarak indirin veya yazdırın. Tüm planı “Dosya işlemleri” menüsünden JSON olarak indirin.
+3. Müşterinin attığı somut adımı kaynağıyla kaydedin. “Bağlı ölçütler” alanında “Müşteri davranışı” seçin.
+4. Riskleri yazdıktan sonra 17. adımda “Geçişi incele” düğmesini seçin.
+5. Karar sahibi öneriyi ve dayanakları inceler. Gerekçeyi yazıp geçiş kararını kaydeder.
+6. Koşullu kararda yalnız seçilen alan açılır. Süre dolunca yazım kapanır.
+7. “Raporlar” bölümünden “Temel belgesi” sekmesini açın. Belgeyi indirin veya yazdırın.
+
+Ödeme genel bir geçiş şartı değildir. Örneğin yazılı ön sipariş müşteri davranışını gösterebilir.
+Karşı kanıt gelirse karar sahibi dayanağı yeniden inceler. Önceki belge geçmişte saklanır.
+“Kafe örneğini aç” düğmesiyle koşullu geçişi deneyebilirsiniz.
 
 Kişisel alanda tarayıcı planları kendi veritabanında saklar. Adres, port veya tarayıcı profili değişirse farklı bir kayıt alanı açılır. JSON dosyasını içe aktardığınızda yeni bir kopya oluşur. Başka bir sekme daha yeni kayıt oluşturmuşsa uygulama farkı bildirir. Yerel kopyanızı indirdikten sonra kayıtlı sürümü açabilirsiniz.
 

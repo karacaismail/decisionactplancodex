@@ -24,6 +24,7 @@ import {
   recommend,
   type Plan,
 } from '../domain'
+import { access, evaluate, levels } from '../readiness'
 import { activeWork } from '../operations'
 import { steps, stages } from '../data/steps'
 import type { Page } from '../ui/navigation'
@@ -33,11 +34,19 @@ export default function Dashboard({
   p,
   go,
   openStage,
+  visit,
+  proof,
+  confirmed,
 }: {
+  confirmed: boolean
+  visit: (id: string) => void
+  proof: (id: import('../readiness').Criterion) => void
   p: Plan
   go: (v: Page) => void
   openStage: (n: number) => void
 }) {
+  const prep = evaluate(p),
+    permission = access(p)
   const current = currentStage(p)
   const [selection, setSelection] = useState<number | null>(null),
     [filter, setFilter] = useState<Filter>('all'),
@@ -99,107 +108,203 @@ export default function Dashboard({
   )
   const selectRow = (i: number) => setSelection(i)
   const source = row.latest
+  const showReadiness = selection === null
+  const gap = prep.rows.find((r) => !r.ok),
+    newPlan = !p.answers['01']?.owner
+  const canStart = permission.active && confirmed
+  const nextLabel = canStart
+    ? 'Strateji çalışmasını aç'
+    : newPlan
+      ? 'Hazırlığa başla'
+      : prep.required === 9 || permission.last
+        ? 'Geçişi incele'
+        : 'Eksik dayanağı incele'
+  function nextAction() {
+    if (canStart)
+      visit(
+        permission.last?.outcome === 'Koşullu hazır'
+          ? permission.last.field.slice(0, 2)
+          : '18',
+      )
+    else if (newPlan) visit('00')
+    else if (gap && prep.required < 9 && !permission.last) proof(gap.id)
+    else go('gecis')
+  }
   return (
     <div className="council">
-      <section className="balance-summary" aria-label="Plan göstergeleri">
-        <div className="balance-metric">
-          <span>
-            <Wallet />
-            Kalan bütçe
-          </span>
-          <strong>{money(balance)}</strong>
-          <small>
-            {usage !== null
-              ? 'Bütçenin %' + usage + ' kadarı kullanıldı'
-              : 'Harcama sınırı bekleniyor'}
-          </small>
-          <div className="budget-scale" aria-hidden="true">
-            <i
-              style={{
-                width:
-                  usage === null
-                    ? '0%'
-                    : Math.max(0, Math.min(100, usage)) + '%',
-              }}
-            />
+      <div className="plan-overview">
+        <section className="decision-brief" aria-label="Seçili karar">
+          <div className="brief-content">
+            <div className="brief-label">
+              <span className="signal-dot" />
+              {showReadiness
+                ? 'Planlamaya hazırlık'
+                : row.open
+                  ? 'Açık karar'
+                  : 'Seçili karar'}
+              <span className="brief-number">
+                {String(selected + 1).padStart(2, '0')} / 08
+              </span>
+            </div>
+            <h2>{showReadiness ? prep.outcome : row.name}</h2>
+            <p>
+              {selected === current
+                ? 'İş fikrinizi sınayın. Ardından planlamaya geçişi değerlendirin.'
+                : row.question}
+            </p>
+            {showReadiness && (
+              <button className="brief-open" onClick={nextAction}>
+                {nextLabel} <ArrowRight size={18} />
+              </button>
+            )}
+            <button
+              className={showReadiness ? 'brief-secondary' : 'brief-open'}
+              onClick={() => openStage(selected)}
+            >
+              Kararı incele <ArrowRight size={18} />
+            </button>
           </div>
-        </div>
-        <button className="book-metric" onClick={() => openStage(current)}>
-          <span>
-            <Flag />
-            Onaylı karar
-          </span>
-          <strong>
-            {passed}
-            <em>/ 8</em>
-          </strong>
-          <span className="mini-ticks" aria-hidden="true">
-            {rows.map((r) => (
-              <i key={r.i} className={r.pass ? 'filled' : ''} />
-            ))}
-          </span>
-        </button>
-        <button className="book-metric" onClick={() => go('evidence')}>
-          <span>
-            <Notebook />
-            Kanıt kaydı
-          </span>
-          <strong>{p.evidence.length}</strong>
-          <small>
-            Kanıt defteri <ArrowUpRight />
-          </small>
-        </button>
-        <button className="book-metric" onClick={() => go('work')}>
-          <span>
-            <ClipboardText />
-            Açık görev
-          </span>
-          <strong>{work}</strong>
-          <small>
-            Görevleri gör <ArrowUpRight />
-          </small>
+          <div
+            className="completion-dial"
+            role="progressbar"
+            aria-label="Tamamlanan plan adımları"
+            aria-valuemin={0}
+            aria-valuemax={active.length}
+            aria-valuenow={done}
+            aria-valuetext={done + ' / ' + active.length + ' adım'}
+          >
+            <div className="dial-face" aria-hidden="true">
+              {Array.from({ length: active.length }, (_, i) => (
+                <i
+                  key={i}
+                  className={i < done ? 'done' : undefined}
+                  style={{
+                    transform: 'rotate(' + (i * 360) / active.length + 'deg)',
+                  }}
+                />
+              ))}
+              <strong>%{Math.round((done * 100) / active.length)}</strong>
+              <span>
+                {done} / {active.length} adım
+              </span>
+            </div>
+          </div>
+          <div className="brief-decision">
+            <div>
+              <span className="verdict-label">
+                <HourglassMedium size={16} />
+                {showReadiness
+                  ? permission.last
+                    ? 'Kayıtlı karar'
+                    : 'Geçiş önerisi'
+                  : row.pass
+                    ? 'Kayıtlı karar'
+                    : 'Öneri'}
+              </span>
+              <b>
+                {showReadiness
+                  ? (permission.last?.outcome ?? prep.outcome)
+                  : row.pass
+                    ? row.status
+                    : advice.outcome}
+              </b>
+            </div>
+            <p>
+              {showReadiness
+                ? permission.last
+                  ? permission.reason
+                  : (gap?.hint ?? 'Dayanakları inceleyin.')
+                : row.pass
+                  ? source?.reason
+                  : advice.reason}
+            </p>
+            <small>
+              {row.pass
+                ? source?.owner
+                : gaps.length + ' açık alan, ' + row.evidence + ' bağlı kanıt'}
+            </small>
+          </div>
+        </section>
+        <section className="balance-summary" aria-label="Plan göstergeleri">
+          <div className="balance-metric">
+            <span>
+              <Wallet />
+              Kalan bütçe
+            </span>
+            <strong>{money(balance)}</strong>
+            <small>
+              {usage !== null
+                ? 'Bütçenin %' + usage + ' kadarı kullanıldı'
+                : 'Harcama sınırı bekleniyor'}
+            </small>
+            <div className="budget-scale" aria-hidden="true">
+              <i
+                style={{
+                  width:
+                    usage === null
+                      ? '0%'
+                      : Math.max(0, Math.min(100, usage)) + '%',
+                }}
+              />
+            </div>
+          </div>
+          <button className="book-metric" onClick={() => openStage(current)}>
+            <span>
+              <Flag />
+              Onaylı karar
+            </span>
+            <strong>
+              {passed}
+              <em>/ 8</em>
+            </strong>
+            <span className="mini-ticks" aria-hidden="true">
+              {rows.map((r) => (
+                <i key={r.i} className={r.pass ? 'filled' : ''} />
+              ))}
+            </span>
+          </button>
+          <button className="book-metric" onClick={() => go('evidence')}>
+            <span>
+              <Notebook />
+              Kanıt kaydı
+            </span>
+            <strong>{p.evidence.length}</strong>
+            <small>
+              Kanıt defteri <ArrowUpRight />
+            </small>
+          </button>
+          <button className="book-metric" onClick={() => go('work')}>
+            <span>
+              <ClipboardText />
+              Açık görev
+            </span>
+            <strong>{work}</strong>
+            <small>
+              Görevleri gör <ArrowUpRight />
+            </small>
+          </button>
+        </section>
+      </div>
+      <section className="panel">
+        <h2>Stratejik planlamaya hazırlık</h2>
+        <p>Hazırlık, strateji çalışması ve uygulama ayrı aşamalardır.</p>
+        <p>
+          Öneri: {prep.outcome}. {prep.required} / 9 zorunlu ölçüt.
+        </p>
+        <p>
+          Doğrulama düzeyi {prep.level} / 5. {levels[prep.level]}.
+        </p>
+        <p>
+          {permission.last
+            ? 'Kayıtlı karar: ' + permission.last.outcome + '. '
+            : ''}
+          {permission.reason}
+        </p>
+        <button className="case-map" onClick={() => go('gecis')}>
+          Planlamaya geçişi incele
         </button>
       </section>
       <div className="analysis-split">
-        <section className="decision-brief" aria-label="Seçili karar">
-          <div className="brief-meta">
-            <span>
-              <span className="signal-dot" />
-              {row.open ? 'Açık karar' : 'Seçili karar'}
-            </span>
-            <span>{String(selected + 1).padStart(2, '0')} / 08</span>
-          </div>
-          <h2>{row.name}</h2>
-          <p>{row.question}</p>
-          <div className="brief-verdict">
-            <span>
-              <HourglassMedium size={17} />
-              {row.pass ? 'Kayıtlı karar' : 'Öneri'}
-            </span>
-            <b>{row.pass ? row.status : advice.outcome}</b>
-          </div>
-          <small>{row.pass ? source?.reason : advice.reason}</small>
-          <div className="brief-trace">
-            {row.pass ? (
-              <span>
-                Karar sahibi <b>{source?.owner}</b>
-              </span>
-            ) : (
-              <>
-                <span>
-                  Açık alan <b>{gaps.length}</b>
-                </span>
-                <span>
-                  Bağlı kanıt <b>{row.evidence}</b>
-                </span>
-              </>
-            )}
-          </div>
-          <button className="brief-open" onClick={() => openStage(selected)}>
-            Kararı incele
-            <ArrowRight size={17} />
-          </button>
-        </section>
         <section className="coverage-sheet" aria-label="Aşama analizi">
           <div className="sheet-heading">
             <div>
@@ -311,6 +416,13 @@ export default function Dashboard({
             <span>
               {String(selected + 1).padStart(2, '0')}. {row.name}
             </span>
+            <button
+              className="plot-open"
+              onClick={() => openStage(selected)}
+              aria-label={'Karara git: ' + row.name}
+            >
+              Karara git <ArrowUpRight size={16} />
+            </button>
             <b>
               {measure === 'steps'
                 ? row.done + ' / ' + row.total + ' adım'
@@ -338,6 +450,36 @@ export default function Dashboard({
                 : p.evidence.length + ' kayıt'}
             </b>
           </div>
+        </section>
+        <section className="decision-feed">
+          <div className="book-toolbar">
+            <h2>Son kararlar</h2>
+            <button onClick={() => go('reports')}>
+              <Files size={17} />
+              Raporlar
+              <ArrowUpRight size={15} />
+            </button>
+          </div>
+          {p.history.length ? (
+            <ol>
+              {p.history
+                .slice(-3)
+                .reverse()
+                .map((h) => (
+                  <li key={h.id}>
+                    <b>{stages[h.stage].name}</b>
+                    <span>
+                      {effective(h)}
+                      {h.stale ? ' · Yeniden incele' : ''}
+                    </span>
+                    <small>{dateLabel(h.at)}</small>
+                    <p>{h.reason}</p>
+                  </li>
+                ))}
+            </ol>
+          ) : (
+            <p>Henüz karar kaydı yok.</p>
+          )}
         </section>
       </div>
       <section className="decision-book">
@@ -421,35 +563,6 @@ export default function Dashboard({
         </div>
         {!filtered.length && (
           <p className="empty-entry">Bu seçimde karar yok.</p>
-        )}
-      </section>
-      <section className="decision-feed">
-        <div className="book-toolbar">
-          <h2>Son kararlar</h2>
-          <button onClick={() => go('reports')}>
-            <Files size={17} />
-            Raporları aç
-            <ArrowUpRight size={15} />
-          </button>
-        </div>
-        {p.history.length ? (
-          <ol>
-            {p.history
-              .slice(-3)
-              .reverse()
-              .map((h) => (
-                <li key={h.id}>
-                  <b>{stages[h.stage].name}</b>
-                  <span>
-                    {effective(h)}
-                    {h.stale ? ' · Yeniden incele' : ''}
-                  </span>
-                  <small>{dateLabel(h.at)}</small>
-                </li>
-              ))}
-          </ol>
-        ) : (
-          <p>Henüz karar kaydı yok.</p>
         )}
       </section>
     </div>

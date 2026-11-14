@@ -1006,3 +1006,109 @@
     grid-template-columns: minmax(0, 1fr) minmax(80px, auto);
   }
 }
+/* Active case, actions and linked steps */
+.case-mast {
+  background: var(--tint);
+  border: 0;
+  border-radius: var(--sheet-round);
+  padding: clamp(14px, 1.6vw, 24px);
+}
+.case-id {
+  background: var(--paper);
+  color: var(--accent);
+}
+.case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+}
+.case-actions > button {
+  margin: 0;
+}
+.case-next {
+  --focus: var(--onAccent);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--onAccent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 590;
+  padding: 8px 14px;
+  min-height: var(--hit);
+}
+.case-next:hover {
+  filter: brightness(0.94);
+}
+.editor-wrap .desk-side .limits-strip > .budget-face {
+  background: linear-gradient(120deg, var(--heroDeep), var(--heroMid));
+  color: var(--heroText);
+}
+.desk-side .budget-face :is(small, div:first-child) {
+  color: var(--heroMuted);
+}
+.desk-side .budget-track i {
+  background: var(--heroMint);
+}
+.editor-wrap .editor-panel {
+  border-radius: var(--sheet-round);
+  border: var(--baseline);
+}
+.editor-wrap .editor-panel .form-heading h3 {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.editor-panel .read-fields legend {
+  color: var(--accent);
+}
+@media (min-width: 70rem) {
+  .case-index {
+    background: var(--paper);
+    padding: 16px 12px;
+    border-radius: var(--sheet-round);
+    border: var(--baseline);
+  }
+  .case-index .case-index-head,
+  .case-index > p {
+    padding-inline: 6px;
+  }
+  .case-index li button {
+    border-radius: 8px;
+  }
+}
+@media (max-width: 42.99rem) {
+  .case-mast {
+    display: flex;
+    gap: 4px 8px;
+    align-items: center;
+    padding: 11px 12px;
+  }
+  .case-id {
+    width: 100%;
+    background: transparent;
+  }
+  .case-actions {
+    margin: 2px 0 0;
+    width: 100%;
+    gap: 6px;
+  }
+  .case-actions .case-next {
+    padding-inline: 10px;
+  }
+  .case-mast h2 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 42.99rem) {
+  .editor-panel .step-selector {
+    justify-content: stretch;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

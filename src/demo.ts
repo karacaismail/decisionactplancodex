@@ -1,4 +1,4 @@
-import { createPlan, now } from './domain'
+import { createPlan, now } from './domain.ts'
 export function demonstration() {
   const p = createPlan('Atölye kapasite yatırımı')
   p.id = 'ornek-atolye'
@@ -116,6 +116,11 @@ export function demonstration() {
     stale: false,
     outcome: 'İlerleyin',
   }))
+  p.foundation = {
+    version: 1,
+    inputs: { expectedSignal: 'Yazılı taahhüt' },
+    decisions: [],
+  }
   p.evidence = [
     ['05', 'Geciken sevkiyat', 'Atölye gözlem defteri'],
     ['12', 'Tezgâh kapasitesi', 'Günlük kira teklifi'],
@@ -123,6 +128,16 @@ export function demonstration() {
   ].map(([step, title, source]) => ({
     id: crypto.randomUUID(),
     step,
+    ...(step === '15'
+      ? {
+          kind: 'Yazılı taahhüt' as const,
+          criteria: ['Z6' as const],
+          side: 'Müşteri' as const,
+          participants: ['A', 'B', 'C', 'D', 'E'],
+          stance: 'Destek' as const,
+          observed: now().slice(0, 10),
+        }
+      : {}),
     title,
     source,
     at: now(),

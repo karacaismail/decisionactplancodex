@@ -1,0 +1,133 @@
+.foundation-page,
+.foundation-layout,
+.foundation-list {
+  display: grid;
+  gap: var(--foundation-gap, 1rem);
+  min-width: 0;
+}
+.foundation-page h2,
+.foundation-page h3 {
+  margin-block: 0 0.6em;
+}
+.foundation-page .ant-collapse-header-text b {
+  display: block;
+  font-size: 1rem;
+  color: var(--accent);
+}
+.foundation-page .ant-tabs-nav-list {
+  max-width: none;
+}
+.foundation-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+.foundation-actions button,
+.foundation-page .ant-btn,
+.foundation-page .ant-select {
+  min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+  height: auto;
+}
+.foundation-layout .fields {
+  align-self: start;
+}
+.foundation-list {
+  padding: 0;
+  list-style: none;
+}
+.foundation-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.foundation-list li p {
+  margin: 0;
+}
+.foundation-page .panel {
+  min-width: 0;
+}
+.foundation-inputs label,
+.foundation-layout label {
+  min-width: 0;
+}
+.foundation-page .ant-tabs {
+  min-width: 0;
+}
+.foundation-page .panel p,
+.foundation-page .panel strong,
+.foundation-document {
+  overflow-wrap: break-word;
+}
+@media (min-width: 64rem) {
+  .foundation-layout {
+    grid-template-columns: minmax(0, 3fr) minmax(19rem, 2fr);
+  }
+}
+@media print {
+  .foundation-document h3 {
+    break-after: avoid;
+  }
+  .foundation-document section {
+    break-inside: avoid;
+  }
+  .foundation-document p {
+    margin: 0.2em 0;
+  }
+  .foundation-document header {
+    margin: 0;
+  }
+  .foundation-document h2,
+  .foundation-document h3 {
+    margin: 0.25em 0;
+  }
+}
+
+@media print {
+  .foundation-document .foundation-appendix {
+    break-before: page;
+    break-inside: auto;
+  }
+  .foundation-document.report-body {
+    font-size: 14px;
+    line-height: 1.16;
+  }
+  .foundation-document.report-body .report-section {
+    margin: 0;
+    padding: 0 0 0.5em;
+  }
+  .foundation-document.report-body .report-section p {
+    font-size: 14px;
+    margin: 0.12em 0;
+  }
+  .foundation-document.report-body .report-section h3 {
+    font-size: 16px;
+    margin: 0.2em 0;
+  }
+}
+
+.foundation-table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: start;
+}
+.foundation-table th,
+.foundation-table td {
+  padding: 0.65rem;
+  vertical-align: top;
+  border-bottom: var(--baseline);
+}
+.foundation-table th {
+  color: var(--accent);
+}
+.foundation-table caption {
+  text-align: start;
+  color: var(--muted);
+}
+.foundation-table summary {
+  cursor: pointer;
+  min-height: var(--hit);
+  align-content: center;
+}

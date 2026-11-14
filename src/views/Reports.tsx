@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Tabs, Select } from 'antd'
 import {
   DownloadSimple,
@@ -6,21 +6,37 @@ import {
   ListBullets,
   Files,
 } from '@phosphor-icons/react'
-import { freezeReports, report, type Plan } from '../domain'
+import { foundation, foundationDoc } from '../readiness'
+import { dateLabel, freezeReports, report, type Plan } from '../domain'
+import './foundation.css'
 import { download } from '../store'
 export default function Reports({
   p,
   change,
   saved,
+  initialFoundation,
+  clearInitial,
 }: {
+  initialFoundation?: string
+  clearInitial: () => void
   p: Plan
   change: (f: (p: Plan) => Plan) => void
   saved: boolean
 }) {
-  const [kind, setKind] = useState<'executive' | 'action'>('executive')
-  const [selected, select] = useState('')
+  const [kind, setKind] = useState<'executive' | 'action' | 'foundation'>(
+    initialFoundation !== undefined ? 'foundation' : 'executive',
+  )
+  useEffect(() => {
+    if (initialFoundation !== undefined) clearInitial()
+  }, [initialFoundation])
+  const [selected, select] = useState(initialFoundation ?? '')
   const pair = p.publications?.find((r) => r.id === selected)
-  const content = pair?.[kind] ?? report(p, kind)
+  const records = foundation(p).decisions
+  const historic = records.find((d) => d.id === selected)
+  const content =
+    kind === 'foundation'
+      ? (historic?.document ?? foundationDoc(p))
+      : (pair?.[kind] ?? report(p, kind))
   const lines = content.split('\n\n')
   const outline = lines
     .map((text, index) => ({ text, index }))
@@ -34,10 +50,14 @@ export default function Reports({
     <section className="panel reports">
       <Tabs
         activeKey={kind}
-        onChange={(v) => setKind(v as typeof kind)}
+        onChange={(v) => {
+          setKind(v as typeof kind)
+          select('')
+        }}
         items={[
           { key: 'executive', label: 'Yönetici raporu' },
           { key: 'action', label: 'Girişimci aksiyon planı' },
+          { key: 'foundation', label: 'Temel belgesi' },
         ]}
       />
       <div className="document-bar">
@@ -48,22 +68,29 @@ export default function Reports({
             onChange={select}
             options={[
               { value: '', label: 'Güncel taslak' },
-              ...(p.publications || []).map((r) => ({
-                value: r.id,
-                label: 'Sabit sürüm ' + r.revision,
-              })),
+              ...(kind === 'foundation'
+                ? records.map((d) => ({
+                    value: d.id,
+                    label: dateLabel(d.at) + ' · ' + d.outcome,
+                  }))
+                : (p.publications || []).map((r) => ({
+                    value: r.id,
+                    label: 'Sabit sürüm ' + r.revision,
+                  }))),
             ]}
           />
-          <Button
-            disabled={!saved || !!pair}
-            onClick={() => {
-              const next = freezeReports(p)
-              change(() => next)
-              select(next.publications!.at(-1)!.id)
-            }}
-          >
-            İki raporu sabitle
-          </Button>
+          {kind !== 'foundation' && (
+            <Button
+              disabled={!saved || !!pair}
+              onClick={() => {
+                const next = freezeReports(p)
+                change(() => next)
+                select(next.publications!.at(-1)!.id)
+              }}
+            >
+              İki raporu sabitle
+            </Button>
+          )}
         </div>
         <div className="report-actions">
           <Button
@@ -74,7 +101,7 @@ export default function Reports({
                   '-' +
                   kind +
                   '-v' +
-                  (pair?.revision ?? p.revision) +
+                  (historic?.id ?? pair?.revision ?? p.revision) +
                   '.md',
                 content,
                 'text/markdown;charset=utf-8',
@@ -106,7 +133,13 @@ export default function Reports({
         </div>
       )}
       <div className="report-spread">
-        <article className="report-body">
+        <article
+          className={
+            kind === 'foundation'
+              ? 'report-body foundation-document'
+              : 'report-body'
+          }
+        >
           <header className="document-title">
             <Files size={26} />
             <div>
@@ -124,7 +157,14 @@ export default function Reports({
               outline[i + 1]?.index ?? lines.length,
             )
             return (
-              <section className="report-section" key={section.index}>
+              <section
+                className={
+                  kind === 'foundation' && section.text === '## Ek belgeler'
+                    ? 'report-section foundation-appendix'
+                    : 'report-section'
+                }
+                key={section.index}
+              >
                 <h3 tabIndex={-1} id={'doc-section-' + section.index}>
                   {section.text.slice(3)}
                 </h3>

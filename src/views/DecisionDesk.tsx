@@ -29,7 +29,9 @@ export default function DecisionDesk({
   openGap,
   children,
   indexPanel,
+  nextMissing,
 }: {
+  nextMissing?: () => void
   indexPanel: ReactNode
   children: ReactNode
   p: Plan
@@ -75,16 +77,23 @@ export default function DecisionDesk({
           <h2>{stages[stage].name}</h2>
           <p>{stages[stage].question}</p>
         </div>
-        <button
-          className="case-map"
-          aria-label="Karar haritasını aç"
-          onClick={() => show('map')}
-        >
-          <Path size={18} />
-          <span className="long-map-label">Karar haritasını aç</span>
-          <span className="short-map-label">Harita</span>
-          <ArrowRight size={16} />
-        </button>
+        <div className="case-actions">
+          {nextMissing && (
+            <button className="case-next" onClick={nextMissing}>
+              İlk eksik adımı aç <ArrowRight size={16} />
+            </button>
+          )}
+          <button
+            className="case-map"
+            aria-label="Karar haritasını aç"
+            onClick={() => show('map')}
+          >
+            <Path size={18} />
+            <span className="long-map-label">Karar haritasını aç</span>
+            <span className="short-map-label">Harita</span>
+            <ArrowRight size={16} />
+          </button>
+        </div>
       </section>
       {indexPanel}
       {children}

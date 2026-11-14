@@ -1,4 +1,5 @@
 import { Alert, Progress, Tag } from 'antd'
+import { foundation, numberValue } from '../readiness'
 import { cash, money, type Plan } from '../domain'
 
 const number = (x: unknown) => (typeof x === 'number' ? x : null)
@@ -105,6 +106,17 @@ export default function StepSummary({ p, id }: { p: Plan; id: string }) {
           ))}
         </dl>
         <div className="live-stats">
+          <Stat
+            label="Paranın yeteceği süre"
+            value={
+              balance !== null &&
+              numberValue(foundation(p).inputs.monthlyOutflow)
+                ? Math.floor(
+                    balance / Number(foundation(p).inputs.monthlyOutflow),
+                  ) + ' ay'
+                : 'Bilinmiyor'
+            }
+          />
           <Stat label="Nakit açığı" value={money(c.gap)} />
           {free ? (
             <Stat label="Hizmet kaynağı" value={money(number(a.fund))} />

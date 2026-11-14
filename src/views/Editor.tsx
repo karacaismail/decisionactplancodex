@@ -35,6 +35,8 @@ import {
 } from '../domain'
 import guide from '../data/guide.json'
 import stepHelp from '../data/stepHelp.json'
+import { access, allows, foundationDoc, scopeFields } from '../readiness'
+import FoundationInputs from './FoundationInputs'
 import DecisionDesk from './DecisionDesk'
 import FieldInput from './Fields'
 import StepSummary from './StepSummary'
@@ -46,7 +48,13 @@ export default function Editor({
   stage,
   setStage,
   readOnly,
+  openTransition,
+  savedTransition,
+  actor,
 }: {
+  openTransition: () => void
+  actor?: string
+  savedTransition?: string
   readOnly: boolean
   p: Plan
   change: (f: (p: Plan) => Plan) => void
@@ -71,9 +79,19 @@ export default function Editor({
     owner: '',
   })
   const route = activeSteps(p),
-    items = steps.filter((s) => s.stage === stage && route.includes(s.id)),
+    items = steps.filter(
+      (s) =>
+        s.stage === stage &&
+        (route.includes(s.id) ||
+          (s.id === selected && ['04', '12'].includes(s.id))),
+    ),
     step = items.find((x) => x.id === selected) ?? items[0],
     index = items.indexOf(step)
+  const missingIndex = items.findIndex((s) => !complete(p, s))
+  const grant = access(p),
+    persisted = !!grant.last && savedTransition === grant.last.id
+  const editable = (key: string) =>
+    !readOnly && (step.id < '18' || (persisted && allows(p, step.id, key)))
   const fields = visibleFields(p, step)
   const fieldGroups =
     step.id === '16'
@@ -113,7 +131,7 @@ export default function Editor({
     error('')
   }
   function edit(key: string, val: Value) {
-    change((prev) => applyEdit(prev, step.id, key, val))
+    if (editable(key)) change((prev) => applyEdit(prev, step.id, key, val))
   }
   function review() {
     focusQuestion()
@@ -179,6 +197,7 @@ export default function Editor({
       <DecisionDesk
         p={p}
         stage={stage}
+        nextMissing={missingIndex >= 0 ? () => choose(missingIndex) : undefined}
         setStage={(n) => {
           setStage(n)
           setSelected('')
@@ -196,32 +215,56 @@ export default function Editor({
               {items.filter((s) => complete(p, s)).length} / {items.length} adım
               tamamlandı
             </p>
-            <ol>
-              {items.map((s, i) => (
-                <li key={s.id}>
-                  <button
-                    aria-label={
-                      s.id +
-                      '. ' +
-                      s.title +
-                      (complete(p, s) ? ', tamamlandı' : '')
-                    }
-                    aria-current={
-                      mode === 'step' && s.id === step.id ? 'step' : undefined
-                    }
-                    onClick={() => choose(i)}
-                  >
-                    <span>{s.id}</span>
-                    <b>{s.title}</b>
-                    {complete(p, s) ? (
-                      <CheckCircle size={16} />
-                    ) : (
-                      <Circle size={13} />
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ol>
+            <div>
+              {(['Hazırlık', 'Strateji çalışması', 'Uygulama'] as const).map(
+                (group) => {
+                  const inGroup = (id: string) =>
+                    group ===
+                    (id < '18'
+                      ? 'Hazırlık'
+                      : id < '21'
+                        ? 'Strateji çalışması'
+                        : 'Uygulama')
+                  if (!items.some((s) => inGroup(s.id))) return null
+                  return (
+                    <div key={group}>
+                      <h4>{group}</h4>
+                      <ol>
+                        {items.map(
+                          (s, i) =>
+                            inGroup(s.id) && (
+                              <li key={s.id}>
+                                <button
+                                  aria-label={
+                                    s.id +
+                                    '. ' +
+                                    s.title +
+                                    (complete(p, s) ? ', tamamlandı' : '')
+                                  }
+                                  aria-current={
+                                    mode === 'step' && s.id === step.id
+                                      ? 'step'
+                                      : undefined
+                                  }
+                                  onClick={() => choose(i)}
+                                >
+                                  <span>{s.id}</span>
+                                  <b>{s.title}</b>
+                                  {complete(p, s) ? (
+                                    <CheckCircle size={16} />
+                                  ) : (
+                                    <Circle size={13} />
+                                  )}
+                                </button>
+                              </li>
+                            ),
+                        )}
+                      </ol>
+                    </div>
+                  )
+                },
+              )}
+            </div>
             <button
               className="index-decision"
               aria-pressed={mode === 'decision'}
@@ -337,7 +380,13 @@ export default function Editor({
             <>
               <div className="form-heading">
                 <div className="eyeline">
-                  <NotePencil size={17} /> Adım {step.id}
+                  <NotePencil size={17} />{' '}
+                  {step.id < '18'
+                    ? 'Hazırlık'
+                    : step.id < '21'
+                      ? 'Strateji çalışması'
+                      : 'Uygulama'}{' '}
+                  · Adım {step.id}
                 </div>
                 <h3 id="active-question" tabIndex={-1}>
                   {step.title}
@@ -360,6 +409,67 @@ export default function Editor({
                   ),
                 )}
               </details>
+              {step.id >= '18' && (
+                <div className="step-help">
+                  <p>
+                    {grant.active && persisted
+                      ? grant.last?.outcome === 'Koşullu hazır'
+                        ? 'Yalnız seçilen alan açık: ' +
+                          scopeFields.find(
+                            ([key]) => key === grant.last?.field,
+                          )?.[1]
+                        : step.id > '20' && !allows(p, step.id, '')
+                          ? 'Uygulama için strateji dosyasını tamamlayın ve kaynak kararını kaydedin.'
+                          : 'Geçiş kararı kaydedildi.'
+                      : grant.reason}
+                  </p>
+                  <Button onClick={openTransition}>
+                    Geçiş kararını incele
+                  </Button>
+                </div>
+              )}
+              {step.id === '18' && (
+                <details className="step-help">
+                  <summary>Planlamanın dayanakları</summary>
+                  <p style={{ whiteSpace: 'pre-line' }}>
+                    {grant.last?.document ?? foundationDoc(p)}
+                  </p>
+                </details>
+              )}
+              {(step.id === '18' || step.id === '19') &&
+                editable(step.id === '18' ? 'choice' : 'goals') &&
+                !p.answers[step.id]?.[
+                  step.id === '18' ? 'choice' : 'goals'
+                ] && (
+                  <details className="step-help">
+                    <summary>Taslak öneriyi incele</summary>
+                    <p>
+                      {String(
+                        step.id === '18'
+                          ? p.answers['08']?.target ||
+                              'Müşteri grubu bekleniyor.'
+                          : p.answers['01']?.goal || 'Hedef bekleniyor.',
+                      )}
+                    </p>
+                    <Button
+                      onClick={() => {
+                        if (step.id === '18')
+                          edit('choice', String(p.answers['08']?.target || ''))
+                        else
+                          edit('goals', [
+                            {
+                              Görev: String(p.answers['01']?.goal || ''),
+                              Sorumlu: String(p.answers['01']?.owner || ''),
+                              'Hedef tarih': '',
+                              'Kabul ölçüsü': '',
+                            },
+                          ])
+                      }}
+                    >
+                      Taslağı kullan
+                    </Button>
+                  </details>
+                )}
               <ConfigProvider componentDisabled={readOnly}>
                 {fieldGroups.map((group) => (
                   <fieldset
@@ -373,17 +483,26 @@ export default function Editor({
                     {group.fields.map((f) => (
                       <div className="field" data-kind={f.kind} key={f.key}>
                         <label htmlFor={'field-' + f.key}>{f.label}</label>
-                        <FieldInput
-                          f={f}
-                          v={p.answers[step.id]?.[f.key]}
-                          id={'field-' + f.key}
-                          onChange={(v) => edit(f.key, v)}
-                        />
+                        <ConfigProvider componentDisabled={!editable(f.key)}>
+                          <FieldInput
+                            f={f}
+                            v={p.answers[step.id]?.[f.key]}
+                            id={'field-' + f.key}
+                            onChange={(v) => edit(f.key, v)}
+                          />
+                        </ConfigProvider>
                       </div>
                     ))}
                   </fieldset>
                 ))}
               </ConfigProvider>
+              <FoundationInputs
+                actor={actor}
+                id={step.id}
+                p={p}
+                change={change}
+                disabled={readOnly}
+              />
               <StepSummary id={step.id} p={p} />
               <div className="editor-controls">
                 <Button
@@ -396,10 +515,18 @@ export default function Editor({
                 <Button
                   type="primary"
                   onClick={() =>
-                    index < items.length - 1 ? choose(index + 1) : review()
+                    step.id === '17'
+                      ? openTransition()
+                      : index < items.length - 1
+                        ? choose(index + 1)
+                        : review()
                   }
                 >
-                  {index < items.length - 1 ? 'Sonraki adım' : 'Kararı incele'}{' '}
+                  {step.id === '17'
+                    ? 'Geçişi incele'
+                    : index < items.length - 1
+                      ? 'Sonraki adım'
+                      : 'Kararı incele'}{' '}
                   <ArrowRight />
                 </Button>
               </div>

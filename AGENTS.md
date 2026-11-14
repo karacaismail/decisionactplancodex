@@ -17,5 +17,8 @@
 - Ortak tema renklerini `src/ui/identity.ts` dosyasından alın. Ant Design ve grafikler aynı renkleri kullanır.
 - Telefonda form, kaynak panelinden önce gelir. Klavye sırası ekrandaki sırayı izler.
 - Görsel kabul için `tests/browser/design.spec.ts` dosyasını kullanın.
-- Pano gerçek aşama, kanıt ve bütçe kayıtlarını özetler. Grafikteki seçim ilgili karar dosyasını açar.
+- Pano önce açık kararı ve ana düğmeyi gösterir. Adım göstergesi tamamlanan form adımlarını sayar. Grafikte seçim özeti yeniler. “Karara git” seçili dosyayı açar.
 - Geniş ekranda adım dizini, form ve kaynaklar ayrı sütunlarda yer alır. Telefonda form tek sütunda ilerler.
+
+- Hazırlık 17. adımda biter. Geçiş kararı kaydedilince strateji yazımı açılır. Geçiş için müşteri davranışının tarihli kaynağını arayın.
+- Geçiş denemeleri için `npm test` ve `npm run test:ui -- tests/browser/readiness.spec.ts` komutlarını kullanın.

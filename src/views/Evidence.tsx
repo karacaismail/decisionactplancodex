@@ -3,21 +3,39 @@ import { Alert, Button, Input, Modal, Select } from 'antd'
 import { Plus, Trash } from '@phosphor-icons/react'
 import { steps } from '../data/steps'
 import { evidenceKinds, type EvidenceKind } from '../operations'
-import { dateLabel, now, type Plan } from '../domain'
+import { criteria, type Criterion } from '../readiness'
+import {
+  calendar,
+  today,
+  dateLabel,
+  now,
+  type Evidence as Proof,
+  type Plan,
+} from '../domain'
 export default function Evidence({
   p,
   change,
   readOnly,
+  initialCriterion,
+  closeContext,
 }: {
+  initialCriterion?: Criterion
+  closeContext: () => void
   readOnly: boolean
   p: Plan
   change: (fn: (p: Plan) => Plan) => void
 }) {
+  const [editing, setEditing] = useState(''),
+    [links, setLinks] = useState<Criterion[]>([]),
+    [observed, setObserved] = useState(''),
+    [stance, setStance] = useState<'Destek' | 'Karşı bulgu'>('Destek')
+  const context = criteria.find((c) => c[0] === initialCriterion)
   const [kind, setKind] = useState<EvidenceKind>('Gözlem'),
     [filter, setFilter] = useState('Tümü'),
     [query, search] = useState('')
   const rows = p.evidence.filter(
     (e) =>
+      (!context || context[4].split(' ').includes(e.step)) &&
       (filter === 'Tümü' || (e.kind || 'Sınıflandırılmadı') === filter) &&
       [e.title, e.source, e.step]
         .join(' ')
@@ -30,29 +48,83 @@ export default function Evidence({
     [step, setStep] = useState('00'),
     [err, error] = useState(''),
     [remove, setRemove] = useState('')
+  const [side, setSide] = useState<NonNullable<Proof['side']>>('Müşteri'),
+    [codes, setCodes] = useState('')
+  function start(existing?: Proof) {
+    setSide(existing?.side ?? 'Müşteri')
+    setCodes(existing?.participants?.join(', ') ?? '')
+    setEditing(existing?.id ?? '')
+    setTitle(existing?.title ?? '')
+    setSource(existing?.source ?? '')
+    setKind(
+      existing?.kind ??
+        (initialCriterion === 'Z6' ? 'Yazılı taahhüt' : 'Gözlem'),
+    )
+    setObserved(existing ? (existing.observed ?? '') : today())
+    setStance(existing?.stance ?? 'Destek')
+    setStep(existing?.step ?? context?.[2] ?? '00')
+    setLinks(
+      existing
+        ? Array.from(
+            new Set([
+              ...(existing.criteria ?? []),
+              ...(initialCriterion ? [initialCriterion] : []),
+            ]),
+          )
+        : initialCriterion
+          ? [initialCriterion]
+          : [],
+    )
+    error('')
+    setOpen(true)
+  }
   function add() {
-    if (!title.trim() || !source.trim()) {
-      error('Gözlemi ve kaynağını yazın.')
+    if (readOnly) return
+    if (
+      !title.trim() ||
+      !source.trim() ||
+      (links.length > 0 && (!calendar(observed) || observed > today()))
+    ) {
+      error('Gözlemi, kaynağı ve geçerli olay tarihini yazın.')
       return
     }
-    change((prev) => ({
-      ...prev,
-      evidence: [
-        ...prev.evidence,
-        {
-          id: crypto.randomUUID(),
-          kind,
-          title: title.trim(),
-          source: source.trim(),
-          step,
-          at: now(),
-        },
-      ],
-    }))
+    change((prev) => {
+      const old = prev.evidence.find((e) => e.id === editing)
+      const item: Proof = {
+        id: old?.id ?? crypto.randomUUID(),
+        at: old?.at ?? now(),
+        kind,
+        step,
+        title: title.trim(),
+        source: source.trim(),
+        criteria: links,
+        ...(links.includes('Z6')
+          ? {
+              side,
+              participants: Array.from(
+                new Set(
+                  codes
+                    .split(/[,;\n]+/)
+                    .map((v) => v.trim())
+                    .filter(Boolean),
+                ),
+              ),
+            }
+          : {}),
+        observed: observed || undefined,
+        stance,
+      }
+      return {
+        ...prev,
+        evidence: old
+          ? prev.evidence.map((e) => (e.id === old.id ? item : e))
+          : [...prev.evidence, item],
+        history: old
+          ? prev.history.map((h) => ({ ...h, stale: true }))
+          : prev.history,
+      }
+    })
     setOpen(false)
-    setTitle('')
-    setSource('')
-    error('')
   }
   return (
     <section className="panel">
@@ -65,11 +137,25 @@ export default function Evidence({
           disabled={readOnly}
           type="primary"
           icon={<Plus />}
-          onClick={() => setOpen(true)}
+          onClick={() => start()}
         >
           Kanıt ekle
         </Button>
       </div>
+      {context && (
+        <div className="step-help">
+          <strong>{context[1]}</strong>
+          <p>{context[3]}</p>
+          <Button onClick={closeContext}>Tüm kayıtları göster</Button>
+          <Button
+            onClick={() => {
+              location.hash = 'gecis'
+            }}
+          >
+            Geçişe dön
+          </Button>
+        </div>
+      )}
       <div className="evidence-filter ops-filters">
         <Input.Search
           aria-label="Kanıt veya kaynak ara"
@@ -116,8 +202,19 @@ export default function Evidence({
                   <td>
                     {e.step}. {steps.find((s) => s.id === e.step)?.title}
                   </td>
-                  <td>{dateLabel(e.at)}</td>
                   <td>
+                    {dateLabel(e.at)}
+                    {e.observed && <p>Olay: {dateLabel(e.observed)}</p>}
+                    {e.criteria?.length ? (
+                      <p>
+                        {e.stance} · {e.criteria.join(', ')}
+                      </p>
+                    ) : null}
+                  </td>
+                  <td>
+                    <Button disabled={readOnly} onClick={() => start(e)}>
+                      Kaydı incele
+                    </Button>
                     <Button
                       disabled={readOnly}
                       type="text"
@@ -139,7 +236,7 @@ export default function Evidence({
         </p>
       )}
       <Modal
-        title="Kanıt ekle"
+        title={editing ? 'Kanıtı güncelle' : 'Kanıt ekle'}
         open={open}
         onCancel={() => setOpen(false)}
         onOk={add}
@@ -151,7 +248,17 @@ export default function Evidence({
             <span>Plan adımı</span>
             <Select
               value={step}
-              onChange={setStep}
+              onChange={(v) => {
+                setStep(v)
+                setLinks(
+                  links.filter((id) =>
+                    criteria
+                      .find((c) => c[0] === id)?.[4]
+                      .split(' ')
+                      .includes(v),
+                  ),
+                )
+              }}
               options={steps.map((s) => ({
                 value: s.id,
                 label: s.id + '. ' + s.title,
@@ -177,6 +284,66 @@ export default function Evidence({
               options={evidenceKinds.map((v) => ({ value: v, label: v }))}
             />
           </label>
+          <label>
+            <span>Olay tarihi</span>
+            <Input
+              type="date"
+              max={today()}
+              value={observed}
+              onChange={(e) => setObserved(e.target.value)}
+            />
+          </label>
+          <label>
+            <span>Bağlı ölçütler</span>
+            <Select
+              aria-label="Bağlı ölçütler"
+              mode="multiple"
+              value={links}
+              onChange={setLinks}
+              options={criteria
+                .filter((c) => c[4].split(' ').includes(step))
+                .map((c) => ({ value: c[0], label: c[1] }))}
+            />
+          </label>
+          <label>
+            <span>Kanıtın yönü</span>
+            <Select
+              aria-label="Kanıtın yönü"
+              value={stance}
+              onChange={setStance}
+              options={['Destek', 'Karşı bulgu'].map((v) => ({
+                value: v,
+                label: v,
+              }))}
+            />
+          </label>
+          {links.includes('Z6') && (
+            <>
+              <label>
+                <span>Davranış kime ait?</span>
+                <Select
+                  aria-label="Davranış kime ait?"
+                  value={side}
+                  onChange={setSide}
+                  options={['Müşteri', 'Diğer taraf', 'Eşleşme'].map(
+                    (value) => ({ value, label: value }),
+                  )}
+                />
+              </label>
+              <label>
+                <span>
+                  {side === 'Eşleşme'
+                    ? 'Eşleşen kodlar. Örnek: K1/S1, K2/S2'
+                    : 'Kişi veya kurum kodları. Örnek: K1, K2'}
+                </span>
+                <Input.TextArea
+                  value={codes}
+                  onChange={(e) => setCodes(e.target.value)}
+                />
+              </label>
+              <p>Her alıcıya bir kod verin. Aynı kod bir kez sayılır.</p>
+            </>
+          )}
           {err && <Alert type="error" title={err} />}
         </div>
       </Modal>

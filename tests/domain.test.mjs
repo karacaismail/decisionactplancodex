@@ -1,3 +1,5 @@
+import { cafeExample } from '../src/cafe.ts'
+import { decide } from '../src/readiness.ts'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
@@ -100,8 +102,36 @@ test('kanıttan önceki kararın iptali tüm sonraki kararları yeniden açar', 
   assert.equal(q.history[0].stale, true)
 })
 test('erken büyüme seçimi önceki kaynak kararını yeniden açar', () => {
-  const p = createPlan('Kamu')
+  const cafe = cafeExample()
+  cafe.foundation.inputs.skills = 'İki barista ve kira sözleşmesi'
+  cafe.evidence.push({
+    ...cafe.evidence[0],
+    id: 'beceri',
+    step: '12',
+    criteria: ['D4'],
+  })
+  const p = decide(cafe, {
+    outcome: 'Planlamaya hazır',
+    owner: 'Ayşe',
+    reason: 'İncelendi',
+    reviewed: true,
+    field: '',
+    due: '',
+    question: '',
+    assignee: '',
+    proof: '',
+  })
+  p.answers['20'] = { ready: 'Karşılandı', authority: 'Ayşe', basis: 'Dayanak' }
   p.history = [
+    {
+      id: 'strateji',
+      stage: 4,
+      outcome: 'İlerleyin',
+      owner: 'Ayşe',
+      reason: 'İzin',
+      at: new Date().toISOString(),
+      stale: false,
+    },
     {
       id: 'a',
       stage: 6,
@@ -113,7 +143,8 @@ test('erken büyüme seçimi önceki kaynak kararını yeniden açar', () => {
     },
   ]
   const q = applyEdit(p, '33', 'direction', 'Büyüt')
-  assert.equal(q.history[0].stale, true)
+  assert.equal(q.history.find((h) => h.stage === 6).stale, true)
+  assert.equal(q.history.find((h) => h.stage === 4).stale, false)
 })
 test('ücretsiz işte kişi başına gelir yerine hizmet kaynağı rapora girer', () => {
   const p = createPlan('Kamu')

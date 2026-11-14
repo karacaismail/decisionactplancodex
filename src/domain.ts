@@ -1,4 +1,14 @@
 import {
+  access,
+  allows,
+  evaluate,
+  demandProof,
+  validFoundation,
+  validLink,
+  type Foundation,
+  type EvidenceLink,
+} from './readiness.ts'
+import {
   activeWork,
   workLabel,
   workItems,
@@ -37,7 +47,7 @@ export interface Decision extends DecisionInput {
   at: string
   stale: boolean
 }
-export interface Evidence {
+export interface Evidence extends EvidenceLink {
   kind?: EvidenceKind
   id: string
   title: string
@@ -53,6 +63,7 @@ export interface ReportPair {
   action: string
 }
 export interface Plan {
+  foundation?: Foundation
   handover?: Record<string, HandoverCheck>
   work?: Work[]
   publications?: ReportPair[]
@@ -197,6 +208,7 @@ export function applyEdit(
   key: string,
   value: Value,
 ): Plan {
+  if (!allows(p, step, key)) return p
   if (JSON.stringify(p.answers[step]?.[key]) === JSON.stringify(value)) return p
   const next = {
     ...p,
@@ -266,19 +278,23 @@ export function cash(p: Plan) {
     p.answers['00']?.mode !== 'Ücretsiz hizmet' &&
     price !== null &&
     cost !== null
-      ? price - cost
+      ? (Math.round(price * 100) - Math.round(cost * 100)) / 100
       : null
   return {
-    gap: balance !== null && due !== null ? Math.max(0, due - balance) : null,
+    gap:
+      balance !== null && due !== null
+        ? Math.max(0, Math.round(due * 100) - Math.round(balance * 100)) / 100
+        : null,
     contribution,
     breakEven:
       contribution !== null && contribution > 0 && fixed !== null
-        ? Math.ceil(fixed / contribution)
+        ? Math.ceil(Math.round(fixed * 100) / Math.round(contribution * 100))
         : null,
   }
 }
 export function currentStage(p: Plan) {
-  const index = stages.findIndex((_, i) => !approved(p, i))
+  const start = p.foundation?.decisions.length && access(p).active ? 4 : 0
+  const index = stages.findIndex((_, i) => i >= start && !approved(p, i))
   return index < 0 ? 7 : index
 }
 export function approved(p: Plan, i: number) {
@@ -353,6 +369,13 @@ export function recommend(p: Plan, i: number): Advice {
       : (cash(p).contribution ?? 1) <= 0)
   )
     return hold('Teslimin gelirini ve giderini yeniden inceleyin.')
+  if (
+    i >= 4 &&
+    (!access(p).active || access(p).last?.outcome !== 'Planlamaya hazır')
+  )
+    return hold('Önce stratejik planlamaya geçiş kararını inceleyin.')
+  if (i === 3 && !demandProof(p))
+    return hold('Müşteri davranışını tarihli bir kanıta bağlayın.')
   if (fields.some((s) => !complete(p, s)))
     return hold('Açık alanları tamamlayın. Eksik kanıtı deftere yazın.', false)
   if (i === 1) {
@@ -593,6 +616,26 @@ export function report(p: Plan, kind: 'executive' | 'action') {
     p.name + (p.example ? ' (örnek plan)' : ''),
     'Kayıt sürümü ' + p.revision + ' · ' + dateLabel(p.updatedAt),
   ]
+  const readiness = evaluate(p),
+    permission = access(p)
+  const gap = readiness.rows.slice(0, 9).find((r) => !r.ok)
+  head.push(
+    '## Stratejik planlamaya hazırlık',
+    'Bugünkü öneri: ' + readiness.outcome,
+    permission.last
+      ? 'Kayıtlı karar: ' + permission.last.outcome + '. ' + permission.reason
+      : permission.reason,
+    gap
+      ? 'Sıradaki iş: ' + gap.hint
+      : permission.active
+        ? 'İzin verilen strateji çalışmasını açın.'
+        : 'Karar sahibi dayanakları incelesin.',
+  )
+  if (permission.last?.outcome === 'Koşullu hazır')
+    head.push(
+      permission.last.question,
+      permission.last.assignee + ' · ' + dateLabel(permission.last.due),
+    )
   const a = p.answers
   const val = (id: string, k: string) =>
     typeof a[id]?.[k] === 'string' || typeof a[id]?.[k] === 'number'
@@ -826,6 +869,7 @@ export function validatePlan(v: unknown): v is Plan {
       ))
   return (
     answers &&
+    validFoundation(v.foundation) &&
     (v.handover === undefined ||
       (object(v.handover) &&
         Object.entries(v.handover).every(
@@ -878,6 +922,7 @@ export function validatePlan(v: unknown): v is Plan {
     v.evidence.every(
       (e) =>
         object(e) &&
+        validLink(e) &&
         typeof e.id === 'string' &&
         typeof e.title === 'string' &&
         typeof e.source === 'string' &&
