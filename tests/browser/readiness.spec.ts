@@ -83,6 +83,9 @@ test('kritik kanıt silinince strateji kapanır ve önceki belge korunur', async
   await page.setViewportSize({ width: 1440, height: 950 })
   await page.goto('/#gecis')
   await page.getByRole('button', { name: 'Kafe örneğini aç' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Koşullu hazır', exact: true }),
+  ).toBeVisible()
   await page.getByLabel('Kararın gerekçesi').fill('Satış yolunu incele.')
   await page.getByLabel('Açık soru').fill('Hangi durak?')
   await page.getByLabel('İşi kim yapacak?').fill('Ayşe')

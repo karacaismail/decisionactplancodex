@@ -141,6 +141,7 @@ function Workspace({
     [error, setError] = useState(''),
     [nameError, setNameError] = useState(''),
     [replacing, setReplacing] = useState(false)
+  const [openingExample, setOpeningExample] = useState(false)
   const [proofId, setProofId] = useState<Criterion>()
   const [foundationReport, setFoundationReport] = useState<string | undefined>()
   const [, clockTick] = useState(0)
@@ -575,42 +576,53 @@ function Workspace({
                       setStage={visitStage}
                     />
                   ) : page === 'gecis' ? (
-                    <Foundation
-                      key={p.id}
-                      p={p}
-                      change={store.change}
-                      readOnly={!!readOnly}
-                      actor={session?.user.name}
-                      saved={
-                        store.status === 'Kaydedildi' &&
-                        !store.hasDraft &&
-                        !store.error
-                      }
-                      visit={visitStep}
-                      reports={(id) => {
-                        setFoundationReport(id ?? '')
-                        go('reports')
-                      }}
-                      proof={(id) => {
-                        setProofId(id)
-                        go('evidence')
-                      }}
-                      example={async () => {
-                        const existing = store.plans.find(
-                          (item) =>
-                            item.example &&
-                            item.name === 'Ayşe’nin mahalle kafesi',
-                        )
-                        if (existing) {
-                          store.select(existing.id)
-                          return
+                    openingExample ? (
+                      <p role="status">Kafe örneği açılıyor.</p>
+                    ) : (
+                      <Foundation
+                        key={p.id}
+                        p={p}
+                        change={store.change}
+                        readOnly={!!readOnly}
+                        actor={session?.user.name}
+                        saved={
+                          store.status === 'Kaydedildi' &&
+                          !store.hasDraft &&
+                          !store.error
                         }
-                        const { cafeExample } = await import('./cafe')
-                        const sample = cafeExample()
-                        store.write(sample)
-                        store.select(sample.id)
-                      }}
-                    />
+                        visit={visitStep}
+                        reports={(id) => {
+                          setFoundationReport(id ?? '')
+                          go('reports')
+                        }}
+                        proof={(id) => {
+                          setProofId(id)
+                          go('evidence')
+                        }}
+                        example={async () => {
+                          const existing = store.plans.find(
+                            (item) =>
+                              item.example &&
+                              item.name === 'Ayşe’nin mahalle kafesi',
+                          )
+                          if (existing) {
+                            store.select(existing.id)
+                            return
+                          }
+                          setOpeningExample(true)
+                          try {
+                            const { cafeExample } = await import('./cafe')
+                            const sample = cafeExample()
+                            store.write(sample)
+                            store.select(sample.id)
+                          } catch {
+                            setError('Kafe örneği açılamadı. Tekrar deneyin.')
+                          } finally {
+                            setOpeningExample(false)
+                          }
+                        }}
+                      />
+                    )
                   ) : page === 'evidence' ? (
                     <Evidence
                       initialCriterion={proofId}
