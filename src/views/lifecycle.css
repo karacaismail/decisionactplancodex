@@ -1,0 +1,79 @@
+.phase-plan {
+  max-inline-size: 74rem;
+}
+.phase-heading p,
+.phase-detail p {
+  color: var(--muted);
+}
+.phase-section {
+  border-block-start: 1px solid var(--line);
+}
+.phase-section h3,
+.phase-tasks h4 {
+  margin: 0;
+}
+.phase-toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--hit);
+  padding: var(--gap) 0;
+  gap: var(--gap);
+}
+.phase-toggle svg {
+  flex: none;
+  transition: transform var(--time) var(--ease);
+}
+.phase-toggle[aria-expanded='true'] {
+  color: var(--accent);
+}
+.phase-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+.phase-detail {
+  display: grid;
+  gap: var(--gap);
+  padding-block-end: var(--gap);
+}
+.phase-detail p {
+  margin: 0;
+}
+.phase-tasks {
+  margin: 0;
+  padding-inline-start: 1.5em;
+  display: grid;
+  gap: var(--gap);
+}
+.phase-tasks li::marker {
+  color: var(--accent);
+  font-weight: 600;
+}
+.phase-tasks li p {
+  margin-block: 0.35em 0.6em;
+}
+.phase-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--gap) / 2);
+}
+.phase-plan .ant-btn {
+  max-inline-size: 100%;
+  min-height: var(--hit);
+  height: auto;
+  white-space: normal;
+}
+.cycle-review {
+  max-inline-size: 44rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .phase-toggle svg {
+    transition: none;
+  }
+}

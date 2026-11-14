@@ -5,7 +5,7 @@ Karar Atlası, bir iş fikrini veya devralınan işi değerlendirmenize yardım 
 [Karar Atlası’nı GitHub Pages üzerinde açın](https://karacaismail.github.io/decisionactplancodex/).
 
 Canlı sürüm kişisel planınızı tarayıcınızda saklar. Kurum alanını yerel sunucuda kullanabilirsiniz.
-Yerel planınızı canlı sürüme taşımak için JSON kopyasını indirip canlı sürüme yükleyin.
+Yerel planınızın JSON kopyasını indirin. Bu dosyayı canlı sürüme yükleyin.
 
 ## Yerelde açın
 
@@ -26,7 +26,7 @@ Tarayıcıda [Karar Atlası’nı açın](http://127.0.0.1:4177/). Geliştirme s
 3. Müşterinin attığı somut adımı kaynağıyla kaydedin. “Bağlı ölçütler” alanında “Müşteri davranışı” seçin.
 4. Riskleri yazdıktan sonra 17. adımda “Geçişi incele” düğmesini seçin.
 5. Karar sahibi öneriyi ve dayanakları inceler. Gerekçeyi yazıp geçiş kararını kaydeder.
-6. Koşullu kararda karar sahibi izin verdiği konuyu seçer. “Yol seçimi ve gerekçesi” seçilirse ekip yolu ve gerekçesini kaydeder. Ardından karar sahibi 90 günlük plan için ayrı izin verebilir.
+6. Koşullu kararda karar sahibi izin verdiği konuyu seçer. “Yol seçimi ve gerekçesi” seçilirse ekip yolu ve gerekçesini kaydeder. Ardından karar sahibi eylem planı için ayrı izin verebilir.
 7. “Raporlar” bölümünden “Strateje devir raporu” sekmesini açın. İlk soruyu ve kanıt bekleyen kararları inceleyin. Raporu indirin veya yazdırın.
 
 Talep kaydında müşteri grubunu, yeri ve dönemi belirtin. Fiyat değişirse yeni teklif için ayrı kaynak ekleyin. Beklenmeyen olayları “Kanıt defteri” bölümünde “Bunu beklemiyorduk” düğmesiyle kaydedin. Ciddi zarar işareti varsa açık gözlem geçişi durdurur.
@@ -40,6 +40,20 @@ Kişisel alanda tarayıcı planları kendi veritabanında saklar. Adres, port ve
 ## Kapsam
 
 Sekiz karar altında 35 adım vardır. İşinize uygun adımlar açılır. Kanıtlar, kaynak sınırları ve karar sahipleri aynı plana bağlanır. Karar Kitabı’nda 128 yöntem bulunur. “Göstergeler” bölümünde grafikler ve sayısal karşılıkları birlikte sunulur.
+
+## Strateji yönetimi
+
+“Strateji yönetimi” ekranı beş ana aşamayı gösterir.
+
+1. Karar sahibi, 17. adımda strateje hangi soruyu devrettiğini kaydeder.
+2. Stratej yolları karşılaştırır. Karar sahibi gerekçesini ve vazgeçtiği işi kaydeder.
+3. Ekip işleri, sorumluları, zamanı, kaynakları ve başarı ölçüsünü belirler.
+4. Uygulayıcı teslimi ve kullanılan kaynağı yazar. Ekip gerçekleşen faydayı gözler.
+5. Karar sahibi beklentiyi gözlemle karşılaştırır. Gerekirse işi veya seçilen yolu değiştirir.
+
+Koşullu geçiş yalnız izin verilen soruyu açar. Sonuç henüz bilinmiyorsa ekip sonraki gözlemi planlar. İş biterse ekip açık sözleri 34. adımda kapatır. Kurum alanında karar sahibi etkin üyelerden seçilir. Yönetici raporu ve girişimci aksiyon planı sonuç kararını gösterir.
+
+[Ana aşamaları açın](https://karacaismail.github.io/decisionactplancodex/#asamalar)
 
 ## Kurumda çalışma
 

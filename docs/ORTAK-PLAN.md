@@ -24,7 +24,11 @@ Bu belge ilk yerel sürümün kararlarını kaydeder. Sonraki sürüme kurum hes
 5. Karar kaydıyla birlikte sorumlu, gerekçe ve sonraki iş yazılır.
 6. Yönetici sonucu ve dayanağını okur. Girişimci üstleneceği işi, tarihi ve kabul şartını görür.
 
-## Sekiz karar
+## Strateji yönetimi ve karar dosyaları
+
+Uygulama beş ana aşama kullanır. Hazırlıktan sonra seçim, eylem planı, uygulama ve sonuç değerlendirmesi gelir. Aşağıdaki sekiz dosya bu aşamalardaki kararları destekler. 17. adım hazırlığın sonudur. Koşullu geçişte yalnız izin verilen konu çalışılır.
+
+## Sekiz karar dosyası
 
 | Karar | Adımlar | İncelenen konu |
 |---|---|---|
@@ -32,7 +36,7 @@ Bu belge ilk yerel sürümün kararlarını kaydeder. Sonraki sürüme kurum hes
 | 2 | 05 ile 08 | Son olay, görüşmeler, tekrar, çaba ve kayıp |
 | 3 | 09 ile 12 | Erişim, varsayım, seçenek ve yapılabilirlik |
 | 4 | 13 ile 15 | Teklif, ödeme veya bütçe yetkisi ve taahhüt |
-| 5 | 16 ile 20 | Nakit, risk, seçilen yol ve 90 günlük çalışma |
+| 5 | 16 ile 20 | Nakit, risk, seçilen yol, eylem planı ve kaynak |
 | 6 | 21 ile 25 | İlk teslim, ölçüm, erişim ve doğrudan fayda |
 | 7 | 26 ile 32 | Tekrar, katkı, fiyat ve kalite |
 | 8 | 33 ile 34 | Büyütme, sürdürme, devir veya kapanış |

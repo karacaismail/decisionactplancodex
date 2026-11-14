@@ -13,7 +13,14 @@ import {
   type Criterion,
   type DecisionForm,
 } from '../readiness'
-import { activeSteps, complete, dateLabel, today, type Plan } from '../domain'
+import {
+  activeSteps,
+  complete,
+  currentStrategyChoice,
+  dateLabel,
+  today,
+  type Plan,
+} from '../domain'
 import { steps } from '../data/steps'
 import Assumptions from './Assumptions'
 import './foundation.css'
@@ -346,9 +353,9 @@ export default function Foundation({
             {result === results[1] && (
               <>
                 <p>
-                  Koşullu izin yalnız açık soruyu kapsar. Yol kaydedilince 90
-                  günlük iş sırası için ayrı izin verilebilir. Seçimi tamamlamak
-                  için “Yol seçimi ve gerekçesi” konusunu kullanın.
+                  Koşullu izin yalnız açık soruyu kapsar. Yol kaydedilince iş
+                  sırası için ayrı izin verilebilir. Seçimi tamamlamak için “Yol
+                  seçimi ve gerekçesi” konusunu kullanın.
                 </p>
                 <label>
                   <span>Planlanacak konu</span>
@@ -360,13 +367,7 @@ export default function Foundation({
                     options={scopeFields.map(([v, label]) => ({
                       value: v,
                       label,
-                      disabled:
-                        v === '19.goals' &&
-                        !complete(
-                          p,
-                          steps.find((s) => s.id === '18')!,
-                          false,
-                        ),
+                      disabled: v === '19.goals' && !currentStrategyChoice(p),
                     }))}
                   />
                 </label>

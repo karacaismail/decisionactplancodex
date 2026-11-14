@@ -33,7 +33,7 @@ import {
 } from '@phosphor-icons/react'
 import { personalOnly, storagePrefix } from './hosting'
 import { usePlans } from './usePlans'
-import { currentStage, validatePlan } from './domain'
+import { copyPlan, currentStage, validatePlan } from './domain'
 import { download } from './store'
 import { identity } from './ui/identity'
 import { navigation, type Page } from './ui/navigation'
@@ -42,6 +42,7 @@ import { teamRequest, roleLabel, type Session } from './team'
 import { steps } from './data/steps'
 import type { Criterion } from './readiness'
 import Dashboard from './views/Dashboard'
+const Lifecycle = lazy(() => import('./views/Lifecycle'))
 const Foundation = lazy(() => import('./views/Foundation'))
 const Team = personalOnly ? null : lazy(() => import('./views/Team')),
   Portfolio = lazy(() => import('./views/Portfolio')),
@@ -59,6 +60,7 @@ const subscribe = (cb: () => void) => {
   return () => width.removeEventListener('change', cb)
 }
 const descriptions: Record<Page, string> = {
+  asamalar: 'Beş ana aşamayı inceleyin. Seçtiğiniz işin kaydını açın.',
   gecis:
     '17. adımdan sonra dayanakları inceleyin. Stratejiye geçiş kararını kaydedin.',
   team: 'Üyeleri, yetkileri ve kurum kayıtlarını yönetin.',
@@ -243,23 +245,7 @@ function Workspace({
       const v: unknown = JSON.parse(await file.text())
       if (!validatePlan(v))
         throw Error('Bu dosya geçerli bir Karar Atlası planı içermiyor.')
-      const copy = {
-        ...v,
-        ...(v.foundation
-          ? {
-              foundation: {
-                ...v.foundation,
-                decisions: v.foundation.decisions.map((d) => ({
-                  ...d,
-                  revoked: true,
-                })),
-              },
-            }
-          : {}),
-        id: crypto.randomUUID(),
-        revision: 0,
-        name: v.name + ' (kopya)',
-      }
+      const copy = copyPlan(v, !!session)
       store.write(copy)
       store.select(copy.id)
       setError('')
@@ -578,6 +564,22 @@ function Workspace({
                         go('editor')
                       }}
                     />
+                  ) : page === 'asamalar' ? (
+                    <Lifecycle
+                      key={p.id + store.generation}
+                      p={p}
+                      visit={visitStep}
+                      transition={() => go('gecis')}
+                      dossier={() => openDossier()}
+                      change={store.change}
+                      actor={session?.user.name}
+                      readOnly={!!readOnly}
+                      confirmed={
+                        store.status === 'Kaydedildi' &&
+                        !store.hasDraft &&
+                        !store.error
+                      }
+                    />
                   ) : page === 'work' ? (
                     <Work
                       key={p.id}
@@ -591,10 +593,15 @@ function Workspace({
                     />
                   ) : page === 'editor' ? (
                     <Editor
+                      session={session ?? undefined}
                       openProof={openEvidenceRecord}
                       visitStep={visitStep}
                       actor={session?.user.name}
                       openTransition={() => go('gecis')}
+                      openEvaluation={() => {
+                        location.hash = 'asamalar?phase=5'
+                        setPage('asamalar')
+                      }}
                       openDossier={openDossier}
                       savedTransition={store.confirmedTransition}
                       key={p.id + '-' + store.generation}

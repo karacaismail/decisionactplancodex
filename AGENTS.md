@@ -38,7 +38,7 @@
 - İş türüne özel kayıtları profil seçimine göre açın. Yöntem yardımını kullanıcı açtığında yükleyin.
 - Araştırma kurallarını `node --test tests/research.test.mjs` ile sınayın. Telefon akışını `npm run test:ui -- tests/browser/research.spec.ts` ile sınayın.
 
-- Başarı koşulunda aynı iddia, müşteri grubu ve dönemin karşı kanıtını da gösterin.
+- Başarı koşulunda karşı kanıtı da gösterin. İddia, müşteri grubu ve dönem eşleşmelidir.
 - İhtiyaç adayını tarihli talep ve güncel seçeneklerle doğrulayın. Dayanaksız güçleri ayrı gösterin.
 - Harcama izni tavan belirtir. Aynı ödemeye bağlanan tutarı bir kez düşürün.
 - Devir raporunu yetki ve ilk soruyla açın. Önceliği karar sahibi seçer.
@@ -50,3 +50,12 @@
 - Ortak bağımlılıkları ve beklenmeyen gözlemleri strateje devir raporuna ekleyin.
 - Bu kuralları `node --test tests/gaps.test.mjs` ile sınayın.
 - Telefon akışlarını `npm run test:ui -- tests/browser/gaps.spec.ts` ile sınayın.
+
+- Strateji yönetimi beş ana aşama kullanır. Sekiz karar dosyası bu aşamaları destekler.
+- Koşullu geçişte 18. adım yalnız izin verilen soruyu kullanır.
+- Seçim ve kaynak kararlarını ayrı kaydedin. Kopyada önceki izinleri kapatın.
+- Gerçek sonucu gözlemden değerlendirmeye taşıyın. Sonuç gecikirse sonraki gözlemi kaydedin.
+- Karar sahibi sonuç kararını değiştirmek isterse yeni kayıt ekler.
+- Kapanışta açık sözleri kaydedin. Bu kayıt yeni harcama yetkisi vermez.
+- Karar döngüsünü `node --test tests/lifecycle.test.mjs tests/team.test.mjs` komutuyla doğrulayın.
+- Tarayıcıda `npm run test:ui -- tests/browser/lifecycle.spec.ts` çalıştırın.

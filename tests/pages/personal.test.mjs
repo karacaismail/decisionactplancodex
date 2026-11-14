@@ -67,11 +67,31 @@ test('GitHub Pages üzerinde kişisel plan açılır ve strateje devir raporu in
   await dialog.getByLabel('Gözlemin kaynağı').fill('Görevli')
   await dialog.getByRole('button', { name: 'Gözlemi kaydet' }).click()
   await expect(dialog).toBeHidden()
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Kaydedildi' }),
+  ).toBeVisible()
   await page.goto(address + '#reports')
   await page.reload()
   await page.getByRole('tab', { name: 'Strateje devir raporu' }).click()
   await expect(page.locator('.dossier-intro')).toContainText('Durakta kahve')
   await expect(page.getByRole('article')).toContainText('Kuzey çıkışı')
+  const lifecycleLoaded = () =>
+    page.evaluate(() =>
+      performance
+        .getEntriesByType('resource')
+        .some((r) => r.name.includes('/Lifecycle-') && r.name.includes('.js')),
+    )
+  assert.equal(await lifecycleLoaded(), false)
+  await page.goto(address + '#asamalar?phase=5')
+  await expect(
+    page.getByRole('heading', {
+      name: 'Beklenenle gerçekleşeni karşılaştırma',
+    }),
+  ).toBeVisible()
+  assert.equal(await lifecycleLoaded(), true)
+  await expect(
+    page.getByRole('button', { name: 'Sonucu değerlendir', exact: true }),
+  ).toHaveCount(0)
   await page.setViewportSize({ width: 1366, height: 900 })
   await page.goto(address + '#team')
   await expect(

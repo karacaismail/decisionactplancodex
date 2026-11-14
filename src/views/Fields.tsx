@@ -109,7 +109,7 @@ export default function FieldInput({
                 />
               </label>
             ))}
-            {f.columns?.map((c) => (
+            {[...(f.columns ?? []), ...(f.optionalColumns ?? [])].map((c) => (
               <label key={c}>
                 <span>{c}</span>
                 <Input

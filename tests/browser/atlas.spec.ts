@@ -115,7 +115,7 @@ test('telefon formu, kayıt devamı, kanıt ve iki ayrı rapor', async ({
   await go(page, 'Raporlar')
   await expect(page.getByRole('article')).toContainText('Teslim defteri')
   await page.getByRole('tab', { name: 'Girişimci aksiyon planı' }).click()
-  await expect(page.getByRole('article')).toContainText('90 günlük çalışma')
+  await expect(page.getByRole('article')).toContainText(/eylem planı/i)
   const file = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Markdown indir' }).click()
   expect((await file).suggestedFilename()).toContain('action')

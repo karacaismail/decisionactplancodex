@@ -1,3 +1,4 @@
+import { confirmStrategyChoice } from '../src/domain.ts'
 import { cafeExample } from '../src/cafe.ts'
 import { decide } from '../src/readiness.ts'
 import { test } from 'node:test'
@@ -110,7 +111,7 @@ test('erken büyüme seçimi önceki kaynak kararını yeniden açar', () => {
     step: '12',
     criteria: ['D4'],
   })
-  const p = decide(cafe, {
+  let p = decide(cafe, {
     outcome: 'Planlamaya hazır',
     owner: 'Ayşe',
     reason: 'İncelendi',
@@ -127,6 +128,9 @@ test('erken büyüme seçimi önceki kaynak kararını yeniden açar', () => {
     excluded: 'Kafe kiralama',
     reconsider: 'İzin biterse',
   }
+  p.answers['18'].actions = 'Durakta teslim et.'
+  p.answers['18'].comparison = 'Durakta talep var.'
+  p = confirmStrategyChoice(p, 'Ayşe')
   p.answers['19'] = {
     choiceBasis: 'Sabah kahve arabası',
     goals: [
@@ -138,7 +142,12 @@ test('erken büyüme seçimi önceki kaynak kararını yeniden açar', () => {
       },
     ],
   }
-  p.answers['20'] = { ready: 'Karşılandı', authority: 'Ayşe', basis: 'Dayanak' }
+  p.answers['20'] = {
+    ready: 'Karşılandı',
+    authority: 'Ayşe',
+    basis: 'Dayanak',
+    resources: 'Bir vardiya',
+  }
   p.history = [
     {
       id: 'strateji',

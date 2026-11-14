@@ -1,3 +1,4 @@
+import { confirmStrategyChoice } from '../src/domain.ts'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { cafeExample } from '../src/cafe.ts'
@@ -218,6 +219,9 @@ test('tam geçişten sonra 90 günlük dosya kendi kaynak kararıyla uygulamayı
   p = applyEdit(p, '18', 'rationale', 'Sabah erişimi durakta doğrulandı.')
   p = applyEdit(p, '18', 'reconsider', 'Durak izni sona ererse.')
   p = applyEdit(p, '18', 'excluded', 'Büyük kafe')
+  p = applyEdit(p, '18', 'actions', 'Menüyü daralt ve durakta teslim et.')
+  p = applyEdit(p, '18', 'comparison', 'Sabah erişimi bu yolu destekliyor.')
+  p = confirmStrategyChoice(p, 'Ayşe')
   p = applyEdit(p, '19', 'goals', [
     {
       Görev: 'Sınırlı deneme',
@@ -229,6 +233,7 @@ test('tam geçişten sonra 90 günlük dosya kendi kaynak kararıyla uygulamayı
   for (const [key, value] of Object.entries({
     authority: 'Ayşe',
     basis: 'Onaylı kaynak',
+    resources: 'Bir gün ve bir araç',
     ready: 'Karşılandı',
   }))
     p = applyEdit(p, '20', key, value)

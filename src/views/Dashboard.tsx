@@ -21,6 +21,7 @@ import {
   effective,
   money,
   openGaps,
+  reviewNext,
   recommend,
   type Plan,
 } from '../domain'
@@ -112,14 +113,22 @@ export default function Dashboard({
   const gap = prep.rows.find((r) => !r.ok),
     newPlan = !p.answers['01']?.owner
   const canStart = permission.active && confirmed
-  const nextLabel = canStart
-    ? 'Strateji çalışmasını aç'
-    : newPlan
-      ? 'Hazırlığa başla'
-      : prep.required === 9 || permission.last
-        ? 'Geçişi incele'
-        : 'Eksik dayanağı incele'
+  const follow = reviewNext(p)
+  const nextLabel = follow
+    ? follow.id + '. adımın kaydını aç'
+    : canStart
+      ? 'Strateji çalışmasını aç'
+      : newPlan
+        ? 'Hazırlığa başla'
+        : prep.required === 9 || permission.last
+          ? 'Geçişi incele'
+          : 'Eksik dayanağı incele'
   function nextAction() {
+    if (follow) {
+      if (follow.id === '17') go('gecis')
+      else visit(follow.id)
+      return
+    }
     if (canStart)
       visit(
         permission.last?.outcome === 'Koşullu hazır'
@@ -146,11 +155,15 @@ export default function Dashboard({
                 {String(selected + 1).padStart(2, '0')} / 08
               </span>
             </div>
-            <h2>{showReadiness ? prep.outcome : row.name}</h2>
+            <h2>
+              {showReadiness ? (follow?.action ?? prep.outcome) : row.name}
+            </h2>
             <p>
-              {selected === current
-                ? 'İş fikrinizi sınayın. Ardından planlamaya geçişi değerlendirin.'
-                : row.question}
+              {showReadiness && follow
+                ? follow.reason
+                : selected === current
+                  ? 'İş fikrinizi sınayın. Ardından planlamaya geçişi değerlendirin.'
+                  : row.question}
             </p>
             {showReadiness && (
               <button className="brief-open" onClick={nextAction}>
@@ -287,7 +300,9 @@ export default function Dashboard({
       </div>
       <section className="panel">
         <h2>Stratejik planlamaya hazırlık</h2>
-        <p>Hazırlık, strateji çalışması ve uygulama ayrı aşamalardır.</p>
+        <button className="case-map" onClick={() => go('asamalar')}>
+          Beş ana aşamayı incele
+        </button>
         <p>
           Öneri: {prep.outcome}. {prep.required} / 9 zorunlu ölçüt.
         </p>

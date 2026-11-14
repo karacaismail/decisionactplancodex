@@ -186,11 +186,11 @@
         "Yön değiştirin. 11. adımda başka çözümü değerlendirin."
       ],
       [
-        "Fayda görüldü. Üç işletme ölçüsünden ikisi karşılandı.",
+        "Fayda görüldü. İşletme ölçülerinden biri eksik kaldı.",
         "Eksik ölçüt düzelebiliyorsa 2 hafta yeniden deneyin. Önceden ayrılan hakla toplam en çok 3 deneme yapılır."
       ],
       [
-        "Üç ölçüt ve fayda eşiği karşılandı.",
+        "Seçilen ölçüler ve fayda eşiği karşılandı.",
         "İlerleyin. Tekrar teslimi ölçün."
       ]
     ],

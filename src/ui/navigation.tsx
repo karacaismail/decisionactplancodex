@@ -13,6 +13,7 @@ import { personalOnly } from '../hosting'
 const pages = [
   { id: 'dashboard', label: 'Karar panosu', icon: SquaresFour },
   { id: 'portfolio', label: 'Plan portföyü', icon: Stack },
+  { id: 'asamalar', label: 'Strateji yönetimi', icon: Stack },
   { id: 'editor', label: 'Plan adımları', icon: Path },
   { id: 'gecis', label: 'Planlamaya geçiş', icon: Path },
   { id: 'evidence', label: 'Kanıt defteri', icon: Notepad },

@@ -6,8 +6,14 @@ import {
   scrypt,
   timingSafeEqual,
 } from 'node:crypto'
-import { promisify } from 'node:util'
-import { validatePlan, report } from '../src/domain.ts'
+import { isDeepStrictEqual, promisify } from 'node:util'
+import {
+  confirmStrategyChoice,
+  recordCycleReview,
+  recordDecision,
+  validatePlan,
+  report,
+} from '../src/domain.ts'
 const derive = promisify(scrypt)
 const digest = (s) => createHash('sha256').update(s).digest('hex')
 const secret = () => randomBytes(32).toString('hex')
@@ -18,6 +24,113 @@ function text(value, max = 120) {
   return (
     typeof value === 'string' && value.trim().length > 0 && value.length <= max
   )
+}
+function checkDecisionHistory(old, p, member, canRecover) {
+  const previousOwner = old?.answers['01']?.owner
+  const owner = p.answers['01']?.owner
+  if (
+    previousOwner &&
+    previousOwner !== owner &&
+    member !== previousOwner &&
+    !canRecover
+  )
+    fail(403, 'Karar sahibini yalnız kayıtlı karar sahibi değiştirebilir.')
+  const resources = (plan) => (plan?.history ?? []).filter((h) => h.stage === 4)
+  const earlier = resources(old),
+    received = resources(p)
+  for (const [i, h] of earlier.entries()) {
+    if (
+      !isDeepStrictEqual(h, received[i]) &&
+      !isDeepStrictEqual({ ...h, stale: true }, received[i])
+    )
+      fail(403, 'Geçmiş kaynak kararı korunmalıdır.')
+  }
+  for (const grant of received.slice(earlier.length)) {
+    if (grant.outcome !== 'İlerleyin') continue
+    if (!old && grant.imported && grant.stale) continue
+    if (
+      grant.imported ||
+      member !== owner ||
+      grant.owner !== member ||
+      (previousOwner && member !== previousOwner)
+    )
+      fail(403, 'Kaynak iznini yalnız planın karar sahibi verir.')
+    try {
+      recordDecision(
+        { ...p, history: p.history.slice(0, p.history.indexOf(grant)) },
+        4,
+        grant,
+      )
+    } catch (e) {
+      fail(400, e.message)
+    }
+  }
+  function additions(key) {
+    const before = old?.[key] ?? [],
+      after = p[key] ?? []
+    for (const [index, entry] of before.entries()) {
+      const next = after[index]
+      if (isDeepStrictEqual(entry, next)) continue
+      if (
+        key === 'strategyChoices' &&
+        !entry.revoked &&
+        member === previousOwner &&
+        isDeepStrictEqual({ ...entry, revoked: true }, next)
+      )
+        continue
+      fail(403, 'Geçmiş karar kaydı korunmalıdır.')
+    }
+    return after.slice(before.length)
+  }
+  for (const [key, archiveFlag] of [
+    ['strategyChoices', 'revoked'],
+    ['cycleReviews', 'imported'],
+  ]) {
+    const added = additions(key)
+    for (const entry of added) {
+      if (!old && entry[archiveFlag]) continue
+      if (
+        entry[archiveFlag] ||
+        !owner ||
+        member !== owner ||
+        (previousOwner && member !== previousOwner) ||
+        entry.owner !== member
+      )
+        fail(403, 'Yeni kararı yalnız planın karar sahibi verebilir.')
+      try {
+        if (key === 'strategyChoices') {
+          const chosen = confirmStrategyChoice(
+            { ...p, strategyChoices: old?.strategyChoices ?? [] },
+            member,
+          ).strategyChoices.at(-1)
+          if (
+            !chosen ||
+            !['question', 'choice', 'basis', 'transition'].every(
+              (k) => entry[k] === chosen[k],
+            )
+          )
+            fail(400, 'Seçim ile dayanağı uyuşmuyor.')
+        } else {
+          if (!old) fail(400, 'Önce kaynak kararını kaydedin.')
+          const result = recordCycleReview(old, entry)
+          const valid = result.cycleReviews.at(-1)
+          if (
+            valid.grant !== entry.grant ||
+            valid.choice !== entry.choice ||
+            !isDeepStrictEqual(result.history, p.history) ||
+            !isDeepStrictEqual(result.strategyChoices, p.strategyChoices) ||
+            !isDeepStrictEqual(
+              result.foundation?.decisions,
+              p.foundation?.decisions,
+            )
+          )
+            fail(400, 'Karar, güncel yol ve kaynak izniyle uyuşmuyor.')
+        }
+      } catch (error) {
+        fail(400, error.message)
+      }
+    }
+  }
 }
 async function read(req) {
   let bytes = 0
@@ -137,7 +250,7 @@ export function teamApi(path) {
         fail(403, 'Bu hizmet yalnız yerel adreste açılır.')
       const action = route.slice(10),
         post = req.method === 'POST'
-      const reads = ['session', 'list', 'members', 'audit', 'reviews']
+      const reads = ['session', 'list', 'members', 'owners', 'audit', 'reviews']
       if (
         (reads.includes(action) && req.method !== 'GET') ||
         (!reads.includes(action) && !post)
@@ -265,6 +378,14 @@ export function teamApi(path) {
             log(space, user.name, 'Erişim kaldırıldı', target.name)
           })
           data = { ok: true }
+        } else if (action === 'owners') {
+          if (!['editor', 'admin'].includes(user.role))
+            fail(403, 'Düzenleme yetkisi gerekiyor.')
+          data = sql(
+            "SELECT name FROM members WHERE space=? AND active=1 AND role IN ('admin','editor') ORDER BY name",
+          )
+            .all(space)
+            .map((m) => m.name)
         } else if (action === 'members')
           data = sql(
             'SELECT id,name,role FROM members WHERE space=? AND active=1 ORDER BY name',
@@ -389,6 +510,25 @@ export function teamApi(path) {
                 'Başka bir kullanıcı bu planı değiştirdi. Kopyanızı indirin veya kayıtlı sürümü açın.',
               )
             const old = prev ? JSON.parse(prev.body) : null
+            const oldOwner = old?.answers['01']?.owner,
+              newOwner = p.answers['01']?.owner
+            const eligible = (name) =>
+              sql(
+                "SELECT 1 AS ok FROM members WHERE space=? AND active=1 AND name=? AND role IN ('admin','editor')",
+              ).get(space, name)
+            const canRecover =
+              user.role === 'admin' &&
+              oldOwner &&
+              oldOwner !== newOwner &&
+              !eligible(oldOwner)
+            checkDecisionHistory(old, p, user.name, canRecover)
+            if (
+              newOwner &&
+              oldOwner !== newOwner &&
+              !p.example &&
+              !eligible(newOwner)
+            )
+              fail(400, 'Karar sahibini etkin üyelerden seçin.')
             const next = {
               ...p,
               revision: p.revision + 1,
@@ -404,6 +544,8 @@ export function teamApi(path) {
               handover: 'Devir kontrolü',
               answers: 'Plan adımları',
               history: 'Kararlar',
+              strategyChoices: 'Stratejik seçimler',
+              cycleReviews: 'Sonuç kararları',
               evidence: 'Kanıtlar',
               work: 'Görevler',
               publications: 'Raporlar',

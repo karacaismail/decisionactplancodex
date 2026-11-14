@@ -1,3 +1,9 @@
+import {
+  reviewDestinations,
+  validReviewInput,
+  type CycleReview,
+  type SavedReview,
+} from './lifecycle.ts'
 import { crossQuestions } from './researchCatalog.ts'
 import { strengthsComplete } from './research.ts'
 import { compareReady, routes } from './dossier.ts'
@@ -48,6 +54,7 @@ export interface Decision extends DecisionInput {
   id: string
   stage: number
   at: string
+  imported?: boolean
   stale: boolean
 }
 export interface Evidence extends EvidenceLink {
@@ -70,10 +77,23 @@ export interface ReportPair {
   executive: string
   action: string
 }
+interface StrategyChoice {
+  question: string
+  id: string
+  at: string
+  owner: string
+  choice: string
+  basis: string
+  transition: string
+  revoked?: boolean
+}
 export interface Plan {
+  importedOwner?: string
+  strategyChoices?: StrategyChoice[]
   foundation?: Foundation
   handover?: Record<string, HandoverCheck>
   work?: Work[]
+  cycleReviews?: SavedReview[]
   publications?: ReportPair[]
   schemaVersion: 1
   id: string
@@ -149,6 +169,7 @@ export function activeSteps(p: Plan) {
           return p.answers['29']?.defect === 'Evet'
         case '34':
           return (
+            !!closingReview(p) ||
             ['Devret', 'Kapat'].includes(String(p.answers['33']?.direction)) ||
             profile.start === 'Devralınan iş'
           )
@@ -176,6 +197,14 @@ export function visibleFields(p: Plan, s: Step) {
     if (s.id === '18' && ['rationale', 'reconsider'].includes(f.key))
       return !!p.foundation?.decisions.at(-1)?.dossier
 
+    if (s.id === '25' && ['nextObservation', 'actual'].includes(f.key)) {
+      return (
+        f.key ===
+        (p.answers['25']?.benefit === 'Bilinmiyor'
+          ? 'nextObservation'
+          : 'actual')
+      )
+    }
     if (s.id === '19' && f.key === 'choiceBasis') return false
     if (f.branch && f.branch !== branch) return false
     if (f.key === 'fundingTerms')
@@ -223,6 +252,39 @@ export function present(v: unknown, f: Field): boolean {
     typeof v === 'string' && !!v.trim() && (!f.choices || f.choices.includes(v))
   )
 }
+function rowGap(p: Plan, s: Step) {
+  const entry = (key: string, row: number, message: string) => ({
+    value: s.id + '.' + key,
+    step: s.id,
+    label: s.id + '. adım, ' + (row + 1) + '. kayıt. ' + message,
+  })
+  if (s.id === '19' && p.foundation?.decisions.at(-1)?.dossier) {
+    const rows = p.answers['19']?.goals
+    if (Array.isArray(rows)) {
+      const i = (rows as Record<string, string>[]).findIndex((r) =>
+        r['Hedef tarih']?.trim()
+          ? !calendar(r['Hedef tarih'])
+          : !r['Başlatacak olay']?.trim(),
+      )
+      if (i >= 0)
+        return entry(
+          'goals',
+          i,
+          'Geçerli tarih veya başlatacak olay gerekiyor.',
+        )
+    }
+  }
+  if (s.id === '22') {
+    const rows = p.answers['22']?.metrics
+    if (Array.isArray(rows)) {
+      const i = (rows as Record<string, string>[]).findIndex(
+        (r) => !r['Başlangıç']?.trim() && !r['İlk ölçüm yolu']?.trim(),
+      )
+      if (i >= 0)
+        return entry('metrics', i, 'Başlangıç veya ilk ölçüm yolu gerekiyor.')
+    }
+  }
+}
 export function complete(p: Plan, s: Step, checkStrengths = true) {
   if (
     checkStrengths &&
@@ -231,15 +293,8 @@ export function complete(p: Plan, s: Step, checkStrengths = true) {
     !strengthsComplete(p)
   )
     return false
+  if (rowGap(p, s)) return false
   if (s.id === '19' && p.foundation?.decisions.at(-1)?.dossier) {
-    const goals = p.answers['19']?.goals
-    if (
-      !Array.isArray(goals) ||
-      !(goals as Record<string, string>[]).every((r) =>
-        calendar(r['Hedef tarih']),
-      )
-    )
-      return false
     if (p.answers['19']?.choiceBasis !== p.answers['18']?.choice) return false
   }
   if (s.id === '18' && p.foundation?.decisions.at(-1)?.dossier) {
@@ -454,6 +509,8 @@ export function recommend(p: Plan, i: number): Advice {
     (!access(p).active || access(p).last?.outcome !== 'Planlamaya hazır')
   )
     return hold('Önce stratejik planlamaya geçiş kararını inceleyin.')
+  if (i === 4 && !currentStrategyChoice(p))
+    return hold('Önce karar sahibi stratejik yolu seçmelidir.')
   if (i === 3 && !demandProof(p))
     return hold('Müşteri davranışını tarihli bir kanıta bağlayın.')
   if (fields.some((s) => !complete(p, s)))
@@ -527,8 +584,6 @@ export function recommend(p: Plan, i: number): Advice {
     return change('Geçerli taahhüt sayısı yazılı eşiğin altında.')
   if (i === 4 && a['20'].ready !== 'Karşılandı')
     return hold('Kaynak ve risk sınırını doğrulayın.')
-  if (i === 5 && (a['22'].metrics as unknown[]).length !== 3)
-    return hold('Üç işletme ölçüsü tanımlayın.')
   if (
     i === 5 &&
     (Number(a['23'].completed) > Number(a['23'].total) ||
@@ -556,7 +611,7 @@ export function recommend(p: Plan, i: number): Advice {
   if (
     i === 7 &&
     activeSteps(p).includes('34') &&
-    a['34'].accepted !== 'Karşılandı'
+    a['34']?.accepted !== 'Karşılandı'
   )
     return hold('Açık işler için yazılı kabul bekleniyor.')
   return {
@@ -568,8 +623,9 @@ export function recommend(p: Plan, i: number): Advice {
 export function openGaps(p: Plan, stage: number) {
   return steps
     .filter((s) => s.stage === stage && activeSteps(p).includes(s.id))
-    .flatMap((s) =>
-      visibleFields(p, s)
+    .flatMap((s) => {
+      const extra = rowGap(p, s)
+      const missing = visibleFields(p, s)
         .filter((f) => !f.optional)
         .filter(
           (f) =>
@@ -581,8 +637,11 @@ export function openGaps(p: Plan, stage: number) {
           value: s.id + '.' + f.key,
           label: s.id + '. ' + f.label,
           step: s.id,
-        })),
-    )
+        }))
+      return extra
+        ? [...missing.filter((item) => item.value !== extra.value), extra]
+        : missing
+    })
 }
 export function recordDecision(
   p: Plan,
@@ -685,6 +744,199 @@ export function freezeReports(p: Plan): Plan {
   }
   return { ...p, publications: [...(p.publications || []), pair] }
 }
+function choiceBasis(p: Plan) {
+  const a = p.answers['18'] ?? {}
+  return JSON.stringify(
+    Object.keys(a)
+      .sort()
+      .map((k) => [k, a[k]]),
+  )
+}
+export function currentStrategyChoice(p: Plan) {
+  const choice = p.strategyChoices?.at(-1)
+  if (!choice || choice.revoked || choice.basis !== choiceBasis(p))
+    return undefined
+  const original = p.foundation?.decisions.find(
+    (d) => d.id === choice.transition,
+  )
+  const latest = p.foundation?.decisions.at(-1)
+  return original &&
+    !original.revoked &&
+    latest &&
+    !latest.revoked &&
+    (latest.outcome !== 'Koşullu hazır' ||
+      latest.field !== '18.route' ||
+      choice.question === latest.question) &&
+    original.signature === latest.signature
+    ? choice
+    : undefined
+}
+export function confirmStrategyChoice(p: Plan, owner: string): Plan {
+  const permission = access(p),
+    last = permission.last
+  if (
+    !permission.active ||
+    !last ||
+    (last.outcome === 'Koşullu hazır' && last.field !== '18.route')
+  )
+    throw Error('Yol seçimi için geçerli izin gerekiyor.')
+  if (
+    !owner.trim() ||
+    owner.trim() !== String(p.answers['01']?.owner ?? '').trim()
+  )
+    throw Error('Yolu planın karar sahibi seçer.')
+  const a = p.answers['18']
+  if (
+    !complete(
+      p,
+      steps.find((s) => s.id === '18')!,
+    ) ||
+    !String(a?.actions ?? '').trim() ||
+    !String(a?.comparison ?? '').trim()
+  )
+    throw Error(
+      'Seçimi, karşılaştırmayı, temel işleri ve yeniden bakma koşulunu tamamlayın.',
+    )
+  const question = String(
+    last.outcome === 'Koşullu hazır'
+      ? last.question
+      : a?.question ||
+          p.foundation?.brief?.openDecisions?.find((q) => q.question.trim())
+            ?.question ||
+          p.foundation?.brief?.question ||
+          '',
+  ).trim()
+  if (!question) throw Error('Stratejin hangi soruyu yanıtladığını yazın.')
+  if (currentStrategyChoice(p)) return p
+  return {
+    ...p,
+    strategyChoices: [
+      ...(p.strategyChoices ?? []),
+      {
+        question,
+        id: crypto.randomUUID(),
+        at: now(),
+        owner: owner.trim(),
+        choice: String(a.choice),
+        basis: choiceBasis(p),
+        transition: last.id,
+      },
+    ],
+  }
+}
+export function copyPlan(p: Plan, team = false): Plan {
+  return {
+    ...p,
+    id: crypto.randomUUID(),
+    revision: 0,
+    name: p.name + ' (kopya)',
+    ...(team && {
+      importedOwner: String(p.answers['01']?.owner || p.importedOwner || ''),
+      answers: { ...p.answers, '01': { ...p.answers['01'], owner: '' } },
+    }),
+    ...(p.foundation && {
+      foundation: {
+        ...p.foundation,
+        decisions: p.foundation.decisions.map((d) => ({ ...d, revoked: true })),
+      },
+    }),
+    history: p.history.map((h) => ({ ...h, stale: true, imported: true })),
+    ...(p.strategyChoices && {
+      strategyChoices: p.strategyChoices.map((c) => ({ ...c, revoked: true })),
+    }),
+    ...(p.cycleReviews && {
+      cycleReviews: p.cycleReviews.map((r) => ({ ...r, imported: true })),
+    }),
+  }
+}
+export function latestReview(p: Plan) {
+  const r = p.cycleReviews?.at(-1)
+  const grant = p.history.findLast(
+    (h) => h.stage === 4 && h.outcome === 'İlerleyin' && !h.imported,
+  )
+  return r && !r.imported && grant && r.grant === grant.id ? r : undefined
+}
+export function closingReview(p: Plan) {
+  const r = latestReview(p)
+  return r && (r.action === 'Tamamla' || r.action === 'Durdur') ? r : undefined
+}
+export function reviewNext(p: Plan) {
+  const r = latestReview(p)
+  if (!r) return undefined
+  const id = reviewDestinations[r.action]
+  if ((id === '23' || id === '25') && !approved(p, 4)) return undefined
+  if (id === '17' && access(p).active) return undefined
+  if (id === '18' && currentStrategyChoice(p)) return undefined
+  if (!['17', '34'].includes(id) && !access(p).active) return undefined
+  return { id, action: r.action, reason: r.reason }
+}
+export function recordCycleReview(p: Plan, input: CycleReview): Plan {
+  if (!validReviewInput(input))
+    throw Error('Kararın dayanağını, gerekçesini ve izlenecek işi tamamlayın.')
+  if (input.owner.trim() !== String(p.answers['01']?.owner ?? '').trim())
+    throw Error('Bu kararı planın karar sahibi verir.')
+  const grant = p.history.findLast(
+    (h) => h.stage === 4 && h.outcome === 'İlerleyin' && !h.imported,
+  )
+  const stopOrReturn = ['Hazırlığa dön', 'Durdur', 'Tamamla'].includes(
+    input.action,
+  )
+  if (
+    !grant ||
+    (!['Hazırlığa dön', 'Durdur'].includes(input.action) &&
+      !allows(p, '33', 'direction'))
+  )
+    throw Error('Güncel kaynak iznini ve geçiş kararını inceleyin.')
+  const saved: SavedReview = {
+    ...input,
+    owner: input.owner.trim(),
+    choice: String(p.answers['18']?.choice ?? ''),
+    grant: grant.id,
+    id: crypto.randomUUID(),
+    at: now(),
+  }
+  const reopen =
+    stopOrReturn ||
+    input.action === 'Yolu yeniden seç' ||
+    input.action === 'Planı düzelt'
+  const f = p.foundation
+  return {
+    ...p,
+    cycleReviews: [...(p.cycleReviews ?? []), saved],
+    ...((stopOrReturn || input.action === 'Yolu yeniden seç') &&
+    p.strategyChoices
+      ? {
+          strategyChoices: p.strategyChoices.map((c) => ({
+            ...c,
+            revoked: true,
+          })),
+        }
+      : {}),
+    ...(reopen
+      ? {
+          history: p.history.map((h) =>
+            h.stage >= 4 ? { ...h, stale: true } : h,
+          ),
+        }
+      : {}),
+    ...(input.action === 'Yolu yeniden seç' && p.answers['19']
+      ? {
+          answers: {
+            ...p.answers,
+            '19': { ...p.answers['19'], choiceBasis: '' },
+          },
+        }
+      : {}),
+    ...(stopOrReturn && f
+      ? {
+          foundation: {
+            ...f,
+            decisions: f.decisions.map((d) => ({ ...d, revoked: true })),
+          },
+        }
+      : {}),
+  }
+}
 export function report(p: Plan, kind: 'executive' | 'action') {
   const stage = currentStage(p),
     advice = recommend(p, stage),
@@ -715,17 +967,75 @@ export function report(p: Plan, kind: 'executive' | 'action') {
       permission.last.question,
       permission.last.assignee + ' · ' + dateLabel(permission.last.due),
     )
+  const follow = reviewNext(p)
+  const reviews = p.cycleReviews ?? []
+  if (reviews.length)
+    head.push(
+      '## Sonucu değerlendirme ve yeniden karar verme',
+      ...reviews.map((r) =>
+        [
+          dateLabel(r.at),
+          r.owner,
+          r.action,
+          'İncelenen yol: ' + (r.choice || 'Belirtilmedi'),
+          'Beklenti: ' + (r.expected || 'Belirtilmedi'),
+          'Gerçek sonuç: ' + (r.observed || 'Henüz bilinmiyor'),
+          'Kaynak: ' + r.source,
+          'Gerekçe: ' + r.reason,
+          r.missing && 'Eksik gözlem: ' + r.missing,
+          r.assignee && 'Sorumlu: ' + r.assignee,
+          r.next && 'Sonraki kontrol: ' + r.next,
+        ]
+          .filter(Boolean)
+          .join('. '),
+      ),
+    )
   const a = p.answers
+  const detail = (step: string, key: string, title: string) => {
+    const value = a[step]?.[key]
+    return typeof value === 'string' && value.trim()
+      ? [title + ': ' + value]
+      : []
+  }
   if (a['18']?.choice) {
     head.push(
-      '## Stratejin önerdiği yol',
+      currentStrategyChoice(p) && permission.active
+        ? '## Karar sahibinin seçtiği yol'
+        : '## Stratejin önerdiği yol',
       String(a['18'].choice),
+      ...(currentStrategyChoice(p) && permission.active
+        ? ['Karar sorusu: ' + currentStrategyChoice(p)!.question]
+        : detail('18', 'question', 'Karar sorusu')),
+      ...detail('18', 'comparison', 'Seçimi ayıran bulgu'),
+      ...detail('18', 'actions', 'Birlikte yapılacak işler'),
       'Gerekçe: ' + String(a['18'].rationale || 'Bilinmiyor'),
       'Vazgeçilen yol: ' + String(a['18'].excluded || 'Bilinmiyor'),
       'Seçimi değiştirecek bulgu: ' +
         String(a['18'].reconsider || 'Bilinmiyor'),
     )
   }
+  const execution = [
+    ...detail('20', 'resources', 'Ayrılan kaynak'),
+    ...detail('21', 'scope', 'Planlanan teslim'),
+    ...detail('21', 'accept', 'Kabul koşulu'),
+    ...detail('22', 'benefit', 'Beklenen fayda'),
+    ...detail('22', 'source', 'Ölçüm kaynağı'),
+    ...detail('22', 'checkpoint', 'Kontrol zamanı'),
+    ...detail('23', 'problem', 'Teslim veya engel'),
+    ...detail('23', 'used', 'Kullanılan kaynak'),
+    ...detail('23', 'source', 'Teslim kaynağı'),
+    ...detail('25', 'group', 'Gözlenen grup'),
+    ...detail('25', 'period', 'Gözlem dönemi'),
+    ...(a['25']?.benefit !== 'Bilinmiyor'
+      ? detail('25', 'actual', 'Gözlenen sonuç')
+      : []),
+    ...detail('25', 'evidence', 'Sonucun kaynağı'),
+    ...detail('25', 'effects', 'Beklenmeyen etki'),
+    ...(a['25']?.benefit === 'Bilinmiyor'
+      ? detail('25', 'nextObservation', 'Sonraki gözlem')
+      : []),
+  ]
+  if (execution.length) head.push('## Seçimden uygulamaya', ...execution)
   const val = (id: string, k: string) =>
     typeof a[id]?.[k] === 'string' || typeof a[id]?.[k] === 'number'
       ? String(a[id][k]) || 'Bilinmiyor'
@@ -745,7 +1055,9 @@ export function report(p: Plan, kind: 'executive' | 'action') {
       ...head,
       '## Karar özeti',
       stages[stage].question,
-      'Öneri: ' + advice.outcome + '. ' + advice.reason,
+      follow
+        ? 'Güncel sonuç kararı: ' + follow.action + '. ' + follow.reason
+        : 'Öneri: ' + advice.outcome + '. ' + advice.reason,
       'Son kayıt: ' +
         (last
           ? effective(last) +
@@ -829,12 +1141,27 @@ export function report(p: Plan, kind: 'executive' | 'action') {
   return [
     ...head,
     '## Sıradaki iş',
-    taskMode,
-    ...(binding ? ['Karar sahibinin gerekçesi: ' + binding.reason] : []),
+    follow
+      ? follow.action +
+        '. ' +
+        follow.id +
+        '. adımın kaydını açın. ' +
+        follow.reason
+      : taskMode,
+    ...(binding && !follow
+      ? ['Karar sahibinin gerekçesi: ' + binding.reason]
+      : []),
     ...(a['18']?.choice
       ? [
-          '## Önerilen strateji',
+          currentStrategyChoice(p) && permission.active
+            ? '## Seçilen strateji'
+            : '## Önerilen strateji',
           String(a['18'].choice),
+          ...(currentStrategyChoice(p) && permission.active
+            ? ['Karar sorusu: ' + currentStrategyChoice(p)!.question]
+            : detail('18', 'question', 'Karar sorusu')),
+          ...detail('18', 'comparison', 'Seçimi ayıran bulgu'),
+          ...detail('18', 'actions', 'Birlikte yapılacak işler'),
           ...(a['18'].chosenOrigin
             ? ['Yolu doğuran soru: ' + a['18'].chosenOrigin]
             : []),
@@ -856,8 +1183,8 @@ export function report(p: Plan, kind: 'executive' | 'action') {
     ),
     ...(!actionable.length ? ['Henüz görev kaydı yok.'] : []),
     result === 'Durdurun' || result === 'Bekletin'
-      ? '## Bekleyen 90 günlük çalışma'
-      : '## 90 günlük çalışma',
+      ? '## Bekleyen eylem planı'
+      : '## Stratejik eylem planı',
     ...(goals.length
       ? goals.map((g) => Object.values(g).join(' · '))
       : ['İş sırasını 19. adımda yazın.']),
@@ -951,6 +1278,7 @@ export function validatePlan(v: unknown): v is Plan {
                   ([c, x]) =>
                     typeof x === 'string' &&
                     (f.columns?.includes(c) ||
+                      f.optionalColumns?.includes(c) ||
                       f.listChoices?.[c]?.includes(x) ||
                       (x === '' && !!f.listChoices?.[c]) ||
                       (id === '11' &&
@@ -990,7 +1318,36 @@ export function validatePlan(v: unknown): v is Plan {
       ))
   return (
     answers &&
+    (v.importedOwner === undefined || typeof v.importedOwner === 'string') &&
     validFoundation(v.foundation) &&
+    (v.strategyChoices === undefined ||
+      (Array.isArray(v.strategyChoices) &&
+        v.strategyChoices.every(
+          (c) =>
+            object(c) &&
+            iso(c.at) &&
+            ['id', 'owner', 'choice', 'basis', 'transition', 'question'].every(
+              (k) => typeof c[k] === 'string' && c[k].trim(),
+            ) &&
+            (c.revoked === undefined || typeof c.revoked === 'boolean'),
+        ) &&
+        new Set(v.strategyChoices.map((c) => c.id)).size ===
+          v.strategyChoices.length)) &&
+    (v.cycleReviews === undefined ||
+      (Array.isArray(v.cycleReviews) &&
+        v.cycleReviews.every(
+          (r) =>
+            object(r) &&
+            validReviewInput(r) &&
+            typeof r.id === 'string' &&
+            !!r.id &&
+            iso(r.at) &&
+            typeof r.choice === 'string' &&
+            typeof r.grant === 'string' &&
+            (r.imported === undefined || typeof r.imported === 'boolean'),
+        ) &&
+        new Set(v.cycleReviews.map((r) => r.id)).size ===
+          v.cycleReviews.length)) &&
     (v.handover === undefined ||
       (object(v.handover) &&
         Object.entries(v.handover).every(
@@ -1027,6 +1384,7 @@ export function validatePlan(v: unknown): v is Plan {
         typeof h.reason === 'string' &&
         typeof h.owner === 'string' &&
         typeof h.stale === 'boolean' &&
+        (h.imported === undefined || typeof h.imported === 'boolean') &&
         iso(h.at) &&
         ['task', 'date', 'proof'].every(
           (k) => h[k] === undefined || typeof h[k] === 'string',

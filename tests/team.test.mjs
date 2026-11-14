@@ -144,6 +144,107 @@ test('kurum alanı erişimi, sürüm çakışması, tek kullanımlık davet ve g
     name: 'Duru',
     password: randomUUID(),
   })
+  const protectedPlan = createPlan('Karar geçmişi')
+  protectedPlan.answers['01'] = { owner: 'Deniz' }
+  const choice = {
+    id: randomUUID(),
+    at: new Date().toISOString(),
+    owner: 'Deniz',
+    question: 'Hangi yol?',
+    choice: 'Durak',
+    basis: 'Dayanak',
+    transition: 'Geçiş',
+  }
+  const initial = await call('save', { plan: protectedPlan }, a.cookie)
+  assert.equal(initial.status, 200)
+  assert.equal(
+    (
+      await call(
+        'save',
+        { plan: { ...initial.body, strategyChoices: [choice] } },
+        ed.cookie,
+      )
+    ).status,
+    403,
+  )
+  assert.equal(
+    (
+      await call(
+        'save',
+        { plan: { ...initial.body, answers: { '01': { owner: 'Duru' } } } },
+        ed.cookie,
+      )
+    ).status,
+    403,
+  )
+  const grant = {
+    id: randomUUID(),
+    at: new Date().toISOString(),
+    owner: 'Deniz',
+    stage: 4,
+    reason: 'Kaynak ayırdım.',
+    outcome: 'İlerleyin',
+    stale: false,
+  }
+  assert.equal(
+    (
+      await call(
+        'save',
+        { plan: { ...initial.body, history: [grant] } },
+        ed.cookie,
+      )
+    ).status,
+    403,
+  )
+  assert.equal(
+    (
+      await call(
+        'save',
+        { plan: { ...initial.body, history: [grant] } },
+        a.cookie,
+      )
+    ).status,
+    400,
+  )
+  const archived = createPlan('Geçmişi olan kopya')
+  archived.strategyChoices = [{ ...choice, revoked: true }]
+  archived.history = [
+    { ...grant, imported: true, stale: true },
+    {
+      ...grant,
+      id: randomUUID(),
+      outcome: 'Bekletin',
+      imported: true,
+      stale: true,
+    },
+  ]
+  const archiveSaved = await call('save', { plan: archived }, a.cookie)
+  assert.equal(archiveSaved.status, 200)
+  assert.equal(
+    (
+      await call(
+        'save',
+        {
+          plan: {
+            ...archiveSaved.body,
+            history: [archiveSaved.body.history[0]],
+          },
+        },
+        ed.cookie,
+      )
+    ).status,
+    403,
+  )
+  assert.equal(
+    (
+      await call(
+        'save',
+        { plan: { ...archiveSaved.body, strategyChoices: [] } },
+        a.cookie,
+      )
+    ).status,
+    403,
+  )
   const started = Promise.withResolvers(),
     finished = Promise.withResolvers()
   server.once('request', () => started.resolve())

@@ -56,7 +56,9 @@
   "16": ["Geliri, gideri ve ödeme günlerini hesaplayın."],
   "17": ["Başarısızlığın olası nedenini, erken işaretini ve önlemini yazın."],
   "18": ["Hedef grubu, seçilen yolu ve vazgeçilen seçeneği belirleyin."],
-  "19": ["İlk 90 günün hedefini, sorumlusunu ve bitişini yazın."],
+  "19": [
+    "Her teslimin sorumlusunu yazın. Tarihi veya işi başlatacak olayı belirtin."
+  ],
   "20": [
     "Yetkiyi, bütçeyi ve kanıtı tek karar dosyasında birleştirin.",
     "İyi, orta ve kötü durum için para hesabı çıkarın. On yedinci adımda beş olası başarısızlık nedenini yazın. Olasılığa ve etkiye 1 ile 3 arasında puan verin. İki puanı çarpın. Başlangıçta 6 ve üstünü kritik sayın. Ağır zarar ihtimali puandan bağımsız incelenir. Orta durumda katkı sıfır veya eksiyse fiyatı veya gideri değiştirin. Geri ödeme 12 ayı aşıyorsa 24. adımda kanalı sınayın.",
@@ -68,8 +70,8 @@
   "23": ["Sınırlı bir grupla gerçek teslim yapın."],
   "24": ["Hangi yolun uygun müşteriyi getirdiğini ölçün."],
   "25": [
-    "Üç ölçütü, gerçek faydayı ve zarar sınırını birlikte değerlendirin.",
-    "Dijital ürünü yapmak 6 haftayı aşıyorsa kapsamı daraltın. Donanımda başlangıç üst sınırı 6 aydır. 22. adımda ölçüm kartı. İşe uygun üç ayrı işletme ölçüsü seçin. Ayrıca kullanıcının elde edeceği doğrudan fayda için bir ölçü yazın. Aynı bulguyu iki kez saymayın. Hepsini ve zarar sınırını teslimden önce kaydedin.",
+    "İşin ölçülerini, gerçek faydayı ve zarar sınırını birlikte değerlendirin.",
+    "Dijital ürünü yapmak 6 haftayı aşıyorsa kapsamı daraltın. Donanımda başlangıç üst sınırı 6 aydır. 22. adımda ölçüm kartı. İşe uygun işletme ölçülerini seçin. Ayrıca kullanıcının elde edeceği doğrudan fayda için bir ölçü yazın. Aynı bulguyu iki kez saymayın. Hepsini ve zarar sınırını teslimden önce kaydedin.",
     "İlk teslim. Kullanıcının tamamlaması gereken işi yazın. İlk teslim için vazgeçilmez işlevleri seçin. İlk deneme için örnek büyüklük tüketicide 10 ile 50 kişidir. İşletmede 3 ile 10 kurum, kamuda 1 veya 2 deneme başlangıç örneğidir. Bunlar 06. adımdaki görüşmelerden ayrı sayılır. Uygunsa 2 veya 3 erişim yolunu küçük bütçelerle karşılaştırın. Örnek süre 2 haftadır. Karar sahibi her yolun giderini ve tamamlanan işini kaydeder.",
     "Elinizde ne olur? Önceki sonuç, gözlenen fayda, kusurlar ve düzeltme sahibi. Satış, tavsiye veya memnuniyet tek başına teslimin işe yaradığını göstermez."
   ],

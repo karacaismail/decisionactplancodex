@@ -1,4 +1,5 @@
-import { storagePrefix } from '../hosting'
+import { personalOnly, storagePrefix } from '../hosting'
+import type { Session } from '../team'
 import { useState, useEffect, lazy, Suspense } from 'react'
 import {
   ConfigProvider,
@@ -32,6 +33,8 @@ import {
   today,
   visibleFields,
   type Plan,
+  confirmStrategyChoice,
+  currentStrategyChoice,
   type DecisionInput,
 } from '../domain'
 import guide from '../data/guide.json'
@@ -42,19 +45,23 @@ import PreparationTools from './PreparationTools'
 import FoundationInputs from './FoundationInputs'
 import DecisionDesk from './DecisionDesk'
 import FieldInput from './Fields'
+import { phases, phaseOf } from '../lifecycle'
 import StepSummary from './StepSummary'
 import { routes } from '../dossier'
+const TeamOwner = personalOnly ? null : lazy(() => import('./TeamOwner'))
 const Situation = lazy(() => import('./Situation'))
 const BriefEditor = lazy(() => import('./BriefEditor'))
 const Takeover = lazy(() => import('./Takeover'))
 const Methods = lazy(() => import('./Methods'))
 export default function Editor({
   p,
+  session,
   change,
   stage,
   setStage,
   readOnly,
   openTransition,
+  openEvaluation,
   savedTransition,
   openDossier,
   visitStep,
@@ -64,7 +71,9 @@ export default function Editor({
   visitStep: (id: string) => void
   openDossier: (id?: string) => void
   openTransition: () => void
+  openEvaluation: () => void
   openProof: (id: string) => void
+  session?: Session
   actor?: string
   savedTransition?: string
   readOnly: boolean
@@ -248,54 +257,47 @@ export default function Editor({
               tamamlandı
             </p>
             <div>
-              {(['Hazırlık', 'Strateji çalışması', 'Uygulama'] as const).map(
-                (group) => {
-                  const inGroup = (id: string) =>
-                    group ===
-                    (id < '18'
-                      ? 'Hazırlık'
-                      : id < '21'
-                        ? 'Strateji çalışması'
-                        : 'Uygulama')
-                  if (!items.some((s) => inGroup(s.id))) return null
-                  return (
-                    <div key={group}>
-                      <h4>{group}</h4>
-                      <ol>
-                        {items.map(
-                          (s, i) =>
-                            inGroup(s.id) && (
-                              <li key={s.id}>
-                                <button
-                                  aria-label={
-                                    s.id +
-                                    '. ' +
-                                    s.title +
-                                    (complete(p, s) ? ', tamamlandı' : '')
-                                  }
-                                  aria-current={
-                                    mode === 'step' && s.id === step.id
-                                      ? 'step'
-                                      : undefined
-                                  }
-                                  onClick={() => choose(i)}
-                                >
-                                  <span>{s.id}</span>
-                                  <b>{s.title}</b>
-                                  {complete(p, s) ? (
-                                    <CheckCircle size={16} />
-                                  ) : (
-                                    <Circle size={13} />
-                                  )}
-                                </button>
-                              </li>
-                            ),
-                        )}
-                      </ol>
-                    </div>
-                  )
-                },
-              )}
+              {phases.map((phase) => {
+                const group = phase.title
+                const inGroup = (id: string) => phaseOf(id).id === phase.id
+                if (!items.some((s) => inGroup(s.id))) return null
+                return (
+                  <div key={group}>
+                    <h4>{group}</h4>
+                    <ol>
+                      {items.map(
+                        (s, i) =>
+                          inGroup(s.id) && (
+                            <li key={s.id}>
+                              <button
+                                aria-label={
+                                  s.id +
+                                  '. ' +
+                                  s.title +
+                                  (complete(p, s) ? ', tamamlandı' : '')
+                                }
+                                aria-current={
+                                  mode === 'step' && s.id === step.id
+                                    ? 'step'
+                                    : undefined
+                                }
+                                onClick={() => choose(i)}
+                              >
+                                <span>{s.id}</span>
+                                <b>{s.title}</b>
+                                {complete(p, s) ? (
+                                  <CheckCircle size={16} />
+                                ) : (
+                                  <Circle size={13} />
+                                )}
+                              </button>
+                            </li>
+                          ),
+                      )}
+                    </ol>
+                  </div>
+                )
+              })}
             </div>
             <button
               className="index-decision"
@@ -412,13 +414,8 @@ export default function Editor({
             <>
               <div className="form-heading">
                 <div className="eyeline">
-                  <NotePencil size={17} />{' '}
-                  {step.id < '18'
-                    ? 'Hazırlık'
-                    : step.id < '21'
-                      ? 'Strateji çalışması'
-                      : 'Uygulama'}{' '}
-                  · Adım {step.id}
+                  <NotePencil size={17} /> {phaseOf(step.id).title} · Adım{' '}
+                  {step.id}
                 </div>
                 <h3 id="active-question" tabIndex={-1}>
                   {step.title}
@@ -444,16 +441,20 @@ export default function Editor({
               {step.id >= '18' && (
                 <div className="step-help">
                   <p>
-                    {grant.active && persisted
-                      ? grant.last?.outcome === 'Koşullu hazır'
-                        ? 'Yalnız seçilen alan açık: ' +
-                          scopeFields.find(
-                            ([key]) => key === grant.last?.field,
-                          )?.[1]
-                        : step.id > '20' && !allows(p, step.id, '')
-                          ? 'Uygulama için strateji dosyasını tamamlayın ve kaynak kararını kaydedin.'
-                          : 'Geçiş kararı kaydedildi.'
-                      : grant.reason}
+                    {step.id === '34' &&
+                    editable('obligations') &&
+                    !grant.active
+                      ? 'Karar sahibi işi kapattı. Açık sözleri kaydedebilirsiniz.'
+                      : grant.active && persisted
+                        ? grant.last?.outcome === 'Koşullu hazır'
+                          ? 'Yalnız seçilen alan açık: ' +
+                            scopeFields.find(
+                              ([key]) => key === grant.last?.field,
+                            )?.[1]
+                          : step.id > '20' && !allows(p, step.id, '')
+                            ? 'Uygulama için strateji dosyasını tamamlayın ve kaynak kararını kaydedin.'
+                            : 'Geçiş kararı kaydedildi.'
+                        : grant.reason}
                   </p>
                   <Button onClick={openTransition}>
                     Geçiş kararını incele
@@ -575,8 +576,8 @@ export default function Editor({
                   (step.id === '20' && !allows(p, '20', 'ready'))) && (
                   <p role="status">
                     {step.id === '19'
-                      ? 'Önce 18. adımda strateji önerisini ve gerekçesini tamamlayın.'
-                      : 'Önce 18. adımı ve 90 günlük iş sırasını tamamlayın.'}
+                      ? 'Önce karar sahibi 18. adımda stratejik seçimi kaydetmelidir.'
+                      : 'Önce 18. adımı ve iş sırasını tamamlayın.'}
                   </p>
                 )}
               <ConfigProvider componentDisabled={readOnly}>
@@ -600,7 +601,19 @@ export default function Editor({
                         <div className="field" data-kind={f.kind} key={f.key}>
                           <label htmlFor={'field-' + f.key}>{f.label}</label>
                           <ConfigProvider componentDisabled={!editable(f.key)}>
-                            {f.key === 'gapProof' ? (
+                            {TeamOwner &&
+                            session &&
+                            step.id === '01' &&
+                            f.key === 'owner' ? (
+                              <Suspense fallback={<p>Üyeler açılıyor.</p>}>
+                                <TeamOwner
+                                  session={session}
+                                  p={p}
+                                  readOnly={readOnly}
+                                  select={(v) => edit('owner', v)}
+                                />
+                              </Suspense>
+                            ) : f.key === 'gapProof' ? (
                               <>
                                 <Select
                                   id="field-gapProof"
@@ -637,7 +650,13 @@ export default function Editor({
                             ) : (
                               <FieldInput
                                 f={f}
-                                v={p.answers[step.id]?.[f.key]}
+                                v={
+                                  step.id === '18' &&
+                                  f.key === 'question' &&
+                                  grant.last?.outcome === 'Koşullu hazır'
+                                    ? grant.last.question
+                                    : p.answers[step.id]?.[f.key]
+                                }
                                 id={'field-' + f.key}
                                 onChange={(v) => edit(f.key, v)}
                               />
@@ -684,6 +703,49 @@ export default function Editor({
                 change={change}
                 disabled={readOnly}
               />
+              {step.id === '19' && (
+                <p>Tarih bilinmiyorsa işi başlatacak olayı yazın.</p>
+              )}
+              {step.id === '22' && (
+                <p>Başlangıç değeri bilinmiyorsa ilk ölçüm yolunu yazın.</p>
+              )}
+              {step.id === '18' && (
+                <div className="step-help">
+                  <p>
+                    {currentStrategyChoice(p) && grant.active
+                      ? 'Karar sahibi bu yolu seçti.'
+                      : 'Karar sahibi seçimini kaydedince eylem planı açılır.'}
+                  </p>
+                  <Button
+                    disabled={
+                      !editable('choice') ||
+                      !allows(p, '18', 'rationale') ||
+                      (!!actor && actor !== p.answers['01']?.owner) ||
+                      !!currentStrategyChoice(p)
+                    }
+                    onClick={() => {
+                      try {
+                        change((plan) =>
+                          confirmStrategyChoice(
+                            plan,
+                            actor ?? String(plan.answers['01']?.owner ?? ''),
+                          ),
+                        )
+                        error('')
+                      } catch (e) {
+                        error((e as Error).message)
+                      }
+                    }}
+                  >
+                    Stratejik seçimi kaydet
+                  </Button>
+                </div>
+              )}
+              {['25', '26', '33'].includes(step.id) && (
+                <Button onClick={openEvaluation}>
+                  Sonucu ve sonraki kararı incele
+                </Button>
+              )}
               <StepSummary id={step.id} p={p} />
               <div className="editor-controls">
                 <Button

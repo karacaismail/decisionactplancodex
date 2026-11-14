@@ -6,6 +6,7 @@ export interface Field {
   label: string
   kind: 'text' | 'long' | 'number' | 'date' | 'pick' | 'list'
   choices?: string[]
+  optionalColumns?: string[]
   columns?: string[]
   unit?: string
   branch?: 'paid' | 'free'
@@ -79,7 +80,7 @@ export const stages = [
   {
     name: 'Strateji ve kaynak',
     question: 'Hangi işe kaynak ayıracağız?',
-    summary: 'Nakit, risk ve 90 günlük yol',
+    summary: 'Nakit, risk ve eylem planı',
   },
   {
     name: 'İlk teslim ve fayda',
@@ -371,6 +372,14 @@ export const steps: Step[] = [
     ],
   ),
   make('18', 4, 'Seçilen strateji', 'Neden bu yolu seçtiğinizi yazın.', [
+    { ...long('question', 'Stratejin kesinleştirdiği soru'), optional: true },
+    {
+      ...long(
+        'comparison',
+        'Yolları ayıran bulgu veya diğer yolların elenme nedeni',
+      ),
+      optional: true,
+    },
     long('choice', 'Seçilen yol'),
     ...crossQuestions.map((q, i) => ({
       ...long('cross' + (i + 1), q),
@@ -394,21 +403,20 @@ export const steps: Step[] = [
     ]),
     long('rationale', 'Bu yolu neden öneriyorsunuz?'),
     long('excluded', 'Vazgeçilen seçenek'),
+    { ...long('actions', 'Birlikte yapılacak temel işler'), optional: true },
     long('reconsider', 'Hangi bulgu seçimi değiştirir?'),
   ]),
   make(
     '19',
     4,
-    '90 günlük yol',
+    'Stratejik eylem planı',
     'Hedefe ulaşmak için sorumlu ve teslim belirleyin.',
     [
       text('choiceBasis', 'İncelenen strateji'),
-      list('goals', 'İş sırası', [
-        'Görev',
-        'Sorumlu',
-        'Hedef tarih',
-        'Kabul ölçüsü',
-      ]),
+      {
+        ...list('goals', 'İş sırası', ['Görev', 'Sorumlu', 'Kabul ölçüsü']),
+        optionalColumns: ['Hedef tarih', 'Başlatacak olay'],
+      },
     ],
   ),
   make(
@@ -419,6 +427,7 @@ export const steps: Step[] = [
     [
       text('authority', 'Yetkili kişi'),
       long('basis', 'Kararın dayanağı'),
+      long('resources', 'Bu iş için ayrılan para, zaman ve ekip'),
       pick('ready', 'Kaynak ve risk sınırı', states),
     ],
   ),
@@ -433,14 +442,14 @@ export const steps: Step[] = [
     '22',
     5,
     'Ölçüm düzeni',
-    'Üç işletme ölçüsü ile ayrı fayda ve zarar sınırını yazın.',
+    'İşe uygun ölçüyü seçin. Faydayı ve zarar sınırını önceden belirleyin.',
     [
-      list('metrics', 'İşletme ölçüleri', [
-        'Ölçü',
-        'Birim',
-        'Başlangıç',
-        'Eşik',
-      ]),
+      {
+        ...list('metrics', 'İşletme ölçüleri', ['Ölçü', 'Birim', 'Eşik']),
+        optionalColumns: ['Başlangıç', 'İlk ölçüm yolu'],
+      },
+      text('source', 'Ölçüm kaynağı'),
+      text('checkpoint', 'Ölçüm günü veya olayı'),
       text('benefit', 'Fayda eşiği'),
       text('harm', 'Zarar sınırı'),
     ],
@@ -448,7 +457,9 @@ export const steps: Step[] = [
   make('23', 5, 'Sınırlı ilk teslim', 'Yardımla biten işleri ayrı sayın.', [
     number('total', 'Başlayan', 'kişi'),
     number('completed', 'Yardımsız bitiren', 'kişi'),
-    long('problem', 'Teslim gözlemi'),
+    long('problem', 'Teslim veya teslimi engelleyen olay'),
+    text('used', 'Kullanılan kaynak'),
+    text('source', 'Teslim kaynağı'),
   ]),
   make('24', 5, 'Erişim yolları', 'Aynı dönemdeki sonuçları karşılaştırın.', [
     list('channels', 'Kanal denemeleri', [
@@ -464,15 +475,24 @@ export const steps: Step[] = [
     'Teslim kararı',
     'Önceden yazılan ölçüleri gerçek sonuçla karşılaştırın.',
     [
-      pick('operating', 'Üç işletme ölçüsü', states),
+      pick('operating', 'İşletme ölçülerinin sonucu', states),
       pick('benefit', 'Doğrudan fayda', states),
-      text('evidence', 'Teslim kanıtı'),
+      text('evidence', 'Sonucun kaynağı'),
+      text('group', 'Sonucu yaşayan grup'),
+      text('period', 'Gözlem dönemi'),
+      { ...long('effects', 'Beklenmeyen etkiler'), optional: true },
+      long('actual', 'Gözlenen değer veya sonuç'),
+      text('nextObservation', 'Sonraki gözlem günü veya olayı'),
     ],
   ),
   make('26', 6, 'Öğrenme döngüsü', 'Beklenti ile sonucu yan yana yazın.', [
     long('expected', 'Beklenti'),
     long('observed', 'Gözlem'),
     long('next', 'Sonraki değişiklik'),
+    {
+      ...long('why', 'Farkın nedeni veya açık kalan açıklama'),
+      optional: true,
+    },
   ]),
   make('27', 6, 'Sorun ve çözüm uyumu', 'Eski yönteme göre ne değişti?', [
     long('baseline', 'Eski sonuç'),

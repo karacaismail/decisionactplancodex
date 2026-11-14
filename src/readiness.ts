@@ -17,6 +17,9 @@ import {
 } from './dossier.ts'
 import {
   activeSteps,
+  currentStrategyChoice,
+  closingReview,
+  latestReview,
   calendar,
   cash,
   complete,
@@ -40,7 +43,7 @@ export const scopeFields = [
   ['18.choice', 'Seçilen yol'],
   ['18.excluded', 'Vazgeçilen seçenek'],
   ['18.route', 'Yol seçimi ve gerekçesi'],
-  ['19.goals', '90 günlük iş sırası'],
+  ['19.goals', 'Seçilen yolun iş sırası'],
 ] as const
 export const levels = [
   'Fikir',
@@ -724,9 +727,12 @@ export function access(p: Plan, day = today()) {
 }
 export function allows(p: Plan, step: string, key: string, day = today()) {
   if (step < '18') return true
+  if (step === '34' && closingReview(p))
+    return ['obligations', 'accepted'].includes(key)
   const { active, last } = access(p, day)
   if (!active || !last) return false
-  if (step >= '19' && !enough(p, '18')) return false
+  if (step >= '19' && (!enough(p, '18') || !currentStrategyChoice(p)))
+    return false
   if (last.outcome === results[1]) {
     if (last.field === '18.route')
       return (
@@ -737,19 +743,25 @@ export function allows(p: Plan, step: string, key: string, day = today()) {
           'excluded',
           'reconsider',
           'newComparison',
+          'actions',
+          'comparison',
         ].includes(key)
       )
     return step + '.' + key === last.field
   }
   if (last.dossier && step >= '20' && !enough(p, '19')) return false
-  if (step > '20') {
+  if (step > '22') {
     const gate = p.history.findLast((h) => h.stage === 4)
     return (
       !!gate &&
       !gate.stale &&
       gate.outcome === 'İlerleyin' &&
       enough(p, '20') &&
-      aReady(p)
+      aReady(p) &&
+      (!['23', '24', '30'].includes(step) ||
+        (enough(p, '21') &&
+          enough(p, '22') &&
+          latestReview(p)?.action !== 'Kanıt bekle'))
     )
   }
   return true
@@ -951,7 +963,10 @@ export function decide(p: Plan, input: DecisionForm) {
   )
     throw Error('Eksik desteğin seçilecek yolu nasıl etkilediğini açıklayın.')
   if (input.outcome === results[1]) {
-    if (input.field === '19.goals' && !enough(p, '18'))
+    if (
+      input.field === '19.goals' &&
+      (!enough(p, '18') || !currentStrategyChoice(p))
+    )
       throw Error('Önce 18. adımda yolu ve gerekçesini kaydedin.')
     if (
       !scopeFields.some(([field]) => field === input.field) ||

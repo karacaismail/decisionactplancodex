@@ -1,3 +1,4 @@
+import { confirmStrategyChoice } from '../src/domain.ts'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { cafeExample } from '../src/cafe.ts'
@@ -108,6 +109,9 @@ test('Koşullu kararla yol ve gerekçe tamamlanınca ayrı izin iş sırasını 
     reconsider: 'Durak taşınırsa.',
   }))
     p = applyEdit(p, '18', field, value)
+  p = applyEdit(p, '18', 'actions', 'Durakta kahve hazırla.')
+  p = applyEdit(p, '18', 'comparison', 'Sabah yolcusu durağı seçiyor.')
+  p = confirmStrategyChoice(p, 'Ayşe')
   p = decide(p, {
     ...input(),
     field: '19.goals',
