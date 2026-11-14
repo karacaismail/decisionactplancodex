@@ -173,11 +173,13 @@ small {
   position: fixed;
   z-index: 9999;
   left: 12px;
-  top: -100px;
+  top: 0;
+  clip-path: inset(50%);
   background: var(--paper);
   padding: 13px;
 }
 .skip:focus {
+  clip-path: none;
   top: 10px;
 }
 .shell {

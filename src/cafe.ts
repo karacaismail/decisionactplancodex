@@ -60,6 +60,7 @@ export function cafeExample(): Plan {
       risk: 'Düşük',
       options: [
         {
+          _id: 'kafe-araba',
           Çözüm: 'Sabah kahve arabası',
           Bedel: 'Günlük kira',
           Dayanak: 'Kiralama teklifi',
@@ -100,6 +101,61 @@ export function cafeExample(): Plan {
   }
   p.foundation = {
     ...foundation(p),
+    brief: {
+      question: 'Durakta kahve satışı günlük gideri karşılar mı?',
+      unknown: 'Yazılı ön siparişlerden kaçı ücretli satışa döner?',
+      experiment: 'Bir sabah ön siparişleri ücretli satışlarla karşılaştır.',
+      assignee: 'Ayşe',
+      studies: [
+        {
+          id: 'kafe-guc-hizmet',
+          method: 'strength',
+          values: {
+            name: 'Güler yüzlü hizmet',
+            valuable: 'Evet',
+            rare: 'Hayır',
+            costly: 'Hayır',
+            organized: 'Evet',
+          },
+        },
+        {
+          id: 'kafe-guc-yer',
+          method: 'strength',
+          values: {
+            name: 'Durağın yanında satış alanı',
+            valuable: 'Evet',
+            rare: 'Evet',
+            costly: 'Hayır',
+            organized: 'Evet',
+          },
+        },
+        {
+          id: 'kafe-guc-hiz',
+          method: 'strength',
+          values: { name: 'Bir dakikada kahve hazırlama', valuable: 'Evet' },
+        },
+      ],
+      routes: {
+        current: {
+          customer: 'Sabah işe gidenler',
+          channel: 'Evde hazırlama',
+          difference: 'Evden çıkmadan kahve hazırlar.',
+          tradeoff: 'Hazırlığa zaman ayırır.',
+        },
+        'kafe-araba': {
+          customer: 'Duraktan geçen yolcular',
+          channel: 'Durakta yüz yüze satış',
+          difference: 'Sabah durakta sıcak kahve alır.',
+          cost: 'Günlük kira teklifi',
+          tradeoff: 'Öğle satışını sonraya bırakır.',
+          reopen: 'Alan izni sona ererse',
+          unitRevenue: '80',
+          unitCost: '30',
+          fixedCost: '2000',
+          period: 'Gün',
+        },
+      },
+    },
     inputs: {
       lossMeasure: 'Ortalama 12 dakika',
       period: 'Gün',
@@ -136,6 +192,8 @@ export function cafeExample(): Plan {
     criteria: ids,
     ...(ids.includes('Z6')
       ? {
+          customerGroup: 'Yolcular',
+          period: 'Sabah',
           side: 'Müşteri' as const,
           participants: ['K1', 'K2', 'K3', 'K4', 'K5', 'K6', 'K7'],
         }

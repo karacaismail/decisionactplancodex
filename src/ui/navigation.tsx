@@ -9,7 +9,8 @@ import {
   ChartBar,
   Notepad,
 } from '@phosphor-icons/react'
-export const navigation = [
+import { personalOnly } from '../hosting'
+const pages = [
   { id: 'dashboard', label: 'Karar panosu', icon: SquaresFour },
   { id: 'portfolio', label: 'Plan portföyü', icon: Stack },
   { id: 'editor', label: 'Plan adımları', icon: Path },
@@ -21,7 +22,10 @@ export const navigation = [
   { id: 'methods', label: 'Karar Kitabı', icon: BookOpenText },
   { id: 'team', label: 'Kurum alanı', icon: Buildings },
 ] as const
-export type Page = (typeof navigation)[number]['id']
+export type Page = (typeof pages)[number]['id']
+export const navigation = pages.filter(
+  ({ id }) => !personalOnly || id !== 'team',
+)
 export interface NavProps {
   scope?: string
   page: Page
@@ -30,7 +34,12 @@ export interface NavProps {
 export function Brand() {
   return (
     <div className="brand">
-      <img src="/mark.svg" width="39" height="39" alt="" />
+      <img
+        src={import.meta.env.BASE_URL + 'mark.svg'}
+        width="39"
+        height="39"
+        alt=""
+      />
       <span>
         Karar <b>Atlası</b>
       </span>

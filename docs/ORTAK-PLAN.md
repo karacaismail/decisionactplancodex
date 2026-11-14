@@ -47,3 +47,17 @@ Ucuz ve geri alınabilir işte mevcut yöntemle bir alternatif karşılaştırı
 - Kayıt başarısızsa kullanıcı açık hata görmelidir. Aynı kayıtta iki sekmenin düzenlemesi sessizce birbirini ezmemelidir.
 - Bir karar sonucu, ilgili kanıt ve kalan kaynakla birlikte okunmalıdır. Örnek veri görünür biçimde ayrılmalıdır.
 - Uygulama yalnız yerel ağ döngüsüne bağlanır. GitHub kaynak kodu ve planı barındırır.
+
+## Hazırlık araştırması ve devir
+
+1. Girişimci 07. adımda asıl engeli ve diğer açıklamayı yazar.
+2. Girişimci 10. adımda başarı için gereken koşulu tanımlar.
+3. Ekip 11. adımda aday yolu ve o yolu doğuran soruyu kaydeder.
+4. Ekip 12. adımda becerileri, güçleri ve teslim sınırını inceler.
+5. Ekip 15. adımda denemeyi koşula, yola ve tarihli bulguya bağlar.
+6. Karar sahibi 17. adımda açık soruyu ve devir raporunu inceler.
+7. Stratej izin alınca 18. adımda yol önerisini gerekçelendirir.
+
+Uygulama kaynak seçimini işin durumuna göre açar. Grup bağı, açık sözleşme ve iş türü ayrı seçimlerdir. Ödenmemiş tutarlar bir bütçenin içinde toplanır. Farklı para birimleri ayrı hesaplarda kalır.
+
+Bir yöntem açıldığında uygulama boş kayıt oluşturmaz. Kullanıcı bilgi girince kayıt planın JSON dosyasına eklenir. Rapor tarihli dayanağı ve varsa karşı bulguyu gösterir. Geçmiş karar kendi günündeki raporu saklar.

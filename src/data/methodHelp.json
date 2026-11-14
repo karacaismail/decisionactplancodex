@@ -1,0 +1,519 @@
+{
+  "durma-kurali": {
+    "steps": [
+      "Kaybedebileceğiniz tutarı belirleyin.",
+      "Denemeye bir bitiş günü koyun.",
+      "Durduracak işareti önceden yazın.",
+      "İşaret görülürse harcamayı durdurun."
+    ],
+    "example": "Kafe sahibi iki başarısız sabahtan sonra kiralamayı gözden geçirir.",
+    "tip": "Sınırı deneme başlamadan kaydedin.",
+    "warning": "Belirsizlik ucuz bir gözlemle çözülebiliyorsa erken kapanış fırsatı kaçırabilir."
+  },
+  "secim-fazlaligi": {
+    "steps": [
+      "Seçenekleri aynı ihtiyaç altında toplayın.",
+      "Seçim ölçüsünü önceden yazın.",
+      "Benzer teklifleri birleştirin.",
+      "Azalan seçeneklerin müşteriyi nasıl etkilediğini gözleyin."
+    ],
+    "example": "Fırıncı altı kahvaltı paketini üç pakete indirir.",
+    "tip": "Özel ihtiyacı olan müşteriye ayrıca sorun.",
+    "warning": "Az seçenek, özel ihtiyacı olan müşteriyi dışlayabilir."
+  },
+  "sonuclar-modeli": {
+    "steps": [
+      "Hangi kararın geciktiğini yazın.",
+      "Bugün karar vermenin bedelini hesaplayın.",
+      "Beklerken kazanılacak bilgiyi belirtin.",
+      "Beklemeye bir inceleme günü koyun."
+    ],
+    "example": "Atölye sahibi sipariş gelmeden makine kiralamanın bedelini hesaplar.",
+    "tip": "Gecikme giderini de hesaba katın.",
+    "warning": "Sonucu hayal etmek olasılığını ölçmez."
+  },
+  "bilissel-celiski": {
+    "steps": [
+      "İlk tahmini yazın.",
+      "Gerçekte yapılan işi kaydedin.",
+      "Beklenti ile sonucu karşılaştırın.",
+      "Farklı açıklama sunacak bir kişiyi dinleyin."
+    ],
+    "example": "Kafe sahibi hızlı servis beklerken uzayan sırayı görür.",
+    "tip": "İlk tahmini kanıtla birlikte saklayın.",
+    "warning": "Bir kişinin itirazı tek başına düşünme hatası göstermez."
+  },
+  "bilissel-onyargi": {
+    "steps": [
+      "İlk duyduğunuz sayının kaynağını bulun.",
+      "Karşı bir örnek arayın.",
+      "Tek olayı diğer gözlemlerden ayırın.",
+      "Kararı yeni bulguyla inceleyin."
+    ],
+    "example": "Tedarikçi ilk fiyatı söyler. Alıcı ikinci bir teklif ister.",
+    "tip": "Başka bir kişinin aynı veriyi yorumlamasını isteyin.",
+    "warning": "Bir hataya ad vermek onu gerçekten yaptığınızı göstermez."
+  },
+  "yol-ayrimi-modeli": {
+    "steps": [
+      "Bugün nerede olduğunuzu yazın.",
+      "Sizi buraya getiren kararları inceleyin.",
+      "Devam etmenin ve değişmenin sonuçlarını düşünün.",
+      "Hangi sorunun seçimi değiştireceğini belirtin."
+    ],
+    "example": "Dükkân sahibi sabah açmayı ve akşam geç kapatmayı karşılaştırır.",
+    "tip": "Yolları başka bir kişiyle tartışın.",
+    "warning": "Listede bulunmayan bir ortaklık bütün seçenekleri değiştirebilir."
+  },
+  "karar-matrisi": {
+    "steps": [
+      "Aday yolları ve ortak ölçüleri yazın.",
+      "Ölçülerin önemini denemeden önce belirleyin.",
+      "Her yolu aynı ölçülerle değerlendirin.",
+      "Önem sırası değişince sonucu yeniden hesaplayın."
+    ],
+    "example": "Usta iki tedarikçiyi teslim günü ve fiyatla karşılaştırır.",
+    "tip": "Karşıt bulguyu puanın yanında gösterin.",
+    "warning": "Küçük bir ağırlık değişince kazanan değişiyorsa seçim kırılgandır."
+  },
+  "sinus-milieu-bourdieu": {
+    "steps": [
+      "Müşterilerin günlük alışkanlıklarını gözleyin.",
+      "Benzer alışkanlıkları gruplandırın.",
+      "Aynı gelirde farklı seçimleri araştırın.",
+      "Grupları yeni görüşmelerle sınayın."
+    ],
+    "example": "Aynı mahallede iki grup farklı saatlerde kahve alır.",
+    "tip": "Yaşam biçimini müşterinin sözüyle kaydedin.",
+    "warning": "Grubun ortalaması tek alıcının tercihini gizleyebilir."
+  },
+  "beklentiler-modeli": {
+    "steps": [
+      "Müşterinin ilk beklentisini sorun.",
+      "Kabul edeceği en düşük sonucu belirleyin.",
+      "Teslimden sonraki deneyimi kaydedin.",
+      "Farkı müşteriyle görüşün."
+    ],
+    "example": "Alıcı sıcak sandviç beklerken soğuk ürün alır.",
+    "tip": "Beklentiyi teslimden önce yazın.",
+    "warning": "Aynı puanı veren iki kişi farklı şeyler beklemiş olabilir."
+  },
+  "catisma-cozumu-modeli": {
+    "steps": [
+      "Anlaşmazlık konusunu yazın.",
+      "Tarafları ayrı ayrı dinleyin.",
+      "İki tarafın korumak istediği sonucu bulun.",
+      "Ortak bir deneme önerin."
+    ],
+    "example": "İki ortak açılış saatinde anlaşamaz. Bir hafta ölçüm yaparlar.",
+    "tip": "Sessiz kalan kişiye ayrıca söz verin.",
+    "warning": "Güç dengesizse sessizlik uzlaşma anlamına gelmez."
+  },
+  "mahkum-ikilemi": {
+    "steps": [
+      "İki tarafın seçeneklerini yazın.",
+      "Her seçimin karşılığını ayrı inceleyin.",
+      "Tekrar görüşmenin sonucu nasıl değiştirdiğini düşünün.",
+      "Küçük bir ortak deneme kararlaştırın."
+    ],
+    "example": "İki esnaf dönüşümlü teslimat yapmayı dener.",
+    "tip": "Tarafların ayrı ayrı ne kazandığını sorun.",
+    "warning": "Tarafların kazançları yanlış yazılırsa beklenen tepki de değişir."
+  },
+  "guven-stratejileri": {
+    "steps": [
+      "Küçük bir ortak işle başlayın.",
+      "Verilen sözü ve sonucu kaydedin.",
+      "Aksaklık olursa nedenini sorun.",
+      "Sonraki işle güveni yeniden sınayın."
+    ],
+    "example": "Fırıncı yeni un tedarikçisiyle bir çuval için anlaşır.",
+    "tip": "İlk siparişin koşullarını yazılı tutun.",
+    "warning": "Küçük işte güven kazanmak büyük yükümlülüğü taşıma gücünü göstermez."
+  },
+  "geri-bildirim-analizi": {
+    "steps": [
+      "Beklentiyi karar gününde yazın.",
+      "Gözlem gününü belirleyin.",
+      "Beklenen ve gerçekleşen sonucu karşılaştırın.",
+      "Tekrarlanan farkı kaydedin."
+    ],
+    "example": "Terzi cuma teslimi beklediği kumaşın pazartesi geldiğini yazar.",
+    "tip": "İlk kaydı koruyun.",
+    "warning": "Tahmin yazılmadıysa sonradan yapılan kıyas hafızaya dayanır."
+  },
+  "cift-dongulu-ogrenme": {
+    "steps": [
+      "Aksayan işi yazın.",
+      "Kullandığınız kuralı bulun.",
+      "Kuralın dayandığı varsayımı inceleyin.",
+      "Değişen varsayımı yeni denemede sınayın."
+    ],
+    "example": "Kafe indirim yapar. Görüşme, müşterinin erken açılış istediğini gösterir.",
+    "tip": "Değişen iş ile değişen varsayımı ayrı yazın.",
+    "warning": "Her küçük aksakta amacı değiştirmek karşılaştırmayı bozar."
+  },
+  "leonardo-gormeyi-bilmek": {
+    "steps": [
+      "İşi yerinde izleyin.",
+      "İşin sırasını kendiniz çizin.",
+      "Çizimi gerçek akışla karşılaştırın.",
+      "Eksik kalan noktayı yeniden gözleyin."
+    ],
+    "example": "Usta siparişin tezgâhtan kasaya yolunu çizer.",
+    "tip": "İkinci vardiyanın akışını da izleyin.",
+    "warning": "Tek vardiyada görülen iş bütün vardiyaları temsil etmeyebilir."
+  },
+  "takim-modeli": {
+    "steps": [
+      "Teslim için gereken işleri yazın.",
+      "Her işin gerektirdiği beceriyi bulun.",
+      "Mevcut beceriyi bir örnekle sınayın.",
+      "Açık iş için sorumlu belirleyin."
+    ],
+    "example": "Fırında siparişler artınca paketleme becerisi eksik kalır.",
+    "tip": "Çalışacak kişinin ayırabileceği süreyi sorun.",
+    "warning": "Beceri listesinde adı geçen kişi iş için müsait olmayabilir."
+  },
+  "rol-oyunu-modeli": {
+    "steps": [
+      "Tartışılacak kararı belirleyin.",
+      "Farklı bakış açılarını kişilere dağıtın.",
+      "Herkesten somut gerekçe isteyin.",
+      "Karşı görüşü gerçek bir bulguyla sınayın."
+    ],
+    "example": "Bir çalışan alıcı rolünde teslim sözünü sorgular.",
+    "tip": "Görüşmeyi bir kişi yönetsin.",
+    "warning": "Canlandırılan itiraz gerçek müşterinin görüşünün yerini tutmaz."
+  },
+  "swot-analizi": {
+    "steps": [
+      "İncelenecek işi seçin.",
+      "Güçleri ve eksikleri kaynaklarıyla yazın.",
+      "Dış fırsatları ve tehditleri belirleyin.",
+      "Bir iç koşulu bir dış koşulla eşleştirin."
+    ],
+    "example": "Kafenin hızlı servisi, durağa yeni sefer gelince değer kazanabilir.",
+    "tip": "Her koşul için gözlemin geldiği adımı açın.",
+    "warning": "Aynı fikri dört kutuya yazmak karar üretmez."
+  },
+  "pazar-boslugu-modeli": {
+    "steps": [
+      "Müşterinin önem verdiği iki ölçüyü seçin.",
+      "Mevcut teklifleri bu ölçülerle karşılaştırın.",
+      "Karşılanmayan ihtiyacı bulun.",
+      "Gerçek bir alıcıyla küçük deneme yapın."
+    ],
+    "example": "Sabah erken açık dükkân bulunmayan sokakta ön sipariş alınır.",
+    "tip": "Boş görünen yerde talebi ayrıca ölçün.",
+    "warning": "Boş görünen yerde ödeme isteği de bulunmayabilir."
+  },
+  "porter-bes-guc": {
+    "steps": [
+      "İncelenen pazarı dar tanımlayın.",
+      "Alıcıları, tedarikçileri ve rakipleri listeleyin.",
+      "Yeni rakipleri ve başka çözümleri ekleyin.",
+      "En büyük baskıya bir dayanak bağlayın."
+    ],
+    "example": "Tek un tedarikçisi olan fırın fiyat artışını inceler.",
+    "tip": "Müşterinin evde üretebildiği çözümü de düşünün.",
+    "warning": "Sınırları yanlış çizilen pazarda gerçek rakip gözden kaçar."
+  },
+  "pestle-analizi": {
+    "steps": [
+      "İşi etkileyen dış koşulları seçin.",
+      "Her koşul için bir soru yazın.",
+      "Değişimi gösterecek kaynağı bulun.",
+      "Takip edecek kişiyi ve günü belirleyin."
+    ],
+    "example": "Belediyenin pazar yerini değiştirmesi satıcının erişimini etkiler.",
+    "tip": "Henüz açıklanmayan değişimi varsayım olarak işaretleyin.",
+    "warning": "Uzun bir eğilim listesi hangisinin işi etkilediğini söylemez."
+  },
+  "vrio": {
+    "steps": [
+      "Bir gücü seçin.",
+      "Müşteriye yararını ve rakipteki durumunu inceleyin.",
+      "Kopyalama güçlüğünü araştırın.",
+      "Ekibin gücü kullanabildiğini sınayın."
+    ],
+    "example": "Kafenin güler yüzlü hizmetini mahalledeki diğer kafeler de sunar.",
+    "tip": "Nadirlik iddiasını müşteriye veya bağımsız kaynağa sorun.",
+    "warning": "Nadir bir araç, alıcının değer verdiği bir sonuç üretmeyebilir."
+  },
+  "mavi-okyanus": {
+    "steps": [
+      "Alıcıların karşılaştırdığı özellikleri seçin.",
+      "Neyi kaldırıp azaltabileceğinizi yazın.",
+      "Güçlendireceğiniz veya ekleyeceğiniz yararı belirleyin.",
+      "Yeni adayı henüz almayan kişilerle deneyin."
+    ],
+    "example": "Fırın oturma alanını küçültüp hızlı teslim penceresi açmayı inceler.",
+    "tip": "Vazgeçilen özelliği kullanan kişileri dinleyin.",
+    "warning": "Rakipten farklı olmak değişim zahmetini karşılamayabilir."
+  },
+  "porter-jenerik-stratejiler": {
+    "steps": [
+      "Müşteriyi ve pazar sınırını tanımlayın.",
+      "Maliyet ve farklılık dayanaklarını karşılaştırın.",
+      "Odaklanacağınız grubun ihtiyacını yazın.",
+      "Seçimin gerektirdiği vazgeçişi belirtin."
+    ],
+    "example": "Terzi hızlı paça işine odaklanınca düğün siparişlerini azaltır.",
+    "tip": "Düşük fiyat iddiasını gerçek giderle sınayın.",
+    "warning": "Ucuzluk iddiası gerçek maliyet farkı gerektirir."
+  },
+  "temel-yetkinlik": {
+    "steps": [
+      "Tekrarlanabilen becerilerinizi yazın.",
+      "Müşteriye yararını ölçün.",
+      "Rakibin aynı beceriyi edinme yolunu inceleyin.",
+      "Becerinin başka bir üründe kullanımını deneyin."
+    ],
+    "example": "Marangozun dar alan ölçümü başka mobilyalarda da işe yarar.",
+    "tip": "Beceriyi birden fazla teslimde gözleyin.",
+    "warning": "Her beceriyi vazgeçilmez saymak ortaklık seçeneğini kapatır."
+  },
+  "benchmarking": {
+    "steps": [
+      "Aynı işi yapan bir işletme bulun.",
+      "Kendi ölçünüzü ve döneminizi belirleyin.",
+      "İki işletmenin koşullarını karşılaştırın.",
+      "Uygun yöntemi küçük ölçekte deneyin."
+    ],
+    "example": "İki atölye aynı ürünü hazırlama süresini ölçer.",
+    "tip": "Vardiya uzunluğunu ve ürün çeşidini kaydedin.",
+    "warning": "Farklı ürün karışımı bir işletmeyi görünürde daha hızlı gösterebilir."
+  },
+  "stratejik-ittifaklar": {
+    "steps": [
+      "Hangi becerinin eksik olduğunu yazın.",
+      "Ortağın katkısını bir örnekle sınayın.",
+      "Yetkiyi ve ayrılma koşulunu belirleyin.",
+      "Küçük bir ortak teslim yapın."
+    ],
+    "example": "Fırıncı teslimat için mahalledeki kurye ile bir rota dener.",
+    "tip": "Ortağın başka işlere verdiği sözleri öğrenin.",
+    "warning": "Ortak hedef, tarafların aynı anda kaynak ayıracağını garanti etmez."
+  },
+  "tows-matrisi": {
+    "steps": [
+      "Durum özetindeki dört grubu okuyun.",
+      "Bir iç koşulla bir dış koşulu eşleştirin.",
+      "Bu eşleşmeden çıkan aday yolu yazın.",
+      "Yolu hangi sorunun doğurduğunu kaydedin."
+    ],
+    "example": "Erken açılan kafe yeni otobüs seferine yetişenlere kahve sunabilir.",
+    "tip": "Yazdığınız adayın kaynağını gösterin.",
+    "warning": "Her kutuya eylem yazmak kaynakları önemsiz işlere dağıtabilir."
+  },
+  "deger-zinciri": {
+    "steps": [
+      "Ürünün geçtiği işleri sırayla yazın.",
+      "Her işin süresini ve giderini bulun.",
+      "Alıcının değer verdiği işi sorun.",
+      "Yüksek giderli işi küçük bir değişiklikle sınayın."
+    ],
+    "example": "Bir pastane süslü kutunun paketleme süresini ikiye katladığını görür.",
+    "tip": "Değişikliği yapmadan önce müşterinin yararını sorun.",
+    "warning": "Bir bölümün tasarrufu başka bölümün giderini artırabilir."
+  },
+  "alici-karar-modeli": {
+    "steps": [
+      "Kullanan ve ödeyen kişileri ayırın.",
+      "Alım için önemli ölçüleri yazın.",
+      "Kararın kısa ve uzun etkilerini karşılaştırın.",
+      "Eşitlik varsa küçük bir deneme isteyin."
+    ],
+    "example": "Aşçı fırını kullanır. Dükkân sahibi ödemeyi onaylar.",
+    "tip": "Kararı kimin durdurabileceğini de öğrenin.",
+    "warning": "Kullanıcı teklifi seçse bile bütçe sahibi reddedebilir."
+  },
+  "deger-onerisi-kanvasi": {
+    "steps": [
+      "Müşterinin yapmak istediği işi dinleyin.",
+      "En sık yaşanan güçlüğü bulun.",
+      "Teklifi beklenen yararla eşleştirin.",
+      "Bu yararı müşteriyle deneyin."
+    ],
+    "example": "Kafe durakta bekleyenlere kapağı kapanan bardak sunar.",
+    "tip": "Özelliği anlatmadan önce müşterinin olayını dinleyin.",
+    "warning": "Kâğıttaki eşleşme kişinin gerçekten daha kolay çalıştığını göstermez."
+  },
+  "musteri-yolculugu-haritasi": {
+    "steps": [
+      "Bir müşteriyi ve olayı seçin.",
+      "İlk temastan teslime kadar adımları yazın.",
+      "En çok beklenen noktayı gözleyin.",
+      "Değişikliği aynı noktada sınayın."
+    ],
+    "example": "Tamirci müşterinin teslim saatini öğrenmek için üç kez aradığını görür.",
+    "tip": "Sırayı müşterinin anlatımıyla karşılaştırın.",
+    "warning": "Yalnız kurum içinden çizilen harita dışarıdaki beklemeyi kaçırabilir."
+  },
+  "persona": {
+    "steps": [
+      "Gerçek müşterilerle konuşun.",
+      "Tekrarlanan davranışları bir araya getirin.",
+      "Her grup için kısa bir örnek yazın.",
+      "Örneği yeni bir müşteriyle sınayın."
+    ],
+    "example": "İşe yetişen yolcu kahveyi hızla almayı önemsiyor.",
+    "tip": "Grupları davranışa göre ayırın.",
+    "warning": "Hayalî bir kişinin öyküsü gözlem sayılmaz."
+  },
+  "nakit-akisi-ve-basabas": {
+    "steps": [
+      "Sabit ve değişen giderleri ayırın.",
+      "Gideri karşılayacak satış sayısını hesaplayın.",
+      "Ödeme ve tahsil günlerini yazın.",
+      "Ödeme gününde kasayı kontrol edin."
+    ],
+    "example": "Kafe kira gününden sonra tahsil ederse kasada açık oluşabilir.",
+    "tip": "Kâr ve kasadaki parayı ayrı izleyin.",
+    "warning": "Başabaş hesabı ödeme günü kasadaki parayı tek başına göstermez."
+  },
+  "birim-ekonomisi-clv-cac": {
+    "steps": [
+      "Müşteri kazanma giderlerini toplayın.",
+      "Toplamı kazanılan müşteri sayısına bölün.",
+      "Bir müşteriden kalan tutarı hesaplayın.",
+      "Giderin kaç dönemde karşılandığını bulun."
+    ],
+    "example": "Terzi ilan giderini yeni gelen müşterilerin kazancıyla karşılaştırır.",
+    "tip": "Yeniden alım bilinmiyorsa tahmini ayrıca yazın.",
+    "warning": "Yeni işte müşteri ilişkisinin beklenen süresi belirsizdir."
+  },
+  "proje-yonetim-ucgeni": {
+    "steps": [
+      "Yapılacak işi tarif edin.",
+      "Süreyi ve bütçeyi yazın.",
+      "Hangi sınırın sabit kalacağını belirleyin.",
+      "Yeni istek gelirse bedelini hesaplayın."
+    ],
+    "example": "Atölye aynı bütçeyle erken teslim için ürün çeşidini azaltır.",
+    "tip": "Vazgeçişi karar sahibine gösterin.",
+    "warning": "Maliyet baskısı zorunlu güvenlik koşulunu kaldırmaz."
+  },
+  "raci-matrisi": {
+    "steps": [
+      "Karar gerektiren işleri yazın.",
+      "Her işin yapanını belirleyin.",
+      "Her karar için son onayı verecek kişiyi seçin.",
+      "Danışılacak ve bilgilendirilecek kişileri belirtin."
+    ],
+    "example": "Usta malzeme seçer. İşletme sahibi ödemeyi onaylar.",
+    "tip": "Her kararın tek son onay sahibi olsun.",
+    "warning": "Onaylayan kişinin gerekli bütçeye yetkisi olmayabilir."
+  },
+  "lean-canvas": {
+    "steps": [
+      "Müşteriyi ve sorununu yazın.",
+      "Sunulan yararı ve çözümü belirtin.",
+      "Gelir, gider ve ulaşma yolunu kaydedin.",
+      "En riskli varsayımı küçük bir denemeyle sınayın."
+    ],
+    "example": "Öğlen de kahve satılacağı varsayımı bir günlük denemede incelenir.",
+    "tip": "Kutulardaki tahminlere tarihli kanıt bağlayın.",
+    "warning": "Tahminleri yazmak, hangisinin yanlış olduğunu tek başına göstermez."
+  },
+  "bes-neden": {
+    "steps": [
+      "Gözlenen olayı yazın.",
+      "Olayı yaşayan kişiye nedenini sorun.",
+      "Her açıklama için bir gözlem arayın.",
+      "Bulduğunuz nedeni küçük bir değişiklikle sınayın."
+    ],
+    "example": "Terzi gecikmenin kesimden mi kumaş tesliminden mi geldiğini araştırır.",
+    "tip": "İki neden aynı anda geçerli olabilir.",
+    "warning": "Bir olayın birbirinden bağımsız birkaç nedeni olabilir."
+  },
+  "rumsfeld-matrisi": {
+    "steps": [
+      "Bildiklerinizi ve açık soruları yazın.",
+      "Bilginin kimde olduğunu araştırın.",
+      "Beklenmeyen durum için pay ayırın.",
+      "Yeni işaretleri düzenli izleyin."
+    ],
+    "example": "Kafe izin ücretini bilir. Onay gününü henüz bilmez.",
+    "tip": "Her açık soru için kaynak belirleyin.",
+    "warning": "Liste henüz sorulmamış soruların tamamını gösteremez."
+  },
+  "isvicre-peyniri": {
+    "steps": [
+      "Riski durduracak önlemleri sıraya koyun.",
+      "Her önlemin hangi durumda aksadığını yazın.",
+      "Zararın son anda önlendiği olayları kaydedin.",
+      "Ayrı bir koruma yolu bulun."
+    ],
+    "example": "Fırında hem sıcaklık göstergesi hem ürün kontrolü yapılır.",
+    "tip": "İki kontrolün aynı kişiye bağlı olup olmadığını inceleyin.",
+    "warning": "Aynı kaynağa dayanan iki kontrol birlikte aksayabilir."
+  },
+  "siyah-kugu-modeli": {
+    "steps": [
+      "Hangi beklentiye çok güvendiğinizi yazın.",
+      "Beklenti bozulursa kaybı hesaplayın.",
+      "Kaybı sınırlayacak bir pay ayırın.",
+      "Önlemi zor bir durumla sınayın."
+    ],
+    "example": "Tek tedarikçi çalışmazsa kafe ikinci teslim kaynağını dener.",
+    "tip": "Geçmişte aksama olmaması geleceği güvenceye almaz.",
+    "warning": "Nadir olayı adlandırmak tarihini öngörmeyi sağlamaz."
+  },
+  "duyarlilik-analizi": {
+    "steps": [
+      "Gelir ve gider hesabını yazın.",
+      "Değişebilecek bir tutarı seçin.",
+      "Yalnız o tutarı değiştirerek yeniden hesaplayın.",
+      "Seçimi değiştiren sınırı kaydedin."
+    ],
+    "example": "Kahvenin maliyeti artınca günlük gereken satış sayısı yükselir.",
+    "tip": "Karşılaştırmada aynı dönemi kullanın.",
+    "warning": "Gider ve satış birlikte değişirse tek değişkenli hesap eksik kalır."
+  },
+  "senaryo-planlama": {
+    "steps": [
+      "Karar sorusunu ve süreyi yazın.",
+      "Birbirinden bağımsız iki belirsizlik seçin.",
+      "Dört olası durumu anlatın.",
+      "Her duruma erken işaret ve ilk önlem bağlayın."
+    ],
+    "example": "Kafe hem kira hem müşteri sayısı değişirse dört durumu inceler.",
+    "tip": "Bir durumu kesin gelecek diye kullanmayın.",
+    "warning": "En sevilen senaryoyu kesin tahmin saymak diğer seçenekleri görünmez kılar."
+  },
+  "morfolojik-kutu-scamper": {
+    "steps": [
+      "Teklifin parçalarını yazın.",
+      "Her parça için başka seçenekler üretin.",
+      "İki parçayı yeni biçimde birleştirin.",
+      "Ortaya çıkan fikri alıcıyla sınayın."
+    ],
+    "example": "Çiçekçi hazır buketi akşam teslim saatiyle birleştirir.",
+    "tip": "Yeni fikrin bedelini ayrıca inceleyin.",
+    "warning": "Özellikleri birleştirmek uygulanabilir bir teklif oluşturmayabilir."
+  },
+  "tesla-zihinsel-prototipleme": {
+    "steps": [
+      "Fikri adım adım tarif edin.",
+      "En zor kullanım anını düşünün.",
+      "Bulduğunuz kusur için değişiklik tasarlayın.",
+      "Değişikliği gerçek bir denemede gözleyin."
+    ],
+    "example": "Usta dar kapıdan geçmeyecek tezgâhı üretmeden önce ölçer.",
+    "tip": "Zihinsel denemeyi saha kaydıyla destekleyin.",
+    "warning": "Zihindeki örnek malzeme, zaman veya dayanım sınırını kanıtlamaz."
+  },
+  "ab-testi": {
+    "steps": [
+      "Tek bir soru ve ortak ölçü seçin.",
+      "Bir fark dışında iki teklifi aynı tutun.",
+      "Benzer grupları aynı dönemde gözleyin.",
+      "Olay sayısını toplam katılımla birlikte karşılaştırın."
+    ],
+    "example": "Kafe iki teklifin her birini kaç kişinin kabul ettiğini sayar.",
+    "tip": "Küçük grupta görülen farkı yeni bir denemeyle sınayın.",
+    "warning": "Gruplar farklıysa görülen farkı seçeneğe bağlayamazsınız."
+  }
+}

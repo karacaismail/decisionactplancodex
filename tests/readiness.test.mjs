@@ -72,7 +72,9 @@ test('dört destek tam geçişi açar. Durma kuralı ve karşı kanıt geçişi 
   }
   assert.equal(evaluate(p).outcome, 'Planlamaya hazır')
   p = decide(p, form(p, 'Planlamaya hazır'))
-  assert.ok(allows(p, '20', 'ready'))
+  assert.ok(allows(p, '18', 'choice'))
+  assert.ok(!allows(p, '19', 'goals'))
+  assert.ok(!allows(p, '20', 'ready'))
   assert.ok(!allows(p, '21', 'anything'))
   assert.equal(
     access({
@@ -206,7 +208,9 @@ test('tam geçişten sonra 90 günlük dosya kendi kaynak kararıyla uygulamayı
     step: '12',
   })
   let p = decide(sample, form(sample, 'Planlamaya hazır'))
-  p = applyEdit(p, '18', 'choice', 'Durak')
+  p = applyEdit(p, '18', 'choice', 'Sabah kahve arabası')
+  p = applyEdit(p, '18', 'rationale', 'Sabah erişimi durakta doğrulandı.')
+  p = applyEdit(p, '18', 'reconsider', 'Durak izni sona ererse.')
   p = applyEdit(p, '18', 'excluded', 'Büyük kafe')
   p = applyEdit(p, '19', 'goals', [
     {

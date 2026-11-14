@@ -1,3 +1,4 @@
+import { storagePrefix } from '../hosting'
 import { useState, useEffect, lazy, Suspense } from 'react'
 import {
   ConfigProvider,
@@ -36,10 +37,15 @@ import {
 import guide from '../data/guide.json'
 import stepHelp from '../data/stepHelp.json'
 import { access, allows, foundationDoc, scopeFields } from '../readiness'
+import { behaviorProof, strengthsComplete } from '../research'
+import PreparationTools from './PreparationTools'
 import FoundationInputs from './FoundationInputs'
 import DecisionDesk from './DecisionDesk'
 import FieldInput from './Fields'
 import StepSummary from './StepSummary'
+import { routes } from '../dossier'
+const Situation = lazy(() => import('./Situation'))
+const BriefEditor = lazy(() => import('./BriefEditor'))
 const Takeover = lazy(() => import('./Takeover'))
 const Methods = lazy(() => import('./Methods'))
 export default function Editor({
@@ -50,9 +56,15 @@ export default function Editor({
   readOnly,
   openTransition,
   savedTransition,
+  openDossier,
+  visitStep,
   actor,
+  openProof,
 }: {
+  visitStep: (id: string) => void
+  openDossier: (id?: string) => void
   openTransition: () => void
+  openProof: (id: string) => void
   actor?: string
   savedTransition?: string
   readOnly: boolean
@@ -64,7 +76,11 @@ export default function Editor({
   const [reviewer, setReviewer] = useState('')
   const [selected, setSelected] = useState(() => {
       try {
-        return localStorage.getItem('atlas-step-' + p.id + '-' + stage) || ''
+        return (
+          localStorage.getItem(
+            storagePrefix + 'atlas-step-' + p.id + '-' + stage,
+          ) || ''
+        )
       } catch {
         return ''
       }
@@ -83,7 +99,11 @@ export default function Editor({
       (s) =>
         s.stage === stage &&
         (route.includes(s.id) ||
-          (s.id === selected && ['04', '12'].includes(s.id))),
+          (s.id === selected && ['03', '04', '12'].includes(s.id)) ||
+          (s.id === '03' && p.answers['00']?.groupLink === 'Evet') ||
+          (s.id === '12' &&
+            (p.answers['11']?.risk === 'Yüksek' ||
+              p.answers['00']?.groupLink === 'Evet'))),
     ),
     step = items.find((x) => x.id === selected) ?? items[0],
     index = items.indexOf(step)
@@ -146,6 +166,13 @@ export default function Editor({
   }
   function record() {
     try {
+      if (
+        stage === 4 &&
+        form.outcome === 'İlerleyin' &&
+        actor &&
+        actor !== String(p.answers['01']?.owner || '')
+      )
+        throw Error('Kaynak kararını kayıtlı karar sahibi verir.')
       const next = recordDecision(p, stage, form)
       change(() => next)
       setNotice('Karar kayda eklendi.')
@@ -162,13 +189,18 @@ export default function Editor({
   useEffect(() => {
     try {
       setSelected(
-        localStorage.getItem('atlas-step-' + p.id + '-' + stage) || '',
+        localStorage.getItem(
+          storagePrefix + 'atlas-step-' + p.id + '-' + stage,
+        ) || '',
       )
     } catch {}
   }, [stage, p.id])
   function remember(id: string) {
     try {
-      localStorage.setItem('atlas-step-' + p.id + '-' + stage, id)
+      localStorage.setItem(
+        storagePrefix + 'atlas-step-' + p.id + '-' + stage,
+        id,
+      )
     } catch {}
   }
   const field = (
@@ -296,7 +328,7 @@ export default function Editor({
                 const dest = steps.find((s) => s.id === id)!
                 try {
                   localStorage.setItem(
-                    'atlas-step-' + p.id + '-' + dest.stage,
+                    storagePrefix + 'atlas-step-' + p.id + '-' + dest.stage,
                     id,
                   )
                 } catch {}
@@ -436,39 +468,116 @@ export default function Editor({
                   </p>
                 </details>
               )}
-              {(step.id === '18' || step.id === '19') &&
-                editable(step.id === '18' ? 'choice' : 'goals') &&
-                !p.answers[step.id]?.[
-                  step.id === '18' ? 'choice' : 'goals'
-                ] && (
-                  <details className="step-help">
-                    <summary>Taslak öneriyi incele</summary>
-                    <p>
-                      {String(
-                        step.id === '18'
-                          ? p.answers['08']?.target ||
-                              'Müşteri grubu bekleniyor.'
-                          : p.answers['01']?.goal || 'Hedef bekleniyor.',
-                      )}
-                    </p>
-                    <Button
-                      onClick={() => {
-                        if (step.id === '18')
-                          edit('choice', String(p.answers['08']?.target || ''))
-                        else
-                          edit('goals', [
-                            {
-                              Görev: String(p.answers['01']?.goal || ''),
-                              Sorumlu: String(p.answers['01']?.owner || ''),
-                              'Hedef tarih': '',
-                              'Kabul ölçüsü': '',
-                            },
-                          ])
+              {['17', '18', '19', '20'].includes(step.id) && (
+                <div className="step-help">
+                  <Button
+                    onClick={() =>
+                      openDossier(step.id === '17' ? undefined : grant.last?.id)
+                    }
+                  >
+                    Strateje devir raporunu aç
+                  </Button>
+                  {step.id > '18' && p.answers['18']?.choice && (
+                    <p>Önerilen yol: {String(p.answers['18'].choice)}</p>
+                  )}
+                </div>
+              )}
+              {step.id === '18' && (
+                <Suspense fallback={<p>Durum özeti açılıyor.</p>}>
+                  <Situation
+                    p={p}
+                    visit={(id) => {
+                      const i = items.findIndex((s) => s.id === id)
+                      if (i >= 0) choose(i)
+                      else visitStep(id)
+                    }}
+                  />
+                </Suspense>
+              )}
+              {step.id === '18' && editable('choice') && (
+                <div className="fields">
+                  <label>
+                    <span>Hazırlıkta incelenen yolu kullan</span>
+                    <Select
+                      aria-label="Hazırlıkta incelenen yolu kullan"
+                      placeholder="Aday yolları inceleyin"
+                      value={undefined}
+                      options={routes(p).map((r) => ({
+                        value: r.id,
+                        label: r.name,
+                      }))}
+                      onChange={(v) => {
+                        const r = routes(p).find((item) => item.id === v)
+                        if (r) edit('choice', r.name)
                       }}
+                    />
+                  </label>
+                  <p>
+                    Bir aday seçebilir veya yeni bir yol önerebilirsiniz. Son
+                    kararı {String(p.answers['01']?.owner || 'karar sahibi')}{' '}
+                    verir.
+                  </p>
+                </div>
+              )}
+              {step.id === '18' && (
+                <details className="step-help">
+                  <summary>Yolun hangi sorudan çıktığını kaydedin</summary>
+                  <div className="fields">
+                    {fields
+                      .filter(
+                        (f) =>
+                          f.key.startsWith('cross') || f.key === 'chosenOrigin',
+                      )
+                      .map((f) => (
+                        <label key={f.key}>
+                          <span>{f.label}</span>
+                          <ConfigProvider componentDisabled={!editable(f.key)}>
+                            <FieldInput
+                              id={'field-' + f.key}
+                              f={f}
+                              v={p.answers['18']?.[f.key]}
+                              onChange={(v) => edit(f.key, v)}
+                            />
+                          </ConfigProvider>
+                        </label>
+                      ))}
+                  </div>
+                </details>
+              )}
+              {step.id === '19' &&
+                grant.last?.dossier &&
+                allows(p, '19', 'goals') &&
+                Array.isArray(p.answers['19']?.goals) &&
+                p.answers['19']?.choiceBasis !== p.answers['18']?.choice && (
+                  <div className="step-help">
+                    <p>Seçilen yol değişti. Önceki işleri yeniden inceleyin.</p>
+                    <Button
+                      disabled={!editable('goals')}
+                      onClick={() =>
+                        change((prev) =>
+                          applyEdit(
+                            prev,
+                            '19',
+                            'choiceBasis',
+                            String(prev.answers['18']?.choice || ''),
+                          ),
+                        )
+                      }
                     >
-                      Taslağı kullan
+                      İşleri bu yol için inceledim
                     </Button>
-                  </details>
+                  </div>
+                )}
+              {grant.last?.dossier &&
+                grant.active &&
+                grant.last.outcome === 'Planlamaya hazır' &&
+                ((step.id === '19' && !allows(p, '19', 'goals')) ||
+                  (step.id === '20' && !allows(p, '20', 'ready'))) && (
+                  <p role="status">
+                    {step.id === '19'
+                      ? 'Önce 18. adımda strateji önerisini ve gerekçesini tamamlayın.'
+                      : 'Önce 18. adımı ve 90 günlük iş sırasını tamamlayın.'}
+                  </p>
                 )}
               <ConfigProvider componentDisabled={readOnly}>
                 {fieldGroups.map((group) => (
@@ -480,26 +589,98 @@ export default function Editor({
                     }
                   >
                     {group.label && <legend>{group.label}</legend>}
-                    {group.fields.map((f) => (
-                      <div className="field" data-kind={f.kind} key={f.key}>
-                        <label htmlFor={'field-' + f.key}>{f.label}</label>
-                        <ConfigProvider componentDisabled={!editable(f.key)}>
-                          <FieldInput
-                            f={f}
-                            v={p.answers[step.id]?.[f.key]}
-                            id={'field-' + f.key}
-                            onChange={(v) => edit(f.key, v)}
-                          />
-                        </ConfigProvider>
-                      </div>
-                    ))}
+                    {group.fields
+                      .filter(
+                        (f) =>
+                          step.id !== '18' ||
+                          (!f.key.startsWith('cross') &&
+                            f.key !== 'chosenOrigin'),
+                      )
+                      .map((f) => (
+                        <div className="field" data-kind={f.kind} key={f.key}>
+                          <label htmlFor={'field-' + f.key}>{f.label}</label>
+                          <ConfigProvider componentDisabled={!editable(f.key)}>
+                            {f.key === 'gapProof' ? (
+                              <>
+                                <Select
+                                  id="field-gapProof"
+                                  aria-label={f.label}
+                                  allowClear
+                                  value={p.answers['09']?.gapProof || undefined}
+                                  options={p.evidence
+                                    .filter((e) => !!behaviorProof(p, e.id))
+                                    .map((e) => ({
+                                      value: e.id,
+                                      label: e.title,
+                                    }))}
+                                  onChange={(v) => edit(f.key, v || '')}
+                                />
+                                <p>
+                                  Kanıtta müşteri grubu ve dönem yazmalı. İkisi
+                                  de bu ihtiyaçla eşleşmeli.
+                                </p>
+                                {p.evidence.some(
+                                  (e) => e.id === p.answers['09']?.gapProof,
+                                ) && (
+                                  <Button
+                                    type="link"
+                                    onClick={() =>
+                                      openProof(
+                                        String(p.answers['09'].gapProof),
+                                      )
+                                    }
+                                  >
+                                    Seçilen kanıtı incele
+                                  </Button>
+                                )}
+                              </>
+                            ) : (
+                              <FieldInput
+                                f={f}
+                                v={p.answers[step.id]?.[f.key]}
+                                id={'field-' + f.key}
+                                onChange={(v) => edit(f.key, v)}
+                              />
+                            )}
+                          </ConfigProvider>
+                        </div>
+                      ))}
                   </fieldset>
                 ))}
               </ConfigProvider>
+              {['01', '11', '17'].includes(step.id) && (
+                <Suspense fallback={<p>Devir alanları açılıyor.</p>}>
+                  <BriefEditor
+                    actor={actor}
+                    key={step.id}
+                    step={step.id}
+                    p={p}
+                    change={change}
+                    disabled={readOnly}
+                  />
+                </Suspense>
+              )}
               <FoundationInputs
                 actor={actor}
                 id={step.id}
                 p={p}
+                change={change}
+                disabled={readOnly}
+              />
+              {step.id === '12' &&
+                p.answers['11']?.risk === 'Yüksek' &&
+                !strengthsComplete(p) && (
+                  <p>
+                    Bu adımı tamamlamak için her gücün dört sorusunu cevaplayın.
+                    Nadir bir güç için tarihli dayanak seçin.
+                  </p>
+                )}
+              <PreparationTools
+                openProof={openProof}
+                actor={actor}
+                key={p.id + step.id}
+                p={p}
+                step={step.id}
                 change={change}
                 disabled={readOnly}
               />

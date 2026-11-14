@@ -31,6 +31,17 @@ test('telefonda koşullu karar, kayıt, kapsam ve tarihli belge', async ({
   await expect(
     page.getByText('Kayıtlı karar: Koşullu hazır', { exact: true }),
   ).toBeVisible()
+  await page.getByRole('button', { name: 'Strateje devir raporunu aç' }).click()
+  await expect(page.locator('.dossier-intro h2')).toHaveText(
+    'Sabah hangi satış yolu çalışır?',
+  )
+  await expect(page.getByRole('article')).toContainText(
+    'İzin verilen konu: Seçilen yol',
+  )
+  await page.getByText('Yolları yan yana incele', { exact: true }).click()
+  await expect(page.locator('.dossier-grid')).toContainText(
+    'Sabah kahve arabası',
+  )
   await page.goto('/#dashboard')
   await page
     .getByRole('button', { name: 'Strateji çalışmasını aç', exact: true })
@@ -120,4 +131,80 @@ test('kritik kanıt silinince strateji kapanır ve önceki belge korunur', async
     'yedi yazılı ön sipariş',
   )
   await expect(page.getByRole('article')).toContainText('Satış yolunu incele.')
+})
+
+test('stratej telefonda aday yolları inceler ve devir raporunu indirir', async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 320, height: 740 })
+  await page.goto('/#gecis')
+  await page.getByRole('button', { name: 'Kafe örneğini aç' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Koşullu hazır', exact: true }),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: 'Strateje devir raporunu aç' })
+    .click({ timeout: 4000 })
+  const article = page.getByRole('article')
+  await expect(article).toContainText('14 teklif')
+  await expect(article).toContainText('Sabah kahve arabası')
+  await expect(article).toContainText('0 ödeme')
+  await expect(article).toContainText('Evde hazırlama')
+  const question = page.locator('.dossier-intro h2')
+  await expect(question).toContainText('Durakta kahve')
+  const rect = await question.boundingBox()
+  expect(rect!.y + rect!.height).toBeLessThan(740)
+  await page.emulateMedia({ media: 'print' })
+  await expect(page.getByRole('article')).toBeVisible()
+  await expect(page.locator('.report-types')).toBeHidden()
+  await page.emulateMedia({ media: 'screen' })
+  const transfer = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Markdown indir' }).click()
+  expect((await transfer).suggestedFilename()).toMatch(/\.md$/)
+  for (const width of [320, 360, 375, 390, 844, 820, 1440]) {
+    await page.setViewportSize({ width, height: width === 844 ? 390 : 820 })
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBe(width)
+    if ([320, 1440].includes(width))
+      await page.screenshot({
+        path: info.outputPath('strateje-devir-' + width + '.png'),
+      })
+  }
+})
+
+test('kullanıcı 17. adımda senaryo yazar, taslak ve kaynak aynı kaydı açar', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 800 })
+  await page.goto('/#gecis')
+  await page.getByRole('button', { name: 'Kafe örneğini aç' }).click()
+  await page.getByRole('button', { name: 'Strateje devir raporunu aç' }).click()
+  await page
+    .getByRole('button', { name: '17. adımın kaydını aç' })
+    .first()
+    .click()
+  await page
+    .getByText('Strateje devir için açık sorular ve dayanaklar', {
+      exact: true,
+    })
+    .click()
+  await page
+    .getByLabel('Stratejin karar sorusu', { exact: true })
+    .fill('Hangi sabah yolunu deneyelim?')
+  await page.getByLabel('Birinci belirsizlik').fill('Talep')
+  await page.getByLabel('İkinci bağımsız belirsizlik').fill('Kira')
+  await page.getByText('Talep düşük, Kira düşük', { exact: true }).click()
+  await page
+    .getByLabel('Sabah kahve arabası için dönemde satış adedi')
+    .first()
+    .fill('20')
+  await expect(
+    page.getByText(/Dönem sonucu:.*1000 TL açık/).first(),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Strateje devir raporunu aç' }).click()
+  await expect(page.locator('.dossier-intro h2')).toHaveText(
+    'Hangi sabah yolunu deneyelim?',
+  )
+  await expect(page.getByRole('article')).toContainText('1000 TL açık')
 })

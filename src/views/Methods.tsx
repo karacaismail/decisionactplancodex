@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { Input, Select, Collapse } from 'antd'
 import { MagnifyingGlass } from '@phosphor-icons/react'
 import models from '../data/models.json'
+const Help = lazy(() => import('./MethodHelp'))
 export default function Methods({ step }: { step?: string }) {
   const [query, setQuery] = useState(''),
-    [section, setSection] = useState('')
+    [section, setSection] = useState(''),
+    [opened, setOpened] = useState<string[]>([])
   const filtered = models.filter(
     (m) =>
       (!step || m.steps.includes(step)) &&
@@ -14,7 +16,19 @@ export default function Methods({ step }: { step?: string }) {
         .includes(query.toLocaleLowerCase('tr')),
   )
   return (
-    <section className="panel methods">
+    <section
+      className="panel methods"
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape') return
+        const header = (e.target as HTMLElement)
+          .closest('.ant-collapse-item')
+          ?.querySelector<HTMLElement>('[aria-expanded="true"]')
+        if (!header) return
+        header.click()
+        header.focus()
+        e.stopPropagation()
+      }}
+    >
       <div className="filter-bar">
         <Input
           aria-label="Yöntem ara"
@@ -37,13 +51,27 @@ export default function Methods({ step }: { step?: string }) {
       <p className="muted">{filtered.length} yöntem</p>
       {filtered.length ? (
         <Collapse
+          activeKey={opened}
+          onChange={(keys) =>
+            setOpened((Array.isArray(keys) ? keys : [keys]).map(String))
+          }
           items={filtered.map((m) => ({
             key: m.slug,
             label: m.title,
             children: (
               <>
                 <b>{m.section}</b>
-                <p>{m.advice}</p>
+                <p>
+                  {opened.includes(m.slug) && m.steps.some((id) => id <= '18')
+                    ? m.advice.split(/(?<=\.) /)[0]
+                    : m.advice}
+                </p>
+                {opened.includes(m.slug) &&
+                  m.steps.some((id) => id <= '18') && (
+                    <Suspense fallback={<p>Yardım açılıyor.</p>}>
+                      <Help slug={m.slug} />
+                    </Suspense>
+                  )}
                 {!!m.steps.length && (
                   <small>İlgili adımlar: {m.steps.join(', ')}</small>
                 )}

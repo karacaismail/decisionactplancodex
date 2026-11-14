@@ -121,6 +121,23 @@ test('erken büyüme seçimi önceki kaynak kararını yeniden açar', () => {
     assignee: '',
     proof: '',
   })
+  p.answers['18'] = {
+    choice: 'Sabah kahve arabası',
+    rationale: 'Sabah talebi',
+    excluded: 'Kafe kiralama',
+    reconsider: 'İzin biterse',
+  }
+  p.answers['19'] = {
+    choiceBasis: 'Sabah kahve arabası',
+    goals: [
+      {
+        Görev: 'İlk satışı gözle',
+        Sorumlu: 'Ayşe',
+        'Hedef tarih': '2026-11-16',
+        'Kabul ölçüsü': 'Satış sayımı',
+      },
+    ],
+  }
   p.answers['20'] = { ready: 'Karşılandı', authority: 'Ayşe', basis: 'Dayanak' }
   p.history = [
     {

@@ -1,3 +1,6 @@
+import { crossQuestions } from './researchCatalog.ts'
+import { strengthsComplete } from './research.ts'
+import { compareReady, routes } from './dossier.ts'
 import {
   access,
   allows,
@@ -48,6 +51,8 @@ export interface Decision extends DecisionInput {
   stale: boolean
 }
 export interface Evidence extends EvidenceLink {
+  customerGroup?: string
+  period?: string
   kind?: EvidenceKind
   id: string
   title: string
@@ -153,6 +158,22 @@ export function activeSteps(p: Plan) {
 export function visibleFields(p: Plan, s: Step) {
   const branch = p.answers['00']?.mode === 'Ücretsiz hizmet' ? 'free' : 'paid'
   return s.fields.filter((f) => {
+    if (s.id === '09' && f.key.startsWith('gap'))
+      return !!String(p.answers['09']?.marketGap ?? '').trim()
+    if (s.id === '18' && f.key === 'newComparison') {
+      const choice = String(p.answers['18']?.choice ?? '')
+        .trim()
+        .toLocaleLowerCase('tr')
+      return (
+        !!p.foundation?.decisions.at(-1)?.dossier &&
+        !!choice &&
+        !routes(p).some((r) => r.name.trim().toLocaleLowerCase('tr') === choice)
+      )
+    }
+    if (s.id === '18' && ['rationale', 'reconsider'].includes(f.key))
+      return !!p.foundation?.decisions.at(-1)?.dossier
+
+    if (s.id === '19' && f.key === 'choiceBasis') return false
     if (f.branch && f.branch !== branch) return false
     if (f.key === 'fundingTerms')
       return p.answers['00']?.funding === 'Dış kaynak'
@@ -199,8 +220,42 @@ export function present(v: unknown, f: Field): boolean {
     typeof v === 'string' && !!v.trim() && (!f.choices || f.choices.includes(v))
   )
 }
-export function complete(p: Plan, s: Step) {
-  return visibleFields(p, s).every((f) => present(p.answers[s.id]?.[f.key], f))
+export function complete(p: Plan, s: Step, checkStrengths = true) {
+  if (
+    checkStrengths &&
+    s.id === '12' &&
+    p.answers['11']?.risk === 'Yüksek' &&
+    !strengthsComplete(p)
+  )
+    return false
+  if (s.id === '19' && p.foundation?.decisions.at(-1)?.dossier) {
+    const goals = p.answers['19']?.goals
+    if (
+      !Array.isArray(goals) ||
+      !(goals as Record<string, string>[]).every((r) =>
+        calendar(r['Hedef tarih']),
+      )
+    )
+      return false
+    if (p.answers['19']?.choiceBasis !== p.answers['18']?.choice) return false
+  }
+  if (s.id === '18' && p.foundation?.decisions.at(-1)?.dossier) {
+    const choice = String(p.answers['18']?.choice ?? '')
+      .trim()
+      .toLocaleLowerCase('tr')
+    if (
+      [p.answers['05']?.group, p.answers['08']?.target].some(
+        (v) =>
+          String(v ?? '')
+            .trim()
+            .toLocaleLowerCase('tr') === choice,
+      )
+    )
+      return false
+  }
+  return visibleFields(p, s).every(
+    (f) => f.optional || present(p.answers[s.id]?.[f.key], f),
+  )
 }
 export function applyEdit(
   p: Plan,
@@ -210,10 +265,26 @@ export function applyEdit(
 ): Plan {
   if (!allows(p, step, key)) return p
   if (JSON.stringify(p.answers[step]?.[key]) === JSON.stringify(value)) return p
-  const next = {
-    ...p,
-    answers: { ...p.answers, [step]: { ...p.answers[step], [key]: value } },
+  const row = { ...p.answers[step], [key]: value }
+  if (step === '09') {
+    if (key === 'marketGap') {
+      delete row.gapMatch
+      delete row.gapChecked
+    }
+    if (['gapProof', 'gapBehavior', 'gapGroup', 'gapPeriod'].includes(key))
+      delete row.gapMatch
+    if (key === 'gapAlternative') {
+      delete row.gapChecked
+      delete row.gapCoverage
+    }
   }
+  if (step === '18' && key === 'choice') {
+    delete row.newComparison
+    delete row.chosenOrigin
+  }
+  if (step === '19' && key === 'goals' && p.answers['18']?.choice)
+    row.choiceBasis = p.answers['18'].choice
+  const next = { ...p, answers: { ...p.answers, [step]: row } }
   const before = activeSteps(p),
     after = activeSteps(next)
   const stage = Math.min(
@@ -399,18 +470,9 @@ export function recommend(p: Plan, i: number): Advice {
   }
   if (i === 2 && (Number(a['09'].capacity) <= 0 || Number(a['09'].demand) <= 0))
     return change('Erişilebilir bir grup ve uygulanabilir bir yol seçin.')
-  if (
-    i === 2 &&
-    a['11'].risk === 'Yüksek' &&
-    (a['11'].options as unknown[]).length < 3 &&
-    !(
-      (a['11'].options as unknown[]).length === 1 &&
-      a['11'].exception === 'Evet' &&
-      a['11'].review
-    )
-  )
+  if (i === 2 && !compareReady(p))
     return hold(
-      'Üç seçeneği veya bağımsız incelemeyle onaylanan istisnayı belgeleyin.',
+      'Farklı yolları karşılaştırın. Pahalı kararda denemeyi ve bağımsız görüşü kaydedin.',
     )
   if (
     i === 2 &&
@@ -499,6 +561,7 @@ export function openGaps(p: Plan, stage: number) {
     .filter((s) => s.stage === stage && activeSteps(p).includes(s.id))
     .flatMap((s) =>
       visibleFields(p, s)
+        .filter((f) => !f.optional)
         .filter(
           (f) =>
             !present(p.answers[s.id]?.[f.key], f) ||
@@ -524,6 +587,13 @@ export function recordDecision(
     stage > currentStage(p)
   )
     throw Error('Önce açık olan kararı tamamlayın.')
+  if (
+    stage === 4 &&
+    input.outcome === 'İlerleyin' &&
+    p.foundation?.decisions.at(-1)?.dossier &&
+    input.owner.trim() !== String(p.answers['01']?.owner ?? '').trim()
+  )
+    throw Error('Kaynak kararını kayıtlı karar sahibi verir.')
   if (!input.reason.trim() || !input.owner.trim())
     throw Error('Gerekçeyi ve karar sahibini yazın.')
   const advice = recommend(p, stage)
@@ -637,6 +707,16 @@ export function report(p: Plan, kind: 'executive' | 'action') {
       permission.last.assignee + ' · ' + dateLabel(permission.last.due),
     )
   const a = p.answers
+  if (a['18']?.choice) {
+    head.push(
+      '## Stratejin önerdiği yol',
+      String(a['18'].choice),
+      'Gerekçe: ' + String(a['18'].rationale || 'Bilinmiyor'),
+      'Vazgeçilen yol: ' + String(a['18'].excluded || 'Bilinmiyor'),
+      'Seçimi değiştirecek bulgu: ' +
+        String(a['18'].reconsider || 'Bilinmiyor'),
+    )
+  }
   const val = (id: string, k: string) =>
     typeof a[id]?.[k] === 'string' || typeof a[id]?.[k] === 'number'
       ? String(a[id][k]) || 'Bilinmiyor'
@@ -742,6 +822,20 @@ export function report(p: Plan, kind: 'executive' | 'action') {
     '## Sıradaki iş',
     taskMode,
     ...(binding ? ['Karar sahibinin gerekçesi: ' + binding.reason] : []),
+    ...(a['18']?.choice
+      ? [
+          '## Önerilen strateji',
+          String(a['18'].choice),
+          ...(a['18'].chosenOrigin
+            ? ['Yolu doğuran soru: ' + a['18'].chosenOrigin]
+            : []),
+          ...crossQuestions.flatMap((q, i) =>
+            a['18']['cross' + (i + 1)]
+              ? [q + ' ' + a['18']['cross' + (i + 1)]]
+              : [],
+          ),
+        ]
+      : []),
     '## Karara bağlı işler',
     ...actionable.map(
       (w) =>
@@ -837,11 +931,29 @@ export function validatePlan(v: unknown): v is Plan {
         if (f.kind === 'list')
           return (
             Array.isArray(val) &&
+            (id !== '11' ||
+              k !== 'options' ||
+              new Set(val.flatMap((r) => (r?._id ? [r._id] : []))).size ===
+                val.filter((r) => r?._id).length) &&
             val.every(
               (r) =>
                 object(r) &&
                 Object.entries(r).every(
-                  ([c, x]) => f.columns?.includes(c) && typeof x === 'string',
+                  ([c, x]) =>
+                    typeof x === 'string' &&
+                    (f.columns?.includes(c) ||
+                      f.listChoices?.[c]?.includes(x) ||
+                      (x === '' && !!f.listChoices?.[c]) ||
+                      (id === '11' &&
+                        k === 'options' &&
+                        c === '_id' &&
+                        /^[a-z0-9%_-]+$/i.test(x) &&
+                        ![
+                          'current',
+                          'constructor',
+                          'prototype',
+                          '__proto__',
+                        ].includes(x))),
                 ),
             )
           )

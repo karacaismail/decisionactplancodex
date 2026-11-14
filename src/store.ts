@@ -1,3 +1,4 @@
+import { storagePrefix } from './hosting'
 import { now, validatePlan } from './domain'
 import type { Plan } from './domain'
 
@@ -5,7 +6,7 @@ let connection: Promise<IDBDatabase> | undefined
 function openDatabase() {
   if (!connection)
     connection = new Promise((resolve, reject) => {
-      const req = indexedDB.open('karar-atlasi', 1)
+      const req = indexedDB.open(storagePrefix + 'karar-atlasi', 1)
       req.onupgradeneeded = () =>
         req.result.createObjectStore('plans', { keyPath: 'id' })
       req.onsuccess = () => resolve(req.result)

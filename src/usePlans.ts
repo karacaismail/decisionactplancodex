@@ -1,3 +1,4 @@
+import { storagePrefix } from './hosting'
 import { useEffect, useRef, useState } from 'react'
 import { invalidate } from './readiness'
 import { readPlans, savePlan } from './store'
@@ -10,7 +11,9 @@ export function usePlans(session: Session | null) {
     session ? teamRequest<Plan[]>('list', undefined, session) : readPlans()
   const persist = (p: Plan) =>
     session ? teamRequest<Plan>('save', { plan: p }, session) : savePlan(p)
-  const lastKey = session ? 'atlas-last-' + session.workspace.id : 'atlas-plan'
+  const lastKey = session
+    ? 'atlas-last-' + session.workspace.id
+    : storagePrefix + 'atlas-plan'
   const [plans, setPlans] = useState<Plan[]>([]),
     [selected, select] = useState(''),
     [status, setStatus] = useState('Yükleniyor')

@@ -47,6 +47,7 @@ type Props = {
   visit: (id: string) => void
   proof: (id: Criterion) => void
   example: () => void
+  openDossier: (id?: string) => void
   reports: (id?: string) => void
 }
 export default function Foundation({
@@ -59,6 +60,7 @@ export default function Foundation({
   proof,
   example,
   reports,
+  openDossier,
 }: Props) {
   const r = evaluate(p),
     permission = access(p),
@@ -235,6 +237,13 @@ export default function Foundation({
               Karar kaydına git
             </Button>
           )}
+          <Button
+            onClick={() =>
+              openDossier(permission.active ? permission.last?.id : undefined)
+            }
+          >
+            Strateje devir raporunu aç
+          </Button>
           <Button onClick={() => reports()}>Temel belgesini aç</Button>
           {!readOnly && <Button onClick={example}>Kafe örneğini aç</Button>}
         </div>
@@ -432,6 +441,11 @@ export default function Foundation({
               </p>
               <p>Karar günündeki öneri: {d.recommendation}</p>
               <p>{d.outcome === 'Koşullu hazır' ? d.question : ''}</p>
+              {d.dossier && (
+                <Button onClick={() => openDossier(d.id)}>
+                  Karar günündeki devir raporunu aç
+                </Button>
+              )}
               <Button onClick={() => reports(d.id)}>
                 Karar günündeki belgeyi aç
               </Button>

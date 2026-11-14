@@ -1,4 +1,14 @@
 import {
+  compareReady,
+  comparison,
+  validComparison,
+  type ComparisonRow,
+  criticalClaimsOK,
+  dossierDoc,
+  validBrief,
+  type Brief,
+} from './dossier.ts'
+import {
   activeSteps,
   calendar,
   cash,
@@ -162,6 +172,8 @@ export type Transition = DecisionForm & {
   id: string
   at: string
   signature: string
+  dossier?: string
+  comparison?: ComparisonRow[]
   document: string
   recommendation: Result
   revoked?: boolean
@@ -207,6 +219,7 @@ export type Assumption = {
   critical: boolean
 }
 export type Foundation = {
+  brief?: Brief
   assumptions?: Assumption[]
   version: 1
   inputs: Partial<Record<InputKey, string>>
@@ -318,7 +331,7 @@ export function demandProof(p: Plan, day = today()) {
 }
 function enough(p: Plan, id: string) {
   const s = steps.find((s) => s.id === id)!
-  return complete(p, s)
+  return complete(p, s, false)
 }
 const count = (v: unknown) =>
   typeof v === 'number' && Number.isSafeInteger(v) && v >= 0
@@ -368,22 +381,6 @@ function testSignals(p: Plan, day: string): Record<Criterion, boolean> {
           e.stance === 'Destek' &&
           bound(e, 'Z8', day),
       ))
-  const options = Array.isArray(a['11']?.options)
-    ? (a['11'].options as Record<string, string>[]).filter(
-        (o) =>
-          o['Çözüm']?.trim() &&
-          o['Çözüm'].trim() !== String(a['11'].current).trim(),
-      )
-    : []
-  const optionCount = new Set(
-    options.map((o) => o['Çözüm'].trim().toLocaleLowerCase('tr')),
-  ).size
-  const sufficientOptions =
-    optionCount > 0 &&
-    (a['11'].risk !== 'Yüksek' ||
-      (meaningful(a['11'].review) &&
-        (optionCount >= 3 ||
-          (optionCount === 1 && a['11'].exception === 'Evet'))))
   return {
     Z1:
       profileOK &&
@@ -410,7 +407,7 @@ function testSignals(p: Plan, day: string): Record<Criterion, boolean> {
       (free || (c.breakEven !== null && target >= c.breakEven)) &&
       (!active.includes('12') ||
         (enough(p, '12') && a['12']?.ready === 'Karşılandı')),
-    Z5: enough(p, '11') && sufficientOptions,
+    Z5: enough(p, '11') && compareReady(p, day),
     Z6:
       enough(p, '13') &&
       enough(p, '15') &&
@@ -512,7 +509,11 @@ export function evaluate(p: Plan, day = today()) {
       hint,
       evidence,
       against,
-      ok: signals[id] && !against && evidence.some((e) => usable(e, id, day)),
+      ok:
+        signals[id] &&
+        criticalClaimsOK(p, id, day) &&
+        !against &&
+        evidence.some((e) => usable(e, id, day)),
     }
   })
   const ok = (id: Criterion) => rows.find((r) => r.id === id)!.ok
@@ -543,13 +544,16 @@ function stable(v: unknown): unknown {
 export function reviewBasis(p: Plan) {
   const f = foundation(p)
   const { reviewVersion, ...inputs } = f.inputs
-  return signature({
-    ...p,
-    foundation: { ...f, inputs },
-    evidence: p.evidence.filter((e) => e.criteria?.some((id) => id !== 'D6')),
-  })
+  return signature(
+    {
+      ...p,
+      foundation: { ...f, inputs },
+      evidence: p.evidence.filter((e) => e.criteria?.some((id) => id !== 'D6')),
+    },
+    !!f.brief,
+  )
 }
-function signature(p: Plan) {
+function signature(p: Plan, withBrief = true) {
   const inputs = Object.fromEntries(
     Object.entries(p.answers).filter(
       ([k]) =>
@@ -578,8 +582,33 @@ function signature(p: Plan) {
           e.criteria,
           e.side,
           e.participants,
+          ...(e.customerGroup || e.period
+            ? [e.customerGroup ?? '', e.period ?? '']
+            : []),
         ])
         .sort(([a], [b]) => String(a).localeCompare(String(b), 'en')),
+      ...(withBrief
+        ? [
+            foundation(p).brief ?? {},
+            p.evidence
+              .filter((e) => e.step <= '17' && !e.criteria?.length)
+              .map((e) => [
+                e.id,
+                e.title,
+                e.source,
+                e.observed,
+                e.stance,
+                e.kind,
+                e.step,
+                ...(e.customerGroup || e.period
+                  ? [e.customerGroup ?? '', e.period ?? '']
+                  : []),
+              ]),
+            p.history.filter((h) => h.stage <= 3),
+            p.answers['04'] ?? {},
+            p.answers['12'] ?? {},
+          ]
+        : []),
     ]),
   )
 }
@@ -592,7 +621,8 @@ export function access(p: Plan, day = today()) {
     return { active: false, reason: 'Koşullu kararın süresi doldu.', last }
   if (
     last.revoked ||
-    last.signature !== signature(p) ||
+    (!last.dossier && p.foundation?.brief !== undefined) ||
+    last.signature !== signature(p, !!last.dossier) ||
     results.indexOf(evaluate(p, day).outcome) < results.indexOf(last.outcome)
   )
     return {
@@ -607,6 +637,8 @@ export function allows(p: Plan, step: string, key: string, day = today()) {
   const { active, last } = access(p, day)
   if (!active || !last) return false
   if (last.outcome === results[1]) return step + '.' + key === last.field
+  if (last.dossier && step >= '19' && !enough(p, '18')) return false
+  if (last.dossier && step >= '20' && !enough(p, '19')) return false
   if (step > '20') {
     const gate = p.history.findLast((h) => h.stage === 4)
     return (
@@ -629,7 +661,8 @@ export function invalidate(previous: Plan, next: Plan) {
     !last ||
     last.revoked ||
     previous.foundation?.decisions.at(-1)?.id !== last.id ||
-    last.signature === signature(next)
+    ((!!last.dossier || next.foundation?.brief === undefined) &&
+      last.signature === signature(next, !!last.dossier))
   )
     return next
   return {
@@ -844,6 +877,8 @@ export function decide(p: Plan, input: DecisionForm) {
       signature: signature(p),
       recommendation: r.outcome,
       document: foundationDoc(p, input, at),
+      dossier: dossierDoc(p, input, at),
+      comparison: comparison(p),
     }
   const next = {
     ...p,
@@ -873,6 +908,7 @@ export function validFoundation(v: unknown) {
   const f = v as Foundation
   return (
     f.version === 1 &&
+    validBrief(f.brief) &&
     !!f.inputs &&
     typeof f.inputs === 'object' &&
     !Array.isArray(f.inputs) &&
@@ -900,6 +936,8 @@ export function validFoundation(v: unknown) {
         d &&
         results.includes(d.outcome) &&
         results.includes(d.recommendation) &&
+        (d.dossier === undefined || meaningful(d.dossier)) &&
+        (d.comparison === undefined || validComparison(d.comparison)) &&
         ['owner', 'at', 'id', 'signature', 'document', 'reason'].every((k) =>
           meaningful(d[k as keyof Transition]),
         ) &&
@@ -930,6 +968,8 @@ export function validLink(e: Record<string, unknown>) {
       ['Müşteri', 'Diğer taraf', 'Eşleşme'].includes(String(e.side))) &&
     (e.participants === undefined ||
       (Array.isArray(e.participants) && e.participants.every(meaningful))) &&
+    (e.customerGroup === undefined || typeof e.customerGroup === 'string') &&
+    (e.period === undefined || typeof e.period === 'string') &&
     (e.observed === undefined || calendar(e.observed)) &&
     (e.stance === undefined ||
       ['Destek', 'Karşı bulgu'].includes(String(e.stance)))

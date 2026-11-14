@@ -131,3 +131,146 @@
   min-height: var(--hit);
   align-content: center;
 }
+
+.brief-editor .fields,
+.dossier-grid,
+.dossier-source-links {
+  display: grid;
+  gap: var(--gap);
+  min-width: 0;
+}
+.brief-editor .ant-select,
+.brief-editor input {
+  width: 100%;
+  min-width: 0;
+}
+.brief-editor .step-help {
+  min-width: 0;
+}
+.dossier-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+.dossier-grid dt {
+  color: var(--muted);
+}
+.dossier-grid dd {
+  margin: 0 0 var(--gap);
+}
+.dossier-source-links {
+  display: flex;
+  flex-wrap: wrap;
+}
+@media print {
+  .dossier-source-links,
+  .dossier-compare {
+    display: none;
+  }
+}
+
+.report-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--gap) / 2);
+  margin-bottom: var(--gap);
+}
+.report-types button {
+  min-height: var(--hit);
+  white-space: normal;
+  height: auto;
+}
+.dossier-source-links button {
+  min-height: var(--hit);
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
+  text-align: start;
+}
+@media print {
+  .report-types {
+    display: none;
+  }
+}
+
+.dossier-intro {
+  padding: var(--gap);
+  margin-bottom: var(--gap);
+  background: var(--teal-bg);
+  color: var(--ink);
+}
+.dossier-intro h2 {
+  margin-block: calc(var(--gap) / 2);
+}
+.dossier-intro p {
+  margin: 0;
+}
+@media print {
+  .dossier-intro {
+    display: none;
+  }
+}
+
+.method-work,
+.method-choice,
+.method-form {
+  display: grid;
+  gap: var(--gap);
+  min-width: 0;
+}
+.method-work {
+  margin-block: var(--gap);
+}
+.method-work h4,
+.method-work p {
+  margin-block: 0;
+}
+.method-work .ant-btn {
+  min-height: var(--hit);
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
+}
+.method-trigger {
+  justify-self: start;
+  text-align: start;
+}
+.method-form {
+  margin-top: var(--gap);
+}
+.method-form .ant-input-number,
+.method-form .ant-select {
+  width: 100%;
+  min-width: 0;
+}
+.method-form label {
+  min-width: 0;
+}
+.method-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--gap);
+}
+.method-actions label {
+  flex: 1 1 15rem;
+  max-width: 100%;
+}
+.method-result {
+  display: grid;
+  gap: calc(var(--gap) / 2);
+  background: var(--teal-bg);
+  padding: var(--gap);
+}
+
+.book-help ol,
+.book-help p {
+  margin-block: calc(var(--gap) / 2);
+}
+.book-help ol {
+  padding-inline-start: var(--gap);
+}
+.book-help li + li {
+  margin-top: calc(var(--gap) / 2);
+}
+.book-help h4 {
+  margin-block: var(--gap) 0;
+}

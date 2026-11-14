@@ -1,3 +1,4 @@
+import { crossQuestions } from '../researchCatalog.ts'
 export type Value = string | number | string[] | Record<string, string>[]
 export type Answers = Record<string, Value>
 export interface Field {
@@ -8,6 +9,8 @@ export interface Field {
   columns?: string[]
   unit?: string
   branch?: 'paid' | 'free'
+  optional?: boolean
+  listChoices?: Record<string, string[]>
   min?: number
 }
 export interface Step {
@@ -134,6 +137,14 @@ export const steps: Step[] = [
       pick('market', 'Pazar nasıl?', ['Mevcut pazar', 'Yeni pazar']),
       pick('start', 'Nereden başlıyorsunuz?', ['Yeni iş', 'Devralınan iş']),
       pick('mode', 'İşin ödeme biçimi', ['Ücretli satış', 'Ücretsiz hizmet']),
+      {
+        ...pick(
+          'groupLink',
+          'Birden fazla iş birimi ortak kaynak kullanıyor mu?',
+          ['Evet', 'Hayır'],
+        ),
+        optional: true,
+      },
       long('description', 'İşi kendi sözlerinizle anlatın'),
       text('fundingTerms', 'Dış kaynağın yazılı koşulu'),
     ],
@@ -158,6 +169,13 @@ export const steps: Step[] = [
         'Yetki var',
         'Yetki bekleniyor',
       ]),
+      {
+        ...pick('contract', 'Henüz ödenmemiş bağlayıcı bir sözleşme var mı?', [
+          'Evet',
+          'Hayır',
+        ]),
+        optional: true,
+      },
       number('spent', 'Bugüne kadarki harcama', 'TL'),
     ],
   ),
@@ -171,7 +189,10 @@ export const steps: Step[] = [
     'Dış koşullar',
     'Bir izin veya pazar değişimi hangi işi etkiliyor?',
     [
-      list('external', 'Koşullar', ['Koşul', 'İşaret', 'Sorumlu']),
+      {
+        ...list('external', 'Koşullar', ['Koşul', 'İşaret', 'Sorumlu']),
+        listChoices: { Yön: ['Fırsat', 'Tehdit'] },
+      },
       date('review', 'Kontrol tarihi'),
     ],
   ),
@@ -217,6 +238,32 @@ export const steps: Step[] = [
     'Pazar ve rakipler',
     'Aynı dönemde ulaşılabilecek talep ile kapasiteyi karşılaştırın.',
     [
+      {
+        ...text('marketGap', 'Hangi müşteri ihtiyacı karşılanmıyor?'),
+        optional: true,
+      },
+      ...[
+        text('gapGroup', 'İhtiyaç hangi müşteri grubuna ait?'),
+        text('gapPeriod', 'İhtiyacı hangi dönemde incelediniz?'),
+        text('gapBehavior', 'Talebi hangi müşteri davranışı gösteriyor?'),
+        text('gapProof', 'Bu davranışın tarihli kanıtı'),
+        pick('gapMatch', 'Kanıt hangi müşteriyi ve dönemi kapsıyor?', [
+          'Aynı müşteri ve dönem',
+          'Farklı veya belirsiz',
+        ]),
+        text('gapAlternative', 'Bugün bu ihtiyacı kim karşılıyor?'),
+        pick('gapCoverage', 'Bugünkü seçenek ihtiyacı karşılıyor mu?', [
+          'Karşılanmıyor',
+          'Kısmen karşılanıyor',
+          'Tam karşılanıyor',
+          'Bilinmiyor',
+        ]),
+        {
+          key: 'gapChecked',
+          label: 'Seçenekleri incelediğiniz gün',
+          kind: 'date' as const,
+        },
+      ].map((f) => ({ ...f, optional: true })),
       number('demand', 'Ulaşılabilir talep', 'adet'),
       number('capacity', 'Teslim kapasitesi', 'adet'),
       list('rivals', 'Bugünkü seçenekler', ['Seçenek', 'Bedel', 'Dayanak']),
@@ -296,6 +343,10 @@ export const steps: Step[] = [
     'Para ve iş planı',
     'İlk ödeme gününde kasanın yetip yetmediğini görün.',
     [
+      {
+        ...text('fragile', 'Hangi sayı değişirse hesap bozulur?'),
+        optional: true,
+      },
       number('balance', 'Ödeme günü kasadaki para', 'TL'),
       number('due', 'O gün ödenecek tutar', 'TL'),
       { ...number('price', 'Siparişin net geliri', 'TL'), branch: 'paid' },
@@ -321,7 +372,29 @@ export const steps: Step[] = [
   ),
   make('18', 4, 'Seçilen strateji', 'Neden bu yolu seçtiğinizi yazın.', [
     long('choice', 'Seçilen yol'),
+    ...crossQuestions.map((q, i) => ({
+      ...long('cross' + (i + 1), q),
+      optional: true,
+    })),
+    {
+      ...pick(
+        'chosenOrigin',
+        'Önerilen yol hangi sorudan çıktı?',
+        crossQuestions,
+      ),
+      optional: true,
+    },
+    list('newComparison', 'Yeni yolun karşılaştırması', [
+      'Müşteri',
+      'Erişim yolu',
+      'Tercih nedeni',
+      'Bedel ve süre',
+      'Vazgeçilecek iş',
+      'Dayanak',
+    ]),
+    long('rationale', 'Bu yolu neden öneriyorsunuz?'),
     long('excluded', 'Vazgeçilen seçenek'),
+    long('reconsider', 'Hangi bulgu seçimi değiştirir?'),
   ]),
   make(
     '19',
@@ -329,6 +402,7 @@ export const steps: Step[] = [
     '90 günlük yol',
     'Hedefe ulaşmak için sorumlu ve teslim belirleyin.',
     [
+      text('choiceBasis', 'İncelenen strateji'),
       list('goals', 'İş sırası', [
         'Görev',
         'Sorumlu',

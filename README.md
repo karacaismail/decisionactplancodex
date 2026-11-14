@@ -2,6 +2,11 @@
 
 Karar Atlası, bir iş fikrini veya devralınan işi değerlendirmenize yardım eder. Her kararda gözlemi, dayanağı ve sıradaki işi yazabilirsiniz. Örnek atölye planı ekranları tanıtır. Kendi işiniz için “Yeni plan” düğmesini kullanın.
 
+[Karar Atlası’nı GitHub Pages üzerinde açın](https://karacaismail.github.io/decisionactplancodex/).
+
+Canlı sürüm kişisel planınızı tarayıcınızda saklar. Kurum alanını yerel sunucuda kullanabilirsiniz.
+Yerel planınızı canlı sürüme taşımak için JSON kopyasını indirip canlı sürüme yükleyin.
+
 ## Yerelde açın
 
 Node.js 24 ve npm gereklidir. Proje klasöründe şu komutları sırayla çalıştırın.

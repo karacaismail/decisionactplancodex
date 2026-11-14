@@ -1,3 +1,4 @@
+import { legacyId } from '../dossier'
 import { Button, DatePicker, Input, InputNumber, Select, Radio } from 'antd'
 import { Plus, Trash } from '@phosphor-icons/react'
 import dayjs from 'dayjs'
@@ -77,7 +78,10 @@ export default function FieldInput({
     return (
       <div className="repeat-list">
         {rows.map((r, n) => (
-          <div key={n} className="repeat-row">
+          <div
+            key={f.key === 'options' ? r._id || (r.Çözüm ? legacyId(r) : n) : n}
+            className="repeat-row"
+          >
             <div className="split">
               <b>Kayıt {n + 1}</b>
               <Button
@@ -87,6 +91,24 @@ export default function FieldInput({
                 onClick={() => onChange(rows.filter((_, i) => i !== n))}
               />
             </div>
+            {Object.entries(f.listChoices ?? {}).map(([key, choices]) => (
+              <label key={key}>
+                <span>{key}</span>
+                <Select
+                  aria-label={key}
+                  allowClear
+                  value={r[key] || undefined}
+                  options={choices.map((value) => ({ value, label: value }))}
+                  onChange={(value) =>
+                    onChange(
+                      rows.map((row, i) =>
+                        i === n ? { ...row, [key]: value ?? '' } : row,
+                      ),
+                    )
+                  }
+                />
+              </label>
+            ))}
             {f.columns?.map((c) => (
               <label key={c}>
                 <span>{c}</span>
@@ -95,7 +117,21 @@ export default function FieldInput({
                   onChange={(e) =>
                     onChange(
                       rows.map((row, i) =>
-                        i === n ? { ...row, [c]: e.target.value } : row,
+                        i === n
+                          ? {
+                              ...row,
+                              ...(f.key === 'options'
+                                ? {
+                                    _id:
+                                      row._id ||
+                                      (row.Çözüm
+                                        ? legacyId(row)
+                                        : crypto.randomUUID()),
+                                  }
+                                : {}),
+                              [c]: e.target.value,
+                            }
+                          : row,
                       ),
                     )
                   }
@@ -104,7 +140,15 @@ export default function FieldInput({
             ))}
           </div>
         ))}
-        <Button icon={<Plus />} onClick={() => onChange([...rows, {}])}>
+        <Button
+          icon={<Plus />}
+          onClick={() =>
+            onChange([
+              ...rows,
+              f.key === 'options' ? { _id: crypto.randomUUID() } : {},
+            ])
+          }
+        >
           {f.label} için kayıt ekle
         </Button>
       </div>

@@ -31,6 +31,7 @@ import {
   SlidersHorizontal,
   MagnifyingGlass,
 } from '@phosphor-icons/react'
+import { personalOnly, storagePrefix } from './hosting'
 import { usePlans } from './usePlans'
 import { currentStage, validatePlan } from './domain'
 import { download } from './store'
@@ -42,7 +43,7 @@ import { steps } from './data/steps'
 import type { Criterion } from './readiness'
 import Dashboard from './views/Dashboard'
 const Foundation = lazy(() => import('./views/Foundation'))
-const Team = lazy(() => import('./views/Team')),
+const Team = personalOnly ? null : lazy(() => import('./views/Team')),
   Portfolio = lazy(() => import('./views/Portfolio')),
   Work = lazy(() => import('./views/Work'))
 const Wide = lazy(() => import('./ui/WideRail')),
@@ -76,14 +77,14 @@ const fromHash = (): Page =>
   'dashboard'
 function initialDark() {
   try {
-    return localStorage.getItem('atlas-theme') === 'dark'
+    return localStorage.getItem(storagePrefix + 'atlas-theme') === 'dark'
   } catch {
     return false
   }
 }
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
-  const [ready, setReady] = useState(false)
+  const [ready, setReady] = useState(personalOnly)
   const [failed, setFailed] = useState(false)
   async function check() {
     try {
@@ -95,7 +96,7 @@ export default function App() {
     }
   }
   useEffect(() => {
-    void check()
+    if (!personalOnly) void check()
   }, [])
   if (!ready && !failed) return <p role="status">Çalışma alanı açılıyor.</p>
   if (!ready && failed)
@@ -143,7 +144,18 @@ function Workspace({
     [replacing, setReplacing] = useState(false)
   const [openingExample, setOpeningExample] = useState(false)
   const [proofId, setProofId] = useState<Criterion>()
+  const [evidenceRecord, setEvidenceRecord] = useState<string>()
   const [foundationReport, setFoundationReport] = useState<string | undefined>()
+  const [dossierEntry, setDossierEntry] = useState<string>()
+  function openEvidenceRecord(id: string) {
+    setProofId(undefined)
+    setEvidenceRecord(id)
+    go('evidence')
+  }
+  function openDossier(id = '') {
+    setDossierEntry(id)
+    go('reports')
+  }
   const [, clockTick] = useState(0)
   useEffect(() => {
     const refresh = () => clockTick((t) => t + 1)
@@ -169,14 +181,17 @@ function Workspace({
       document.documentElement.style.setProperty('--' + key, value)
     document.documentElement.dataset.theme = dark ? 'dark' : 'light'
     try {
-      localStorage.setItem('atlas-theme', dark ? 'dark' : 'light')
+      localStorage.setItem(
+        storagePrefix + 'atlas-theme',
+        dark ? 'dark' : 'light',
+      )
     } catch {}
   }, [dark])
   useEffect(() => {
     if (p) {
       let saved = null
       try {
-        saved = localStorage.getItem('atlas-stage-' + p.id)
+        saved = localStorage.getItem(storagePrefix + 'atlas-stage-' + p.id)
       } catch {}
       setStage(
         saved !== null && /^[0-7]$/.test(saved)
@@ -189,7 +204,7 @@ function Workspace({
     setStage(i)
     if (p)
       try {
-        localStorage.setItem('atlas-stage-' + p.id, String(i))
+        localStorage.setItem(storagePrefix + 'atlas-stage-' + p.id, String(i))
       } catch {}
   }
   useEffect(() => {
@@ -205,7 +220,10 @@ function Workspace({
     const step = steps.find((s) => s.id === id)
     if (!step || !p) return
     try {
-      localStorage.setItem('atlas-step-' + p.id + '-' + step.stage, id)
+      localStorage.setItem(
+        storagePrefix + 'atlas-step-' + p.id + '-' + step.stage,
+        id,
+      )
     } catch {}
     visitStage(step.stage)
     go('editor')
@@ -266,7 +284,10 @@ function Workspace({
     setName('')
     if (launch === 'danger') {
       try {
-        localStorage.setItem('atlas-step-' + newPlan.id + '-0', '02')
+        localStorage.setItem(
+          storagePrefix + 'atlas-step-' + newPlan.id + '-0',
+          '02',
+        )
       } catch {}
     }
     setStage(0)
@@ -300,7 +321,12 @@ function Workspace({
     <ConfigProvider
       locale={trTR}
       theme={{
-        components: { Button: { primaryColor: colors.onAccent } },
+        components: {
+          Button: { primaryColor: colors.onAccent },
+          Input: { activeBorderColor: colors.control },
+          InputNumber: { activeBorderColor: colors.control },
+          Select: { activeBorderColor: colors.control },
+        },
         algorithm: dark ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
           fontFamily: '"Outfit Variable", Outfit, sans-serif',
@@ -471,7 +497,7 @@ function Workspace({
                 )}
               </div>
             )}
-            {page === 'team' ? (
+            {Team && page === 'team' ? (
               <Suspense fallback={<p>Üyelik açılıyor.</p>}>
                 <Team
                   plan={p}
@@ -565,8 +591,11 @@ function Workspace({
                     />
                   ) : page === 'editor' ? (
                     <Editor
+                      openProof={openEvidenceRecord}
+                      visitStep={visitStep}
                       actor={session?.user.name}
                       openTransition={() => go('gecis')}
+                      openDossier={openDossier}
                       savedTransition={store.confirmedTransition}
                       key={p.id + '-' + store.generation}
                       p={p}
@@ -591,6 +620,7 @@ function Workspace({
                           !store.error
                         }
                         visit={visitStep}
+                        openDossier={openDossier}
                         reports={(id) => {
                           setFoundationReport(id ?? '')
                           go('reports')
@@ -625,6 +655,8 @@ function Workspace({
                     )
                   ) : page === 'evidence' ? (
                     <Evidence
+                      recordId={evidenceRecord}
+                      clearRecord={() => setEvidenceRecord(undefined)}
                       initialCriterion={proofId}
                       closeContext={() => setProofId(undefined)}
                       readOnly={!!readOnly}
@@ -635,7 +667,13 @@ function Workspace({
                   ) : page === 'reports' ? (
                     <Reports
                       initialFoundation={foundationReport}
-                      clearInitial={() => setFoundationReport(undefined)}
+                      openProof={openEvidenceRecord}
+                      initialDossier={dossierEntry}
+                      visit={visitStep}
+                      clearInitial={() => {
+                        setFoundationReport(undefined)
+                        setDossierEntry(undefined)
+                      }}
                       key={p.id}
                       p={p}
                       change={store.change}

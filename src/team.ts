@@ -1,3 +1,5 @@
+import { personalOnly } from './hosting'
+
 export type Role = 'admin' | 'editor' | 'reader' | 'reviewer'
 export const roleLabel: Record<Role, string> = {
   admin: 'Yönetici',
@@ -28,6 +30,7 @@ export async function teamRequest<T>(
   body?: unknown,
   session?: Session,
 ): Promise<T> {
+  if (personalOnly) throw Error('Kurum alanı yerel sunucuda açılır.')
   const response = await fetch('/api/team/' + action, {
     method: body === undefined ? 'GET' : 'POST',
     credentials: 'same-origin',

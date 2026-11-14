@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, Button, Input, Modal, Select } from 'antd'
 import { Plus, Trash } from '@phosphor-icons/react'
 import { steps } from '../data/steps'
@@ -17,8 +17,12 @@ export default function Evidence({
   change,
   readOnly,
   initialCriterion,
+  recordId,
+  clearRecord,
   closeContext,
 }: {
+  recordId?: string
+  clearRecord: () => void
   initialCriterion?: Criterion
   closeContext: () => void
   readOnly: boolean
@@ -29,12 +33,17 @@ export default function Evidence({
     [links, setLinks] = useState<Criterion[]>([]),
     [observed, setObserved] = useState(''),
     [stance, setStance] = useState<'Destek' | 'Karşı bulgu'>('Destek')
+  const [selectedRecord, setRecord] = useState(recordId)
+  useEffect(() => {
+    if (recordId) clearRecord()
+  }, [recordId])
   const context = criteria.find((c) => c[0] === initialCriterion)
   const [kind, setKind] = useState<EvidenceKind>('Gözlem'),
     [filter, setFilter] = useState('Tümü'),
     [query, search] = useState('')
   const rows = p.evidence.filter(
     (e) =>
+      (!selectedRecord || e.id === selectedRecord) &&
       (!context || context[4].split(' ').includes(e.step)) &&
       (filter === 'Tümü' || (e.kind || 'Sınıflandırılmadı') === filter) &&
       [e.title, e.source, e.step]
@@ -42,6 +51,8 @@ export default function Evidence({
         .toLocaleLowerCase('tr')
         .includes(query.trim().toLocaleLowerCase('tr')),
   )
+  const [customerGroup, setGroup] = useState(''),
+    [period, setPeriod] = useState('')
   const [open, setOpen] = useState(false),
     [title, setTitle] = useState(''),
     [source, setSource] = useState(''),
@@ -53,6 +64,8 @@ export default function Evidence({
   function start(existing?: Proof) {
     setSide(existing?.side ?? 'Müşteri')
     setCodes(existing?.participants?.join(', ') ?? '')
+    setGroup(existing?.customerGroup ?? '')
+    setPeriod(existing?.period ?? '')
     setEditing(existing?.id ?? '')
     setTitle(existing?.title ?? '')
     setSource(existing?.source ?? '')
@@ -98,6 +111,10 @@ export default function Evidence({
         title: title.trim(),
         source: source.trim(),
         criteria: links,
+        ...(customerGroup.trim()
+          ? { customerGroup: customerGroup.trim() }
+          : {}),
+        ...(period.trim() ? { period: period.trim() } : {}),
         ...(links.includes('Z6')
           ? {
               side,
@@ -142,6 +159,11 @@ export default function Evidence({
           Kanıt ekle
         </Button>
       </div>
+      {selectedRecord && (
+        <Button onClick={() => setRecord(undefined)}>
+          Tüm kanıtları göster
+        </Button>
+      )}
       {context && (
         <div className="step-help">
           <strong>{context[1]}</strong>
@@ -196,6 +218,11 @@ export default function Evidence({
                 <tr key={e.id}>
                   <th scope="row">
                     <h3>{e.title}</h3>
+                    {(e.customerGroup || e.period) && (
+                      <p>
+                        {[e.customerGroup, e.period].filter(Boolean).join(', ')}
+                      </p>
+                    )}
                   </th>
                   <td>{e.source}</td>
                   <td>{e.kind || 'Sınıflandırılmadı'}</td>
@@ -284,6 +311,25 @@ export default function Evidence({
               options={evidenceKinds.map((v) => ({ value: v, label: v }))}
             />
           </label>
+          <details className="step-help">
+            <summary>Gözlemin kapsadığı müşteri ve dönem</summary>
+            <div className="fields">
+              <label>
+                <span>Gözlenen müşteri grubu</span>
+                <Input
+                  value={customerGroup}
+                  onChange={(e) => setGroup(e.target.value)}
+                />
+              </label>
+              <label>
+                <span>Gözlem dönemi</span>
+                <Input
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
+                />
+              </label>
+            </div>
+          </details>
           <label>
             <span>Olay tarihi</span>
             <Input

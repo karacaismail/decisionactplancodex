@@ -14,27 +14,31 @@ export default function WideRail({ page, go }: NavProps) {
   return (
     <nav className="product-nav" aria-label="Ana menü">
       <Brand />
-      {sections.map(({ title, pages }) => (
-        <div className="nav-group" key={title}>
-          <p>{title}</p>
-          {pages.map((id) => {
-            const item = navigation.find((n) => n.id === id)!
-            const Icon = item.icon
-            const selected = page === id
-            return (
-              <button
-                key={id}
-                type="button"
-                aria-current={selected ? 'page' : undefined}
-                onClick={() => go(id)}
-              >
-                <Icon size={20} weight={selected ? 'duotone' : 'regular'} />
-                <span>{item.label}</span>
-              </button>
-            )
-          })}
-        </div>
-      ))}
+      {sections.map(({ title, pages }) => {
+        const items = navigation.filter((item) => pages.includes(item.id))
+        if (!items.length) return null
+        return (
+          <div className="nav-group" key={title}>
+            <p>{title}</p>
+            {items.map((item) => {
+              const id = item.id
+              const Icon = item.icon
+              const selected = page === id
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-current={selected ? 'page' : undefined}
+                  onClick={() => go(id)}
+                >
+                  <Icon size={20} weight={selected ? 'duotone' : 'regular'} />
+                  <span>{item.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        )
+      })}
     </nav>
   )
 }

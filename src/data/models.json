@@ -46,7 +46,7 @@
     "slug": "secim-fazlaligi",
     "section": "Karar Verme ve Düşünme Hataları",
     "advice": "Teklifler karışıyorsa benzer seçenekleri azaltıp seçimi gözleyin. Az seçenek, özel ihtiyacı olan müşteriyi dışlayabilir.",
-    "steps": []
+    "steps": ["18"]
   },
   {
     "title": "Sonuçlar Modeli",
@@ -95,7 +95,7 @@
     "slug": "karar-matrisi",
     "section": "Karar Verme ve Düşünme Hataları",
     "advice": "Ölçüler çatışıyorsa ağırlıkları seçenekleri puanlamadan belirleyin. Küçük bir ağırlık değişince kazanan değişiyorsa seçim kırılgandır.",
-    "steps": ["07", "11", "18"]
+    "steps": ["07", "11", "15", "18"]
   },
   {
     "title": "Akış (Flow) Modeli",
@@ -242,7 +242,7 @@
     "slug": "geri-bildirim-analizi",
     "section": "Öğrenme ve Geri Bildirim",
     "advice": "Karar günündeki tahmini gerçekleşen sonuçla karşılaştırın. Tahmin yazılmadıysa sonradan yapılan kıyas hafızaya dayanır.",
-    "steps": ["26", "34"]
+    "steps": ["10", "15", "17", "26", "34"]
   },
   {
     "title": "John Whitmore Modeli",
@@ -263,7 +263,7 @@
     "slug": "cift-dongulu-ogrenme",
     "section": "Öğrenme ve Geri Bildirim",
     "advice": "Aynı hata sürüyorsa yöntemin yanında başlangıç varsayımını inceleyin. Her küçük aksakta amacı değiştirmek karşılaştırmayı bozar.",
-    "steps": ["26"]
+    "steps": ["10", "15", "17", "26"]
   },
   {
     "title": "AI Modeli (Takdir Eden Sorgulama)",
@@ -333,7 +333,7 @@
     "slug": "swot-analizi",
     "section": "Strateji ve Rekabet Analizi",
     "advice": "İç güçler ve dış koşullar için doğrulanabilir birer örnek bulun. Aynı fikri dört kutuya yazmak karar üretmez.",
-    "steps": []
+    "steps": ["11", "17", "18"]
   },
   {
     "title": "BCG Kutusu",
@@ -368,14 +368,14 @@
     "slug": "vrio",
     "section": "Strateji ve Rekabet Analizi",
     "advice": "Avantaj saydığınız kaynağı kullanacak insan ve düzen var mı, inceleyin. Nadir bir araç, alıcının değer verdiği bir sonuç üretmeyebilir.",
-    "steps": ["12"]
+    "steps": ["12", "16"]
   },
   {
     "title": "Blue Ocean Stratejisi (Mavi Okyanus)",
     "slug": "mavi-okyanus",
     "section": "Strateji ve Rekabet Analizi",
     "advice": "Farklı teklif üretirken çıkarılan özelliklerin alıcıya etkisini deneyin. Rakipten farklı olmak değişim zahmetini karşılamayabilir.",
-    "steps": ["09"]
+    "steps": ["09", "11"]
   },
   {
     "title": "Porter'ın Jenerik Stratejileri",
@@ -438,7 +438,7 @@
     "slug": "stratejik-ittifaklar",
     "section": "Strateji ve Rekabet Analizi",
     "advice": "Ortak gerekiyorsa katkı, sorumluluk ve ayrılma şartlarını yazın. Ortak hedef, tarafların aynı anda kaynak ayıracağını garanti etmez.",
-    "steps": []
+    "steps": ["12"]
   },
   {
     "title": "Döngüsel Ekonomi",
@@ -459,14 +459,14 @@
     "slug": "tows-matrisi",
     "section": "Strateji ve Rekabet Analizi",
     "advice": "Bir güç veya zayıflığı dış koşulla eşleştirip somut eylem çıkarın. Her kutuya eylem yazmak kaynakları önemsiz işlere dağıtabilir.",
-    "steps": ["18"]
+    "steps": ["11", "17", "18"]
   },
   {
     "title": "Değer Zinciri (Porter)",
     "slug": "deger-zinciri",
     "section": "Strateji ve Rekabet Analizi",
     "advice": "Maliyeti düşürürken hangi işin müşteri faydasını ürettiğini bulun. Bir bölümün tasarrufu başka bölümün giderini artırabilir.",
-    "steps": []
+    "steps": ["09", "12", "13"]
   },
   {
     "title": "GE-McKinsey Matrisi",
@@ -480,7 +480,7 @@
     "slug": "alici-karar-modeli",
     "section": "Pazarlama ve Müşteri",
     "advice": "Seçim uzuyorsa eksik bilgiyi ve gereken onayı öğrenin. Kullanıcı teklifi seçse bile bütçe sahibi reddedebilir.",
-    "steps": []
+    "steps": ["08", "14"]
   },
   {
     "title": "Uzun Kuyruk Modeli",
@@ -508,7 +508,7 @@
     "slug": "deger-onerisi-kanvasi",
     "section": "Pazarlama ve Müşteri",
     "advice": "Vaat ettiğiniz yararı müşterinin gerçek bir işiyle eşleştirin. Kâğıttaki eşleşme kişinin gerçekten daha kolay çalıştığını göstermez.",
-    "steps": ["05", "13"]
+    "steps": ["13"]
   },
   {
     "title": "Müşteri İlişkileri Yönetimi (CRM)",
@@ -683,7 +683,7 @@
     "slug": "lean-canvas",
     "section": "Proje ve Ürün Geliştirme",
     "advice": "Başlangıçta sorunu, hedef grubu, gideri ve kritik tahmini özetleyin. Tahminleri yazmak, hangisinin yanlış olduğunu tek başına göstermez.",
-    "steps": ["16"]
+    "steps": ["10", "16"]
   },
   {
     "title": "PDCA Döngüsü (Deming Döngüsü)",
@@ -760,7 +760,7 @@
     "slug": "bes-neden",
     "section": "Süreç ve Kalite",
     "advice": "Görünen belirtinin nedenlerini araştırıp açıklamayı sahada sınayın. Bir olayın birbirinden bağımsız birkaç nedeni olabilir.",
-    "steps": ["01"]
+    "steps": ["01", "05", "06", "07"]
   },
   {
     "title": "SIPOC (Süreç Özet Haritası)",
@@ -795,7 +795,7 @@
     "slug": "monte-carlo-simulasyonu",
     "section": "Risk ve Belirsizlik",
     "advice": "Girdilerin aralıkları gerçek verilere dayanıyorsa olası sonuç dağılımını inceleyin. Varsayımları görünür tutun. Zayıf girdilerle çok sayıda hesap yapmak kesinlik sağlamaz.",
-    "steps": ["17"]
+    "steps": []
   },
   {
     "title": "Kriz Yönetimi",
@@ -809,7 +809,7 @@
     "slug": "duyarlilik-analizi",
     "section": "Risk ve Belirsizlik",
     "advice": "Fiyat veya miktar değiştiğinde kararın hangi değerde döndüğünü bulun. Gider ve satış birlikte değişirse tek değişkenli hesap eksik kalır.",
-    "steps": ["16"]
+    "steps": ["16", "17"]
   },
   {
     "title": "Senaryo Planlama",
@@ -886,7 +886,7 @@
     "slug": "ab-testi",
     "section": "Veri ve Teknoloji Çağı",
     "advice": "İki seçeneği benzer koşullarda karşılaştırın. Küçük farkı kesin sonuç saymayın. Gruplar farklıysa görülen farkı seçeneğe bağlayamazsınız.",
-    "steps": ["15", "24"]
+    "steps": ["11", "15", "24"]
   },
   {
     "title": "Kohort Analizi",
