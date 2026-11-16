@@ -17,6 +17,7 @@
     --gutter: clamp(14px, 3.5vw, 54px);
     --gap: 16px;
     --hit: 44px;
+    --caption-size: max(14px, 0.875rem);
     --focus: #995521;
     --time: 0.18s;
     --ease: cubic-bezier(0.65, 0, 0.35, 1);

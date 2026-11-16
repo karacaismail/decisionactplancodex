@@ -515,5 +515,38 @@
     "example": "Kafe iki teklifin her birini kaç kişinin kabul ettiğini sayar.",
     "tip": "Küçük grupta görülen farkı yeni bir denemeyle sınayın.",
     "warning": "Gruplar farklıysa görülen farkı seçeneğe bağlayamazsınız."
+  },
+  "hoshin-kanri": {
+    "steps": [
+      "Hedefi ve sorumlusunu seçin.",
+      "Ekibin süre ve kaynak önerisini alın.",
+      "Yanıtınızı aynı hedefe yazın.",
+      "Uzlaşılan işi ve tarihini belirleyin."
+    ],
+    "example": "Atölye bakım haftasını gösterir. Yönetici teslim tarihini birlikte düzeltir.",
+    "warning": "Bir hedefin yazılması harcama yetkisi vermez.",
+    "tip": "Ekibin önerisini yanıttan ayrı saklayın."
+  },
+  "kpi-tasarimi": {
+    "steps": [
+      "Hangi kararı izlediğinizi belirleyin.",
+      "Ölçüyü, birimi ve başlangıcı yazın.",
+      "Kaynağı ve kontrol gününü seçin.",
+      "Zararı gösterecek ikinci ölçüyü belirleyin."
+    ],
+    "example": "Ekip teslim süresinin yanında hatalı teslim oranını izler.",
+    "warning": "Hızdaki artış müşteriye verilen zararı gizleyebilir.",
+    "tip": "Başlangıç bilinmiyorsa ilk ölçüm yolunu yazın."
+  },
+  "kanban": {
+    "steps": [
+      "Bekleyen işleri yazın.",
+      "Yürütülen işler için bir sınır seçin.",
+      "Engeli ve beklemenin başlangıcını kaydedin.",
+      "İşi açacak kişiyi ve sonraki işi belirleyin."
+    ],
+    "example": "Kesim başladı. Kalıp gelmediği için iş bekliyor.",
+    "warning": "Bir kartın tamamlanması tek başına teslim kanıtı oluşturmaz.",
+    "tip": "Engellenmiş iş de yürüyen iş sınırına dahildir."
   }
 }

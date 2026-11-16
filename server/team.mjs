@@ -1,3 +1,4 @@
+import { validateMethodUpdate } from './method-update.mjs'
 import { DatabaseSync } from 'node:sqlite'
 import {
   randomBytes,
@@ -117,6 +118,8 @@ function checkDecisionHistory(old, p, member, canRecover) {
           if (
             valid.grant !== entry.grant ||
             valid.choice !== entry.choice ||
+            (entry.choiceId !== undefined &&
+              valid.choiceId !== entry.choiceId) ||
             !isDeepStrictEqual(result.history, p.history) ||
             !isDeepStrictEqual(result.strategyChoices, p.strategyChoices) ||
             !isDeepStrictEqual(
@@ -522,6 +525,7 @@ export function teamApi(path) {
               oldOwner !== newOwner &&
               !eligible(oldOwner)
             checkDecisionHistory(old, p, user.name, canRecover)
+            validateMethodUpdate(old, p)
             if (
               newOwner &&
               oldOwner !== newOwner &&

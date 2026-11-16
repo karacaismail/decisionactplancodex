@@ -1,9 +1,16 @@
 import { useState, lazy, Suspense } from 'react'
-import { Input, Select, Collapse } from 'antd'
+import { Input, Select, Collapse, Button } from 'antd'
 import { MagnifyingGlass } from '@phosphor-icons/react'
+import { phaseCards } from '../phaseMethods'
 import models from '../data/models.json'
 const Help = lazy(() => import('./MethodHelp'))
-export default function Methods({ step }: { step?: string }) {
+export default function Methods({
+  step,
+  start,
+}: {
+  step?: string
+  start?: (step: string) => void
+}) {
   const [query, setQuery] = useState(''),
     [section, setSection] = useState(''),
     [opened, setOpened] = useState<string[]>([])
@@ -55,29 +62,34 @@ export default function Methods({ step }: { step?: string }) {
           onChange={(keys) =>
             setOpened((Array.isArray(keys) ? keys : [keys]).map(String))
           }
-          items={filtered.map((m) => ({
-            key: m.slug,
-            label: m.title,
-            children: (
-              <>
-                <b>{m.section}</b>
-                <p>
-                  {opened.includes(m.slug) && m.steps.some((id) => id <= '18')
-                    ? m.advice.split(/(?<=\.) /)[0]
-                    : m.advice}
-                </p>
-                {opened.includes(m.slug) &&
-                  m.steps.some((id) => id <= '18') && (
+          items={filtered.map((m) => {
+            const card = phaseCards.find(
+              (c) => c.slug === m.slug && (!step || c.step === step),
+            )
+            return {
+              key: m.slug,
+              label: m.title,
+              children: (
+                <>
+                  <b>{m.section}</b>
+                  <p>{m.advice}</p>
+                  {card && start && (
+                    <Button onClick={() => start(card.step)}>
+                      Bu yöntemi ilgili adımda aç
+                    </Button>
+                  )}
+                  {m.hasGuide && opened.includes(m.slug) && (
                     <Suspense fallback={<p>Yardım açılıyor.</p>}>
                       <Help slug={m.slug} />
                     </Suspense>
                   )}
-                {!!m.steps.length && (
-                  <small>İlgili adımlar: {m.steps.join(', ')}</small>
-                )}
-              </>
-            ),
-          }))}
+                  {!!m.steps.length && (
+                    <small>İlgili adımlar: {m.steps.join(', ')}</small>
+                  )}
+                </>
+              ),
+            }
+          })}
         />
       ) : (
         <p>Bu seçim için yöntem bulunamadı.</p>

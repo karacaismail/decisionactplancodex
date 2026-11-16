@@ -4,6 +4,14 @@ import {
   type CycleReview,
   type SavedReview,
 } from './lifecycle.ts'
+import {
+  phaseMethodReport,
+  observationOwners,
+  validMatrixRows,
+  cycleField,
+  hasCycleData,
+  validForecast,
+} from './phaseMethods.ts'
 import { crossQuestions } from './researchCatalog.ts'
 import { strengthsComplete } from './research.ts'
 import { compareReady, routes } from './dossier.ts'
@@ -30,6 +38,8 @@ import {
 } from './operations.ts'
 import { steps, stages } from './data/steps.ts'
 import type { Answers, Field, Step, Value } from './data/steps.ts'
+
+import { strategyTrace, validRelationRows } from './strategyLinks.ts'
 
 export const outcomes = [
   'Durdurun',
@@ -93,6 +103,7 @@ export interface Plan {
   foundation?: Foundation
   handover?: Record<string, HandoverCheck>
   work?: Work[]
+  observedChoices?: string[]
   cycleReviews?: SavedReview[]
   publications?: ReportPair[]
   schemaVersion: 1
@@ -182,6 +193,10 @@ export function activeSteps(p: Plan) {
 export function visibleFields(p: Plan, s: Step) {
   const branch = p.answers['00']?.mode === 'Ücretsiz hizmet' ? 'free' : 'paid'
   return s.fields.filter((f) => {
+    if (s.id === '01' && ['publicBasis', 'publicDuty'].includes(f.key))
+      return p.answers['00']?.planningContext === 'Türkiye kamu idaresi'
+    if (s.id === '26' && f.key === 'patternSource')
+      return !!String(p.answers['26']?.pattern || '').trim()
     if (s.id === '09' && f.key.startsWith('gap'))
       return !!String(p.answers['09']?.marketGap ?? '').trim()
     if (s.id === '18' && f.key === 'newComparison') {
@@ -243,7 +258,7 @@ export function present(v: unknown, f: Field): boolean {
   if (f.kind === 'date') return calendar(v)
   if (f.kind === 'number')
     return (
-      (!['kişi', 'adet'].includes(f.unit || '') || Number.isInteger(v)) &&
+      (!['kişi', 'adet', 'iş'].includes(f.unit || '') || Number.isInteger(v)) &&
       typeof v === 'number' &&
       Number.isFinite(v) &&
       v >= (f.min ?? 0)
@@ -324,6 +339,14 @@ export function applyEdit(
   if (!allows(p, step, key)) return p
   if (JSON.stringify(p.answers[step]?.[key]) === JSON.stringify(value)) return p
   const row = { ...p.answers[step], [key]: value }
+  if (
+    cycleField(step, key) &&
+    !p.answers[step]?.methodChoice &&
+    !hasCycleData(p.answers[step], step)
+  ) {
+    const choice = currentStrategyChoice(p)?.id
+    if (choice) row.methodChoice = choice
+  }
   if (step === '09') {
     if (key === 'marketGap') {
       delete row.gapMatch
@@ -343,6 +366,16 @@ export function applyEdit(
   if (step === '19' && key === 'goals' && p.answers['18']?.choice)
     row.choiceBasis = p.answers['18'].choice
   const next = { ...p, answers: { ...p.answers, [step]: row } }
+  if (
+    (step === '25' && key === 'actual') ||
+    (step === '26' && key === 'observed')
+  ) {
+    if (step === '25')
+      row.actualChoice = value ? currentStrategyChoice(p)?.id || '' : ''
+    next.observedChoices = [
+      ...new Set([...observationOwners(p), ...observationOwners(next)]),
+    ]
+  }
   const before = activeSteps(p),
     after = activeSteps(next)
   const stage = Math.min(
@@ -891,6 +924,7 @@ export function recordCycleReview(p: Plan, input: CycleReview): Plan {
     ...input,
     owner: input.owner.trim(),
     choice: String(p.answers['18']?.choice ?? ''),
+    choiceId: currentStrategyChoice(p)?.id,
     grant: grant.id,
     id: crypto.randomUUID(),
     at: now(),
@@ -1008,12 +1042,36 @@ export function report(p: Plan, kind: 'executive' | 'action') {
         : detail('18', 'question', 'Karar sorusu')),
       ...detail('18', 'comparison', 'Seçimi ayıran bulgu'),
       ...detail('18', 'actions', 'Birlikte yapılacak işler'),
+      ...detail('18', 'diagnosis', 'Temel güçlük'),
+      ...detail('18', 'policy', 'Yön veren ilke'),
       'Gerekçe: ' + String(a['18'].rationale || 'Bilinmiyor'),
       'Vazgeçilen yol: ' + String(a['18'].excluded || 'Bilinmiyor'),
       'Seçimi değiştirecek bulgu: ' +
         String(a['18'].reconsider || 'Bilinmiyor'),
     )
   }
+  const governance = [
+    ...detail('01', 'mandate', 'Yetki dayanağı'),
+    ...(a['00']?.planningContext === 'Türkiye kamu idaresi'
+      ? [
+          ...detail('01', 'publicBasis', 'Planlama kaynağı ve sürümü'),
+          ...detail('01', 'publicDuty', 'Kamu görevi'),
+        ]
+      : []),
+  ]
+  if (governance.length)
+    head.push('## Karar yetkisinin dayanağı', ...governance)
+  const trace = strategyTrace(
+    p,
+    permission.active ? currentStrategyChoice(p)?.id : undefined,
+  )
+  head.push(
+    ...phaseMethodReport(
+      p,
+      permission.active ? currentStrategyChoice(p)?.id : undefined,
+    ),
+  )
+  if (trace.length) head.push('## Hedeflerin karar bağları', ...trace)
   const execution = [
     ...detail('20', 'resources', 'Ayrılan kaynak'),
     ...detail('21', 'scope', 'Planlanan teslim'),
@@ -1043,7 +1101,12 @@ export function report(p: Plan, kind: 'executive' | 'action') {
   const rows = (id: string, k: string) =>
     Array.isArray(a[id]?.[k])
       ? (a[id][k] as Record<string, string>[])
-          .map((row) => Object.values(row).filter(Boolean).join(' · '))
+          .map((row) =>
+            Object.entries(row)
+              .filter(([k, v]) => !k.startsWith('_') && v)
+              .map(([, v]) => v)
+              .join(' · '),
+          )
           .filter(Boolean)
       : []
   const last = p.history.at(-1)
@@ -1135,9 +1198,7 @@ export function report(p: Plan, kind: 'executive' | 'action') {
         ? w.decision === binding?.id
         : true),
   )
-  const goals = Array.isArray(p.answers['19']?.goals)
-    ? (p.answers['19'].goals as Record<string, string>[])
-    : []
+  const goals = rows('19', 'goals')
   return [
     ...head,
     '## Sıradaki iş',
@@ -1185,9 +1246,7 @@ export function report(p: Plan, kind: 'executive' | 'action') {
     result === 'Durdurun' || result === 'Bekletin'
       ? '## Bekleyen eylem planı'
       : '## Stratejik eylem planı',
-    ...(goals.length
-      ? goals.map((g) => Object.values(g).join(' · '))
-      : ['İş sırasını 19. adımda yazın.']),
+    ...(goals.length ? goals : ['İş sırasını 19. adımda yazın.']),
     ...(workItems(p).length
       ? [
           '## Görev takibi',
@@ -1267,6 +1326,9 @@ export function validatePlan(v: unknown): v is Plan {
         if (f.kind === 'list')
           return (
             Array.isArray(val) &&
+            validRelationRows(id, k, val) &&
+            (id !== '18' || validMatrixRows(k, val)) &&
+            (id !== '22' || k !== 'forecasts' || val.every(validForecast)) &&
             (id !== '11' ||
               k !== 'options' ||
               new Set(val.flatMap((r) => (r?._id ? [r._id] : []))).size ===
@@ -1277,7 +1339,14 @@ export function validatePlan(v: unknown): v is Plan {
                 Object.entries(r).every(
                   ([c, x]) =>
                     typeof x === 'string' &&
-                    (f.columns?.includes(c) ||
+                    ((id === '19' &&
+                      k === 'objectives' &&
+                      ['_id', '_choice', '_risk'].includes(c)) ||
+                      (id === '17' && k === 'risks' && c === '_id') ||
+                      (((id === '19' && k === 'goals') ||
+                        (id === '22' && k === 'metrics')) &&
+                        c === '_objective') ||
+                      f.columns?.includes(c) ||
                       f.optionalColumns?.includes(c) ||
                       f.listChoices?.[c]?.includes(x) ||
                       (x === '' && !!f.listChoices?.[c]) ||
@@ -1318,6 +1387,10 @@ export function validatePlan(v: unknown): v is Plan {
       ))
   return (
     answers &&
+    (v.observedChoices === undefined ||
+      (Array.isArray(v.observedChoices) &&
+        v.observedChoices.every((id) => typeof id === 'string') &&
+        new Set(v.observedChoices).size === v.observedChoices.length)) &&
     (v.importedOwner === undefined || typeof v.importedOwner === 'string') &&
     validFoundation(v.foundation) &&
     (v.strategyChoices === undefined ||
@@ -1343,6 +1416,8 @@ export function validatePlan(v: unknown): v is Plan {
             !!r.id &&
             iso(r.at) &&
             typeof r.choice === 'string' &&
+            (r.choiceId === undefined ||
+              (typeof r.choiceId === 'string' && !!r.choiceId.trim())) &&
             typeof r.grant === 'string' &&
             (r.imported === undefined || typeof r.imported === 'boolean'),
         ) &&

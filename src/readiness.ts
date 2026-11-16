@@ -1,3 +1,4 @@
+import { cycleField } from './phaseMethods.ts'
 import {
   proofIssue,
   trialIssue,
@@ -733,6 +734,12 @@ export function allows(p: Plan, step: string, key: string, day = today()) {
   if (!active || !last) return false
   if (step >= '19' && (!enough(p, '18') || !currentStrategyChoice(p)))
     return false
+  if (
+    cycleField(step, key) &&
+    p.answers[step]?.methodChoice &&
+    p.answers[step].methodChoice !== currentStrategyChoice(p)?.id
+  )
+    return false
   if (last.outcome === results[1]) {
     if (last.field === '18.route')
       return (
@@ -743,6 +750,8 @@ export function allows(p: Plan, step: string, key: string, day = today()) {
           'excluded',
           'reconsider',
           'newComparison',
+          'matrixPair',
+          'matrixScores',
           'actions',
           'comparison',
         ].includes(key)
@@ -801,7 +810,12 @@ export function foundationDoc(p: Plan, decision?: DecisionForm, at?: string) {
   const rows = (id: string, k: string) =>
     Array.isArray(a[id]?.[k])
       ? (a[id][k] as Record<string, string>[])
-          .map((row) => Object.values(row).join(', '))
+          .map((row) =>
+            Object.entries(row)
+              .filter(([key]) => !key.startsWith('_'))
+              .map(([, v]) => v)
+              .join(', '),
+          )
           .join('. ')
       : 'Bilinmiyor'
   const line = (label: string, v: unknown) => label + ': ' + word(v)

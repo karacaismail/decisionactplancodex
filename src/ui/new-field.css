@@ -1,0 +1,73 @@
+@layer atlas-tokens {
+  :root {
+    --release-pill-inset: 0.55em;
+    --release-pill-gap: 0.36em;
+    --release-pill-round: 100vmax;
+    --release-dot-size: 0.86em;
+    --release-dot-dim: 0.18;
+    --release-dot-cycle: 3.6s;
+  }
+}
+.release-label {
+  overflow-wrap: break-word;
+}
+.new-field-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--release-pill-gap);
+  padding: 0.08em var(--release-pill-inset);
+  border-radius: var(--release-pill-round);
+  vertical-align: 0.04em;
+  white-space: nowrap;
+  background: var(--signalBg);
+  color: var(--signal);
+  font-size: var(--caption-size);
+  line-height: 1.35;
+  font-weight: 680;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.new-field-dot {
+  flex: none;
+  width: var(--release-dot-size);
+  height: var(--release-dot-size);
+  border-radius: var(--release-pill-round);
+  background: var(--newFieldDot);
+}
+@keyframes new-field-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: var(--release-dot-dim);
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  :root:not(:has(.new-field-motion[data-paused='true'])) .new-field-dot {
+    animation: new-field-pulse var(--release-dot-cycle) var(--ease) infinite;
+  }
+}
+.new-field-motion.ant-btn {
+  color: var(--muted);
+  padding-inline: var(--release-pill-inset);
+  min-height: var(--hit);
+  white-space: normal;
+}
+@media (prefers-reduced-motion: reduce) {
+  .new-field-motion.ant-btn {
+    display: none;
+  }
+}
+@media (forced-colors: active) {
+  .new-field-dot {
+    background: CanvasText;
+    forced-color-adjust: none;
+  }
+}
+@media print {
+  .new-field-motion.ant-btn,
+  .new-field-badge {
+    display: none;
+  }
+}

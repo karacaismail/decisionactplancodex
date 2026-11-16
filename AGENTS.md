@@ -59,3 +59,48 @@
 - Kapanışta açık sözleri kaydedin. Bu kayıt yeni harcama yetkisi vermez.
 - Karar döngüsünü `node --test tests/lifecycle.test.mjs tests/team.test.mjs` komutuyla doğrulayın.
 - Tarayıcıda `npm run test:ui -- tests/browser/lifecycle.spec.ts` çalıştırın.
+
+## Yeni alanların etiketi
+
+- Son sürümde değişen alanları form tanımındaki `releaseMark` ile işaretleyin.
+- Listenin yalnız bir alanı değiştiyse o alanın anahtarını belirtin.
+- “new” yazısı sabit kalır. Yalnız yeşil nokta hareket eder.
+- Hareket durdurulduğunda veya cihazda azaltıldığında nokta sabit kalır.
+- Yazdırılan raporda bu etiketler görünmez.
+- `npm run test:ui -- tests/browser/new-fields.spec.ts` komutuyla işaretleri sınayın.
+
+## Seçim ve hedef arasındaki bağ
+
+- Yeni hedefi karar sahibinin kaydettiği seçime bağlayın.
+- Seçim eskirse eski hedefi güncel hedef olarak göstermeyin.
+- 17. adımdaki geçmiş rapora sonradan kurulan stratejiyi eklemeyin.
+- Türkiye kamu idaresi alanlarını yalnız açık seçimle gösterin.
+- 19. adımda ekip görüşünü kaynak onayından ayrı tutun.
+- İş, ölçü ve risk bağlantılarını iki uygulama raporunda sınayın.
+- `node --test tests/strategy-links.test.mjs` komutuyla veri kurallarını sınayın.
+- `npm run test:ui -- tests/browser/strategy-links.spec.ts` komutuyla telefon akışını sınayın.
+
+## Şirkete göre strateji inceleme takvimi
+
+Her şirket kendi strateji inceleme takvimini belirler. Şirketin yetkilendirdiği kullanıcı iki süreyi ayrı seçer. İlki şirketin genel yönünü, ikincisi rekabet stratejisini inceleme aralığıdır. İki süre aynı da olabilir.
+
+- Şirketin kendi sürelerini girmesine ve sonradan değiştirmesine izin verin. Örneğin beş yıl ve iki yıl seçilebilir. Seçenekleri örneklerle sınırlamayın.
+- Sektör bilgisi öneriye dayanak olabilir. Öneriyi ancak şirket seçerse kaydedin. Şirket süre seçmediyse takvimi boş bırakın.
+- Takvimi şirket düzeyinde saklayın. Sunucuda şirketi ve kullanıcının değişiklik yetkisini doğrulayın.
+- Tarih geldiğinde inceleme zamanını gösterin. Karar sahibi stratejiyi koruyabilir, değiştirebilir veya bırakabilir. Önemli bir değişiklikte karar sahibi incelemeyi erkene alabilir.
+
+**Geliştirme kabulü.** Aynı sektörden iki şirkete farklı süreler vererek sınayın. Bir şirketin takvimi değişince diğerininki korunmalı. Boş takvim, eşit süreler ve yetkisiz değişiklik isteği de sınanmalı. İnceleme tarihinin gelmesi kendiliğinden yeni strateji oluşturmamalı.
+
+
+## Karar Kitabı çalışmalarını sınama
+
+İlk altı yöntem 07, 18, 19, 22, 23 ve 26. adımlarda açılır. Kartı okumak planı değiştirmez. Hazırlık kararı 17. adımda verilir. Karar günündeki devir raporu saklanır. Yöntem sonucunu ilgili seçime bağlayın. Kaynağı eksik gözleme başka gözlemin dayanağını eklemeyin.
+
+İzin ve rapor kurallarını `node --test tests/phase-methods.test.mjs` ile sınayın. Tarayıcı denemesini `npm run test:ui -- tests/browser/phase-methods.spec.ts` ile çalıştırın.
+
+## SaaS modül planı
+
+- Ürün kapsamını `src/modules/module-plan/catalog.ts` içinde tanımlayın. Her özellik tek modüle ait olmalıdır.
+- Katalog ve mimari rehber kuruma ait veri okumaz. Rehber sorularını mevcut özellik kimliğine bağlayın.
+- Kataloğu `node --test tests/module-plan.test.mjs` ile sınayın.
+- Tarayıcı için önce `npm run build` çalıştırın. Ardından `npm run test:ui -- tests/browser/module-plan.spec.ts` çalıştırın.

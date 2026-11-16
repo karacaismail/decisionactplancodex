@@ -6,10 +6,12 @@ export interface Field {
   label: string
   kind: 'text' | 'long' | 'number' | 'date' | 'pick' | 'list'
   choices?: string[]
+  releaseMark?: true | string[]
   optionalColumns?: string[]
   columns?: string[]
   unit?: string
   branch?: 'paid' | 'free'
+  methodOnly?: boolean
   optional?: boolean
   listChoices?: Record<string, string[]>
   min?: number
@@ -55,6 +57,18 @@ const list = (key: string, label: string, columns: string[]): Field => ({
   kind: 'list',
   columns,
 })
+const methodCycleFields: Field[] = [
+  {
+    ...text('methodChoice', 'Yöntemin bağlı olduğu seçim'),
+    methodOnly: true,
+    optional: true,
+  },
+  {
+    ...list('methodHistory', 'Önceki yöntem sonuçları', ['Seçim', 'Özet']),
+    methodOnly: true,
+    optional: true,
+  },
+]
 const states = ['Bilinmiyor', 'Karşılandı', 'Karşılanmadı']
 export const stages = [
   {
@@ -146,6 +160,15 @@ export const steps: Step[] = [
         ),
         optional: true,
       },
+      {
+        ...pick(
+          'planningContext',
+          'Hangi planlama çerçevesini kullanacaksınız?',
+          ['Kurum içi çalışma', 'Türkiye kamu idaresi'],
+        ),
+        releaseMark: true,
+        optional: true,
+      },
       long('description', 'İşi kendi sözlerinizle anlatın'),
       text('fundingTerms', 'Dış kaynağın yazılı koşulu'),
     ],
@@ -153,6 +176,21 @@ export const steps: Step[] = [
   make('01', 0, 'Amaç ve gelecek', 'Başarıyı hangi sonuçla anlayacaksınız?', [
     long('goal', 'Beklenen sonuç'),
     text('owner', 'Karar sahibi'),
+    {
+      ...text('mandate', 'Karar yetkisini gösteren belge veya kayıt'),
+      releaseMark: true,
+      optional: true,
+    },
+    {
+      ...text('publicBasis', 'Kurumunuza uygulanan planlama kaynağı ve sürümü'),
+      releaseMark: true,
+      optional: true,
+    },
+    {
+      ...text('publicDuty', 'Yetkili kurumun verdiği kamu görevi'),
+      releaseMark: true,
+      optional: true,
+    },
   ]),
   make(
     '02',
@@ -380,7 +418,41 @@ export const steps: Step[] = [
       ),
       optional: true,
     },
+    {
+      ...list('matrixPair', 'Karşılaştırılan yollar', [
+        'left',
+        'right',
+        'leftName',
+        'rightName',
+        'leftBasis',
+        'rightBasis',
+      ]),
+      optional: true,
+      methodOnly: true,
+      releaseMark: true,
+    },
+    {
+      ...list('matrixScores', 'Karşılaştırma ölçüleri', [
+        'Ölçü',
+        'Ağırlık',
+        'Birinci',
+        'İkinci',
+      ]),
+      optional: true,
+      methodOnly: true,
+      releaseMark: true,
+    },
     long('choice', 'Seçilen yol'),
+    {
+      ...long('diagnosis', 'Seçimi gerektiren temel güçlük'),
+      releaseMark: true,
+      optional: true,
+    },
+    {
+      ...long('policy', 'Bu güçlüğü aşarken işleri yönlendirecek ilke'),
+      releaseMark: true,
+      optional: true,
+    },
     ...crossQuestions.map((q, i) => ({
       ...long('cross' + (i + 1), q),
       optional: true,
@@ -414,7 +486,21 @@ export const steps: Step[] = [
     [
       text('choiceBasis', 'İncelenen strateji'),
       {
+        ...list('objectives', 'Stratejik hedefler', [
+          'Hedef',
+          'Sorumlu',
+          'Ayrılan kaynak',
+        ]),
+        releaseMark: true,
+        optional: true,
+        optionalColumns: ['Ekibin karşı önerisi', 'Karşı öneriye yanıt'],
+        listChoices: {
+          'Çalışma amacı': ['Yeni bir yol denemek', 'Mevcut işi geliştirmek'],
+        },
+      },
+      {
         ...list('goals', 'İş sırası', ['Görev', 'Sorumlu', 'Kabul ölçüsü']),
+        releaseMark: ['_objective'],
         optionalColumns: ['Hedef tarih', 'Başlatacak olay'],
       },
     ],
@@ -446,7 +532,24 @@ export const steps: Step[] = [
     [
       {
         ...list('metrics', 'İşletme ölçüleri', ['Ölçü', 'Birim', 'Eşik']),
-        optionalColumns: ['Başlangıç', 'İlk ölçüm yolu'],
+        releaseMark: ['_objective', 'Beklenen etki', 'Karşı ölçü'],
+        optionalColumns: [
+          'Başlangıç',
+          'İlk ölçüm yolu',
+          'Beklenen etki',
+          'Karşı ölçü',
+        ],
+      },
+      {
+        ...list('forecasts', 'Tarihli beklentiler', [
+          'Seçim',
+          'Beklenti',
+          'Kaynak',
+          'Tarih',
+          'Zaman',
+        ]),
+        methodOnly: true,
+        optional: true,
       },
       text('source', 'Ölçüm kaynağı'),
       text('checkpoint', 'Ölçüm günü veya olayı'),
@@ -455,6 +558,21 @@ export const steps: Step[] = [
     ],
   ),
   make('23', 5, 'Sınırlı ilk teslim', 'Yardımla biten işleri ayrı sayın.', [
+    ...methodCycleFields,
+    {
+      ...number('wipLimit', 'Aynı anda yürütülebilecek iş sayısı', 'iş'),
+      optional: true,
+      methodOnly: true,
+      releaseMark: true,
+    },
+    {
+      ...list('board', 'Kanban işleri', ['İş', 'Sorumlu']),
+      optional: true,
+      methodOnly: true,
+      releaseMark: true,
+      optionalColumns: ['Engel', 'Bekleme başlangıcı', 'Sonraki iş'],
+      listChoices: { Durum: ['Sırada', 'Sürüyor', 'Engellendi', 'Tamamlandı'] },
+    },
     number('total', 'Başlayan', 'kişi'),
     number('completed', 'Yardımsız bitiren', 'kişi'),
     long('problem', 'Teslim veya teslimi engelleyen olay'),
@@ -482,13 +600,34 @@ export const steps: Step[] = [
       text('period', 'Gözlem dönemi'),
       { ...long('effects', 'Beklenmeyen etkiler'), optional: true },
       long('actual', 'Gözlenen değer veya sonuç'),
+      {
+        ...text('actualChoice', 'Gözlemin bağlı olduğu seçim'),
+        methodOnly: true,
+        optional: true,
+      },
       text('nextObservation', 'Sonraki gözlem günü veya olayı'),
     ],
   ),
   make('26', 6, 'Öğrenme döngüsü', 'Beklenti ile sonucu yan yana yazın.', [
+    ...methodCycleFields,
     long('expected', 'Beklenti'),
     long('observed', 'Gözlem'),
+    {
+      ...text('feedbackSource', 'Gözlemin dayanağı'),
+      optional: true,
+      releaseMark: true,
+    },
     long('next', 'Sonraki değişiklik'),
+    {
+      ...long('pattern', 'İlk planda olmayan hangi davranış tekrarlandı?'),
+      releaseMark: true,
+      optional: true,
+    },
+    {
+      ...text('patternSource', 'Bu gözlemin kaynağı'),
+      releaseMark: true,
+      optional: true,
+    },
     {
       ...long('why', 'Farkın nedeni veya açık kalan açıklama'),
       optional: true,

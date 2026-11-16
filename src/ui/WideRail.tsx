@@ -7,7 +7,7 @@ const sections: { title: string; pages: Page[] }[] = [
     pages: ['dashboard', 'portfolio', 'editor', 'gecis', 'evidence', 'work'],
   },
   { title: 'İnceleme', pages: ['insights', 'reports', 'methods'] },
-  { title: 'Yönetim', pages: ['team'] },
+  { title: 'Yönetim', pages: ['team', 'moduller'] },
 ]
 
 export default function WideRail({ page, go }: NavProps) {

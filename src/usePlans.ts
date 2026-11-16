@@ -6,7 +6,7 @@ import { demonstration } from './demo'
 import type { Plan } from './domain'
 
 import { teamRequest, type Session } from './team'
-export function usePlans(session: Session | null) {
+export function usePlans(session: Session | null, needsPlans: boolean) {
   const list = () =>
     session ? teamRequest<Plan[]>('list', undefined, session) : readPlans()
   const persist = (p: Plan) =>
@@ -76,12 +76,15 @@ export function usePlans(session: Session | null) {
         localStorage.setItem(lastKey, selected)
       } catch {}
   }, [selected])
+  const started = useRef(false)
   useEffect(() => {
+    if (!needsPlans || started.current) return
+    started.current = true
     load().catch((e) => {
       setError(String(e.message || e))
       setStatus('Kayıt açılamadı')
     })
-  }, [])
+  }, [needsPlans])
   useEffect(() => {
     function before(e: BeforeUnloadEvent) {
       if (pending.current.size || running.current || blocked.current.size) {

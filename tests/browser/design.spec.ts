@@ -182,3 +182,53 @@ test('karar dosyası ilk eksik soruya götürür', async ({ page }) => {
     page.getByRole('heading', { name: 'Risk ve önlem', exact: true }),
   ).toBeFocused()
 })
+
+test('Hazırlık düğmeleri telefonda dokunulabilir ve doğru ekranları açar', async ({
+  page,
+}, info) => {
+  await page.setViewportSize({ width: 320, height: 760 })
+  await page.goto('/')
+  const panel = page
+    .locator('section')
+    .filter({
+      has: page.getByRole('heading', {
+        name: 'Stratejik planlamaya hazırlık',
+        exact: true,
+      }),
+    })
+    .last()
+  const primary = panel.getByRole('button', {
+    name: 'Planlamaya geçişi incele',
+  })
+  const secondary = panel.getByRole('button', {
+    name: 'Beş ana aşamayı incele',
+  })
+  await panel.scrollIntoViewIfNeeded()
+  await page.evaluate(() => document.fonts.ready)
+  await panel.screenshot({ path: info.outputPath('hazirlik-320.png') })
+  for (const b of [primary, secondary]) {
+    const box = await b.boundingBox()
+    expect(box!.height).toBeGreaterThanOrEqual(44)
+    expect(box!.x).toBeGreaterThanOrEqual(0)
+    expect(box!.x + box!.width).toBeLessThanOrEqual(320)
+  }
+  expect(
+    await primary.evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).not.toEqual(
+    await secondary.evaluate((el) => getComputedStyle(el).backgroundColor),
+  )
+  await primary.focus()
+  // macOS WebKit uses Option+Tab to include buttons when keyboard navigation is off.
+  await page.keyboard.press(info.project.name === 'WebKit' ? 'Alt+Tab' : 'Tab')
+  await expect(secondary).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/#asamalar/)
+  await page.goBack()
+  await primary.click()
+  await expect(page).toHaveURL(/#gecis/)
+  await page.goBack()
+  await page.getByRole('button', { name: 'Koyu temaya geç' }).click()
+  await panel.screenshot({ path: info.outputPath('hazirlik-koyu-320.png') })
+  await page.setViewportSize({ width: 1440, height: 920 })
+  await panel.screenshot({ path: info.outputPath('hazirlik-1440.png') })
+})

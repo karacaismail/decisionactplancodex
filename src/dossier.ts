@@ -506,7 +506,7 @@ export function dossierDoc(p: Plan, decision?: DecisionForm, at?: string) {
       ? (val as Record<string, string>[])
           .map((r) =>
             Object.entries(r)
-              .filter(([k]) => k !== '_id')
+              .filter(([k]) => !k.startsWith('_'))
               .map(([k, v]) => k + ' · ' + display(v))
               .join('. '),
           )
@@ -596,6 +596,13 @@ export function dossierDoc(p: Plan, decision?: DecisionForm, at?: string) {
       '. Son gün: ' +
       dateLabel(String(a['02']?.end ?? '')) +
       '.',
+    ...(a['01']?.mandate ? ['Yetki dayanağı: ' + get('01', 'mandate')] : []),
+    ...(a['00']?.planningContext === 'Türkiye kamu idaresi'
+      ? [
+          'Planlama kaynağı ve sürümü: ' + get('01', 'publicBasis'),
+          'Kamu görevi: ' + get('01', 'publicDuty'),
+        ]
+      : []),
     ...pendingCommitments(p).map(
       (a) =>
         'Kanıt bekleyen taahhüt: ' +

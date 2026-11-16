@@ -144,6 +144,7 @@ export interface SavedReview extends CycleReview {
   id: string
   at: string
   choice: string
+  choiceId?: string
   imported?: boolean
   grant: string
 }

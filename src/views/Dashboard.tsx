@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Select } from 'antd'
+import { Button, Select } from 'antd'
 import {
   ArrowRight,
   ArrowUpRight,
@@ -9,6 +9,7 @@ import {
   Files,
   Flag,
   HourglassMedium,
+  ListNumbers,
   Notebook,
   Wallet,
 } from '@phosphor-icons/react'
@@ -298,26 +299,50 @@ export default function Dashboard({
           </button>
         </section>
       </div>
-      <section className="panel">
-        <h2>Stratejik planlamaya hazırlık</h2>
-        <button className="case-map" onClick={() => go('asamalar')}>
-          Beş ana aşamayı incele
-        </button>
-        <p>
-          Öneri: {prep.outcome}. {prep.required} / 9 zorunlu ölçüt.
-        </p>
-        <p>
-          Doğrulama düzeyi {prep.level} / 5. {levels[prep.level]}.
-        </p>
-        <p>
+      <section
+        className="panel readiness-summary"
+        aria-labelledby="readiness-title"
+      >
+        <h2 id="readiness-title">Stratejik planlamaya hazırlık</h2>
+        <dl className="readiness-facts">
+          <div>
+            <dt>Öneri</dt>
+            <dd>{prep.outcome}</dd>
+          </div>
+          <div>
+            <dt>Zorunlu ölçütler</dt>
+            <dd>{prep.required} / 9</dd>
+          </div>
+          <div>
+            <dt>Doğrulama düzeyi</dt>
+            <dd>
+              {prep.level} / 5 <span>{levels[prep.level]}</span>
+            </dd>
+          </div>
+        </dl>
+        <p className="readiness-note">
           {permission.last
             ? 'Kayıtlı karar: ' + permission.last.outcome + '. '
             : ''}
           {permission.reason}
         </p>
-        <button className="case-map" onClick={() => go('gecis')}>
-          Planlamaya geçişi incele
-        </button>
+        <div className="readiness-actions">
+          <Button
+            type="primary"
+            icon={<ArrowRight />}
+            iconPlacement="end"
+            onClick={() => go('gecis')}
+          >
+            Planlamaya geçişi incele
+          </Button>
+          <Button
+            type="text"
+            icon={<ListNumbers />}
+            onClick={() => go('asamalar')}
+          >
+            Beş ana aşamayı incele
+          </Button>
+        </div>
       </section>
       <div className="analysis-split">
         <section className="coverage-sheet" aria-label="Aşama analizi">

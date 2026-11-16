@@ -8,6 +8,7 @@ import {
   Files,
   ChartBar,
   Notepad,
+  TreeStructure,
 } from '@phosphor-icons/react'
 import { personalOnly } from '../hosting'
 const pages = [
@@ -21,6 +22,7 @@ const pages = [
   { id: 'insights', label: 'Göstergeler', icon: ChartBar },
   { id: 'reports', label: 'Raporlar', icon: Files },
   { id: 'methods', label: 'Karar Kitabı', icon: BookOpenText },
+  { id: 'moduller', label: 'Modül planı', icon: TreeStructure },
   { id: 'team', label: 'Kurum alanı', icon: Buildings },
 ] as const
 export type Page = (typeof pages)[number]['id']

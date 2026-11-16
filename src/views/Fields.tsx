@@ -1,20 +1,30 @@
+import { NewFieldLabel, newFieldDescription } from '../ui/NewFieldLabel'
 import { legacyId } from '../dossier'
 import { Button, DatePicker, Input, InputNumber, Select, Radio } from 'antd'
 import { Plus, Trash } from '@phosphor-icons/react'
 import dayjs from 'dayjs'
 import type { Field, Value } from '../data/steps'
+import { freshRow, type RowRelation } from '../strategyLinks'
 export default function FieldInput({
   f,
   v,
   id,
   onChange,
+  relation,
+  choice,
 }: {
+  relation?: RowRelation
+  choice?: string
   f: Field
   v: Value | undefined
   id: string
   onChange: (v: Value) => void
 }) {
-  const props = { id, 'aria-label': f.label }
+  const props = {
+    id,
+    'aria-label': f.label,
+    'aria-description': f.releaseMark ? newFieldDescription : undefined,
+  }
   if (
     f.kind === 'pick' &&
     f.choices &&
@@ -47,6 +57,7 @@ export default function FieldInput({
           {...props}
           value={typeof v === 'number' ? v : null}
           min={f.min}
+          precision={f.unit === 'iş' ? 0 : undefined}
           onChange={(n) => onChange(n ?? '')}
           controls={false}
           placeholder="Sayı girin"
@@ -74,12 +85,14 @@ export default function FieldInput({
       />
     )
   if (f.kind === 'list') {
+    const newColumn = (key: string) =>
+      f.releaseMark === true || !!f.releaseMark?.includes(key)
     const rows = Array.isArray(v) ? (v as Record<string, string>[]) : []
     return (
-      <div className="repeat-list">
+      <div className="repeat-list" role="group" {...props}>
         {rows.map((r, n) => (
           <div
-            key={f.key === 'options' ? r._id || (r.Çözüm ? legacyId(r) : n) : n}
+            key={r._id || (f.key === 'options' && r.Çözüm ? legacyId(r) : n)}
             className="repeat-row"
           >
             <div className="split">
@@ -91,28 +104,22 @@ export default function FieldInput({
                 onClick={() => onChange(rows.filter((_, i) => i !== n))}
               />
             </div>
-            {Object.entries(f.listChoices ?? {}).map(([key, choices]) => (
-              <label key={key}>
-                <span>{key}</span>
-                <Select
-                  aria-label={key}
-                  allowClear
-                  value={r[key] || undefined}
-                  options={choices.map((value) => ({ value, label: value }))}
-                  onChange={(value) =>
-                    onChange(
-                      rows.map((row, i) =>
-                        i === n ? { ...row, [key]: value ?? '' } : row,
-                      ),
-                    )
-                  }
-                />
-              </label>
-            ))}
+            {f.key === 'objectives' && r._choice !== choice && (
+              <p>
+                Bu hedef önceki seçime aittir. Güncel seçim için yeni hedef
+                ekleyebilirsiniz.
+              </p>
+            )}
             {[...(f.columns ?? []), ...(f.optionalColumns ?? [])].map((c) => (
               <label key={c}>
-                <span>{c}</span>
+                <span>
+                  <NewFieldLabel text={c} marked={newColumn(c)} />
+                </span>
                 <Input
+                  aria-label={c}
+                  aria-description={
+                    newColumn(c) ? newFieldDescription : undefined
+                  }
                   value={r[c] ?? ''}
                   onChange={(e) =>
                     onChange(
@@ -138,16 +145,75 @@ export default function FieldInput({
                 />
               </label>
             ))}
+            {relation && (relation.options.length > 0 || r[relation.key]) && (
+              <label>
+                <span>
+                  <NewFieldLabel
+                    text={relation.label}
+                    marked={newColumn(relation.key)}
+                  />
+                </span>
+                <Select
+                  aria-label={relation.label}
+                  aria-description={
+                    newColumn(relation.key) ? newFieldDescription : undefined
+                  }
+                  allowClear
+                  virtual={false}
+                  value={r[relation.key] || undefined}
+                  options={
+                    r[relation.key] &&
+                    !relation.options.some(
+                      (item) => item.value === r[relation.key],
+                    )
+                      ? [
+                          ...relation.options,
+                          {
+                            value: r[relation.key],
+                            label: 'Önceki bağlantıyı inceleyin',
+                            disabled: true,
+                          },
+                        ]
+                      : relation.options
+                  }
+                  onChange={(value) =>
+                    onChange(
+                      rows.map((row, i) =>
+                        i === n ? { ...row, [relation.key]: value ?? '' } : row,
+                      ),
+                    )
+                  }
+                />
+              </label>
+            )}
+            {Object.entries(f.listChoices ?? {}).map(([key, choices]) => (
+              <label key={key}>
+                <span>
+                  <NewFieldLabel text={key} marked={newColumn(key)} />
+                </span>
+                <Select
+                  aria-label={key}
+                  aria-description={
+                    newColumn(key) ? newFieldDescription : undefined
+                  }
+                  allowClear
+                  value={r[key] || undefined}
+                  options={choices.map((value) => ({ value, label: value }))}
+                  onChange={(value) =>
+                    onChange(
+                      rows.map((row, i) =>
+                        i === n ? { ...row, [key]: value ?? '' } : row,
+                      ),
+                    )
+                  }
+                />
+              </label>
+            ))}
           </div>
         ))}
         <Button
           icon={<Plus />}
-          onClick={() =>
-            onChange([
-              ...rows,
-              f.key === 'options' ? { _id: crypto.randomUUID() } : {},
-            ])
-          }
+          onClick={() => onChange([...rows, freshRow(f, choice)])}
         >
           {f.label} için kayıt ekle
         </Button>

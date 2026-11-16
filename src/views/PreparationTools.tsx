@@ -11,15 +11,19 @@ export default function PreparationTools({
   disabled,
   actor,
   openProof,
+  initialCause,
 }: {
   p: Plan
   step: string
   change: (fn: (current: Plan) => Plan) => void
   openProof: (id: string) => void
+  initialCause?: boolean
   actor?: string
   disabled: boolean
 }) {
-  const [opened, setOpened] = useState<MethodId>()
+  const [opened, setOpened] = useState<MethodId | undefined>(
+    initialCause ? 'cause' : undefined,
+  )
   const [others, setOthers] = useState(false)
   const available = methodsFor(p, step)
   if (!available.length) return null
@@ -45,7 +49,13 @@ export default function PreparationTools({
                 {m.title}
               </Button>
               {open && (
-                <div id={'method-form-' + m.id}>
+                <div
+                  tabIndex={-1}
+                  id={'method-form-' + m.id}
+                  data-phase-method={
+                    step === '07' && m.id === 'cause' ? 'bes-neden' : undefined
+                  }
+                >
                   <p>{m.hint}</p>
                   <Suspense fallback={<p role="status">Yöntem açılıyor.</p>}>
                     <StudyForm

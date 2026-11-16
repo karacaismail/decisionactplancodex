@@ -43,6 +43,9 @@ import { steps } from './data/steps'
 import type { Criterion } from './readiness'
 import Dashboard from './views/Dashboard'
 const Lifecycle = lazy(() => import('./views/Lifecycle'))
+const ModulePlanView = lazy(
+  () => import('./modules/module-plan/ModulePlanView'),
+)
 const Foundation = lazy(() => import('./views/Foundation'))
 const Team = personalOnly ? null : lazy(() => import('./views/Team')),
   Portfolio = lazy(() => import('./views/Portfolio')),
@@ -60,6 +63,8 @@ const subscribe = (cb: () => void) => {
   return () => width.removeEventListener('change', cb)
 }
 const descriptions: Record<Page, string> = {
+  moduller:
+    'Bu SaaS ürün planı tüm kurumlar için ortaktır. Her özelliğin sahibini ve geliştirme durumunu görebilirsiniz.',
   asamalar: 'Beş ana aşamayı inceleyin. Seçtiğiniz işin kaydını açın.',
   gecis:
     '17. adımdan sonra dayanakları inceleyin. Stratejiye geçiş kararını kaydedin.',
@@ -134,16 +139,17 @@ function Workspace({
   const readOnly =
     !!session && ['reader', 'reviewer'].includes(session.user.role)
   const [launch, setLaunch] = useState<Launch>('new')
-  const store = usePlans(session),
+  const [page, setPage] = useState<Page>(fromHash)
+  const store = usePlans(session, page !== 'moduller'),
     p = store.plan
-  const [page, setPage] = useState<Page>(fromHash),
-    [dark, setDark] = useState(initialDark),
+  const [dark, setDark] = useState(initialDark),
     [stage, setStage] = useState(0),
     [dialog, setDialog] = useState(false),
     [name, setName] = useState(''),
     [error, setError] = useState(''),
     [nameError, setNameError] = useState(''),
     [replacing, setReplacing] = useState(false)
+  const [bookTarget, setBookTarget] = useState<{ plan: string; step: string }>()
   const [openingExample, setOpeningExample] = useState(false)
   const [proofId, setProofId] = useState<Criterion>()
   const [evidenceRecord, setEvidenceRecord] = useState<string>()
@@ -229,6 +235,14 @@ function Workspace({
     } catch {}
     visitStage(step.stage)
     go('editor')
+  }
+  useEffect(() => {
+    if (page !== 'editor') setBookTarget(undefined)
+  }, [page])
+  function openBookWork(id: string) {
+    if (!p) return
+    setBookTarget({ plan: p.id, step: id })
+    visitStep(id)
   }
   const exportPlan = () => {
     if (p)
@@ -377,7 +391,7 @@ function Workspace({
                   Bölüm bul <kbd>⌘ K</kbd>
                 </button>
               )}
-              {wide && (
+              {wide && (page !== 'moduller' || store.hasDraft) && (
                 <span className="save" role="status">
                   <CheckCircle size={17} />
                   {store.status}
@@ -389,35 +403,37 @@ function Workspace({
                 icon={dark ? <Sun size={21} /> : <Moon size={21} />}
                 onClick={() => setDark(!dark)}
               />
-              <Dropdown
-                trigger={['click']}
-                menu={{
-                  items: [
-                    {
-                      key: 'export',
-                      label: 'Planı JSON indir',
-                      icon: <DownloadSimple />,
-                      disabled: !p,
-                    },
-                    {
-                      disabled: readOnly,
-                      key: 'import',
-                      label: 'JSON dosyasını aç',
-                      icon: <UploadSimple />,
-                    },
-                  ],
-                  onClick: ({ key }) =>
-                    key === 'export'
-                      ? exportPlan()
-                      : document.getElementById('import-file')?.click(),
-                }}
-              >
-                <Button
-                  type="text"
-                  aria-label="Dosya işlemleri"
-                  icon={<SlidersHorizontal size={21} />}
-                />
-              </Dropdown>
+              {page !== 'moduller' && (
+                <Dropdown
+                  trigger={['click']}
+                  menu={{
+                    items: [
+                      {
+                        key: 'export',
+                        label: 'Planı JSON indir',
+                        icon: <DownloadSimple />,
+                        disabled: !p,
+                      },
+                      {
+                        disabled: readOnly,
+                        key: 'import',
+                        label: 'JSON dosyasını aç',
+                        icon: <UploadSimple />,
+                      },
+                    ],
+                    onClick: ({ key }) =>
+                      key === 'export'
+                        ? exportPlan()
+                        : document.getElementById('import-file')?.click(),
+                  }}
+                >
+                  <Button
+                    type="text"
+                    aria-label="Dosya işlemleri"
+                    icon={<SlidersHorizontal size={21} />}
+                  />
+                </Dropdown>
+              )}
               <input
                 id="import-file"
                 type="file"
@@ -442,18 +458,20 @@ function Workspace({
                   <p>{descriptions[page]}</p>
                 )}
               </div>
-              <Button
-                disabled={readOnly}
-                type="primary"
-                icon={<Plus size={18} weight="bold" />}
-                onClick={() => {
-                  setLaunch('new')
-                  setDialog(true)
-                  setNameError('')
-                }}
-              >
-                Yeni plan
-              </Button>
+              {page !== 'moduller' && (
+                <Button
+                  disabled={readOnly}
+                  type="primary"
+                  icon={<Plus size={18} weight="bold" />}
+                  onClick={() => {
+                    setLaunch('new')
+                    setDialog(true)
+                    setNameError('')
+                  }}
+                >
+                  Yeni plan
+                </Button>
+              )}
             </div>
             {(error || store.error) && (
               <Alert
@@ -483,7 +501,11 @@ function Workspace({
                 )}
               </div>
             )}
-            {Team && page === 'team' ? (
+            {page === 'moduller' ? (
+              <Suspense fallback={<p role="status">Modül planı açılıyor.</p>}>
+                <ModulePlanView />
+              </Suspense>
+            ) : Team && page === 'team' ? (
               <Suspense fallback={<p>Üyelik açılıyor.</p>}>
                 <Team
                   plan={p}
@@ -595,6 +617,9 @@ function Workspace({
                     <Editor
                       session={session ?? undefined}
                       openProof={openEvidenceRecord}
+                      initialBookStep={
+                        bookTarget?.plan === p.id ? bookTarget.step : undefined
+                      }
                       visitStep={visitStep}
                       actor={session?.user.name}
                       openTransition={() => go('gecis')}
@@ -692,7 +717,7 @@ function Workspace({
                       }
                     />
                   ) : page === 'methods' ? (
-                    <Methods />
+                    <Methods start={openBookWork} />
                   ) : (
                     <Insights p={p} dark={dark} />
                   )}

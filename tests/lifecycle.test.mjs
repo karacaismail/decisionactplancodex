@@ -260,3 +260,25 @@ test('Kapanış açık taahhütleri korur. İçe aktarılan eski izin yeni iş a
   p = confirmStrategyChoice(p, 'Ayşe')
   assert.equal(allows(p, '25', 'evidence'), false)
 })
+
+test('Gözlem yalnız sonuç kararında saklandığında tarihli beklenti doğru seçimi bulur', async () => {
+  const { forecastRecord } = await import('../src/phaseMethods.ts')
+  const p = funded()
+  const selected = currentStrategyChoice(p)
+  const q = recordCycleReview(p, review('Sürdür'))
+  assert.notEqual(selected.choice, selected.id)
+  assert.equal(q.cycleReviews.at(-1).choiceId, selected.id)
+  assert.equal(
+    forecastRecord(q, selected.id, today()).Zaman,
+    'Gözlem kaydından sonra',
+  )
+  assert.equal(
+    forecastRecord(q, 'başka-seçim', today()).Zaman,
+    'Gözlem kaydından önce',
+  )
+  delete q.cycleReviews.at(-1).choiceId
+  assert.equal(
+    forecastRecord(q, selected.id, today()).Zaman,
+    'Gözlem sırası bilinmiyor',
+  )
+})

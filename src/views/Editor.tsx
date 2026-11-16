@@ -1,6 +1,7 @@
+import { NewFieldLabel, NewFieldMotion } from '../ui/NewFieldLabel'
 import { personalOnly, storagePrefix } from '../hosting'
 import type { Session } from '../team'
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import {
   ConfigProvider,
   Alert,
@@ -45,6 +46,8 @@ import PreparationTools from './PreparationTools'
 import FoundationInputs from './FoundationInputs'
 import DecisionDesk from './DecisionDesk'
 import FieldInput from './Fields'
+import { rowRelation } from '../strategyLinks'
+import { phaseCards, methodSuggested } from '../phaseMethods'
 import { phases, phaseOf } from '../lifecycle'
 import StepSummary from './StepSummary'
 import { routes } from '../dossier'
@@ -52,6 +55,7 @@ const TeamOwner = personalOnly ? null : lazy(() => import('./TeamOwner'))
 const Situation = lazy(() => import('./Situation'))
 const BriefEditor = lazy(() => import('./BriefEditor'))
 const Takeover = lazy(() => import('./Takeover'))
+const PhaseMethodWork = lazy(() => import('./PhaseMethodWork'))
 const Methods = lazy(() => import('./Methods'))
 export default function Editor({
   p,
@@ -63,6 +67,7 @@ export default function Editor({
   openTransition,
   openEvaluation,
   savedTransition,
+  initialBookStep,
   openDossier,
   visitStep,
   actor,
@@ -75,6 +80,7 @@ export default function Editor({
   openProof: (id: string) => void
   session?: Session
   actor?: string
+  initialBookStep?: string
   savedTransition?: string
   readOnly: boolean
   p: Plan
@@ -82,6 +88,9 @@ export default function Editor({
   stage: number
   setStage: (n: number) => void
 }) {
+  const [bookStep, setBookStep] = useState(initialBookStep)
+  const [bookVisit, setBookVisit] = useState(0)
+  const focusBook = useRef(!!initialBookStep)
   const [reviewer, setReviewer] = useState('')
   const [selected, setSelected] = useState(() => {
       try {
@@ -116,11 +125,29 @@ export default function Editor({
     ),
     step = items.find((x) => x.id === selected) ?? items[0],
     index = items.indexOf(step)
+  const card = phaseCards.find((c) => c.step === step.id)
+  const bookOpen = bookStep === step.id
+  useEffect(() => {
+    if (!bookOpen || !focusBook.current) return
+    const frame = requestAnimationFrame(() => {
+      const panel = document.querySelector<HTMLElement>('[data-phase-method]')
+      if (panel) {
+        panel.focus({ preventScroll: true })
+        panel.scrollIntoView({ block: 'start' })
+        focusBook.current = false
+      }
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [bookOpen, bookVisit, step.id])
   const missingIndex = items.findIndex((s) => !complete(p, s))
   const grant = access(p),
     persisted = !!grant.last && savedTransition === grant.last.id
   const editable = (key: string) =>
     !readOnly && (step.id < '18' || (persisted && allows(p, step.id, key)))
+  const choiceId =
+    grant.active && ['19', '22'].includes(step.id)
+      ? currentStrategyChoice(p)?.id
+      : undefined
   const fields = visibleFields(p, step)
   const fieldGroups =
     step.id === '16'
@@ -152,6 +179,7 @@ export default function Editor({
   }
   function choose(i: number) {
     focusQuestion()
+    setBookStep(undefined)
     setSelected(i >= 0 ? items[i].id : '')
     remember(i >= 0 ? items[i].id : '')
     setMode('step')
@@ -421,6 +449,7 @@ export default function Editor({
                   {step.title}
                 </h3>
                 <p>{step.help}</p>
+                {fields.some((f) => f.releaseMark) && <NewFieldMotion />}
               </div>
               {step.id === '00' &&
                 p.answers['00']?.start === 'Devralınan iş' && (
@@ -580,6 +609,51 @@ export default function Editor({
                       : 'Önce 18. adımı ve iş sırasını tamamlayın.'}
                   </p>
                 )}
+              {card &&
+                step.id !== '07' &&
+                (bookOpen ||
+                  methodSuggested(p, step.id) ||
+                  step.id === '23') && (
+                  <section
+                    className="method-work brief-editor"
+                    aria-label={card.title}
+                  >
+                    <Button
+                      className="method-trigger"
+                      aria-expanded={bookOpen}
+                      aria-controls={
+                        bookOpen ? 'phase-method-' + card.slug : undefined
+                      }
+                      onClick={() =>
+                        setBookStep(bookOpen ? undefined : step.id)
+                      }
+                      icon={<BookOpenText size={18} />}
+                    >
+                      {card.title}
+                      {step.id === '23' && !methodSuggested(p, step.id)
+                        ? ' · İşler birikiyorsa aç'
+                        : ''}
+                    </Button>
+                    {bookOpen && (
+                      <div
+                        id={'phase-method-' + card.slug}
+                        data-phase-method={card.slug}
+                        role="region"
+                        aria-label={card.title + ' çalışması'}
+                        tabIndex={-1}
+                      >
+                        <Suspense fallback={<p>Yöntem açılıyor.</p>}>
+                          <PhaseMethodWork
+                            p={p}
+                            step={step.id}
+                            change={change}
+                            editable={editable}
+                          />
+                        </Suspense>
+                      </div>
+                    )}
+                  </section>
+                )}
               <ConfigProvider componentDisabled={readOnly}>
                 {fieldGroups.map((group) => (
                   <fieldset
@@ -593,13 +667,19 @@ export default function Editor({
                     {group.fields
                       .filter(
                         (f) =>
-                          step.id !== '18' ||
-                          (!f.key.startsWith('cross') &&
-                            f.key !== 'chosenOrigin'),
+                          !f.methodOnly &&
+                          (step.id !== '18' ||
+                            (!f.key.startsWith('cross') &&
+                              f.key !== 'chosenOrigin')),
                       )
                       .map((f) => (
                         <div className="field" data-kind={f.kind} key={f.key}>
-                          <label htmlFor={'field-' + f.key}>{f.label}</label>
+                          <label htmlFor={'field-' + f.key}>
+                            <NewFieldLabel
+                              text={f.label}
+                              marked={!!f.releaseMark}
+                            />
+                          </label>
                           <ConfigProvider componentDisabled={!editable(f.key)}>
                             {TeamOwner &&
                             session &&
@@ -649,6 +729,13 @@ export default function Editor({
                               </>
                             ) : (
                               <FieldInput
+                                relation={rowRelation(
+                                  p,
+                                  step.id,
+                                  f.key,
+                                  choiceId,
+                                )}
+                                choice={choiceId}
                                 f={f}
                                 v={
                                   step.id === '18' &&
@@ -697,7 +784,14 @@ export default function Editor({
               <PreparationTools
                 openProof={openProof}
                 actor={actor}
-                key={p.id + step.id}
+                key={
+                  p.id +
+                  step.id +
+                  (bookOpen && step.id === '07'
+                    ? 'book' + bookVisit
+                    : 'regular')
+                }
+                initialCause={step.id === '07' && bookOpen}
                 p={p}
                 step={step.id}
                 change={change}
@@ -784,7 +878,15 @@ export default function Editor({
               </Button>
               {showMethods && (
                 <Suspense fallback={<p>Yöntemler açılıyor.</p>}>
-                  <Methods step={step.id} />
+                  <Methods
+                    step={step.id}
+                    start={(id) => {
+                      focusBook.current = true
+                      setBookVisit((n) => n + 1)
+                      setBookStep(id)
+                      methods(false)
+                    }}
+                  />
                 </Suspense>
               )}
             </>

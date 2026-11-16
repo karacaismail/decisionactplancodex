@@ -18,6 +18,7 @@
     "start": "node server/start.mjs"
   },
   "dependencies": {
+    "@ant-design/x": "2.10.0",
     "@fontsource-variable/outfit": "5.3.0",
     "@phosphor-icons/react": "2.1.10",
     "antd": "6.7.0",

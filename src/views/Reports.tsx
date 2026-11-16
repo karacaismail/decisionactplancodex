@@ -1,3 +1,8 @@
+import {
+  NewFieldLabel,
+  NewFieldMotion,
+  newFieldDescription,
+} from '../ui/NewFieldLabel'
 import { methods } from '../preparationMethods'
 import {
   sourceLink,
@@ -18,6 +23,15 @@ import { access, foundation, foundationDoc } from '../readiness'
 import { dateLabel, freezeReports, report, type Plan } from '../domain'
 import './foundation.css'
 import { download } from '../store'
+const newSectionTitles = new Set([
+  '## Karar yetkisinin dayanağı',
+  '## Hedeflerin karar bağları',
+  '## Karar Matrisi',
+  '## KPI Tasarımı',
+  '## Kanban',
+  '## Geri Bildirim Analizi',
+  '## Planda olmayan gelişme',
+])
 const reportTypes = [
   ['executive', 'Yönetici raporu'],
   ['action', 'Girişimci aksiyon planı'],
@@ -98,6 +112,7 @@ export default function Reports({
   const outline = lines
     .map((text, index) => ({ text, index }))
     .filter((i) => i.text.startsWith('## '))
+  const liveReport = !pair && (kind === 'executive' || kind === 'action')
   function goToSection(index: number) {
     const h = document.getElementById('doc-section-' + index)
     h?.focus({ preventScroll: true })
@@ -198,6 +213,9 @@ export default function Reports({
           )}
         </div>
         <div className="report-actions">
+          {liveReport && outline.some((s) => newSectionTitles.has(s.text)) && (
+            <NewFieldMotion />
+          )}
           <Button
             icon={<DownloadSimple />}
             onClick={() =>
@@ -286,6 +304,7 @@ export default function Reports({
               section.index + 1,
               outline[i + 1]?.index ?? lines.length,
             )
+            const marked = liveReport && newSectionTitles.has(section.text)
             return (
               <section
                 className={
@@ -295,8 +314,12 @@ export default function Reports({
                 }
                 key={section.index}
               >
-                <h3 tabIndex={-1} id={'doc-section-' + section.index}>
-                  {section.text.slice(3)}
+                <h3
+                  tabIndex={-1}
+                  id={'doc-section-' + section.index}
+                  aria-description={marked ? newFieldDescription : undefined}
+                >
+                  <NewFieldLabel text={section.text.slice(3)} marked={marked} />
                 </h3>
                 {kind === 'dossier' && !historic && (
                   <div className="dossier-source-links">

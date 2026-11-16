@@ -1151,3 +1151,63 @@ body .shell.wide .workspace {
   border: none;
   text-decoration: underline;
 }
+
+.council .readiness-summary {
+  display: grid;
+  gap: var(--sheet-gap);
+  padding: var(--gutter);
+}
+.readiness-summary h2 {
+  margin: 0;
+}
+.readiness-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sheet-gap) var(--gutter);
+  margin: 0;
+}
+.readiness-facts dt,
+.readiness-note,
+.readiness-facts dd span {
+  color: var(--muted);
+}
+.readiness-facts dt {
+  font-size: var(--caption-size);
+}
+.readiness-facts dd {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 630;
+  font-variant-numeric: tabular-nums;
+}
+.readiness-facts dd span {
+  font-weight: 450;
+}
+.readiness-summary .readiness-note {
+  margin: 0;
+}
+.readiness-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sheet-gap);
+  border-top: var(--baseline);
+  padding-block-start: var(--sheet-gap);
+}
+.readiness-actions .ant-btn {
+  min-height: var(--hit);
+  height: auto;
+  max-width: 100%;
+  white-space: normal;
+  font-weight: 600;
+}
+.readiness-actions .ant-btn-text {
+  color: var(--accent);
+}
+@media (max-width: 36rem) {
+  .readiness-actions .ant-btn {
+    width: 100%;
+  }
+  .readiness-facts > div:first-child {
+    flex-basis: 100%;
+  }
+}

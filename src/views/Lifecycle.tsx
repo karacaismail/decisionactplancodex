@@ -10,6 +10,7 @@ import {
 import { access, allows } from '../readiness'
 import {
   dateLabel,
+  currentStrategyChoice,
   latestReview,
   recordCycleReview,
   type Plan,
@@ -29,22 +30,34 @@ type Props = {
 }
 function ReviewForm({ p, actor, readOnly, confirmed, change }: Props) {
   const owner = String(p.answers['01']?.owner ?? '')
+  const related =
+    p.answers['26']?.methodChoice &&
+    p.answers['26'].methodChoice === currentStrategyChoice(p)?.id
+      ? p.answers['26']
+      : undefined
+  const delivery = p.answers['25']
+  const measured =
+    delivery?.actualChoice &&
+    delivery.actualChoice === currentStrategyChoice(p)?.id &&
+    delivery.benefit !== 'Bilinmiyor'
+      ? delivery
+      : undefined
   const initial = (): CycleReview => ({
     action: 'Sürdür',
     owner,
     assignee: '',
     next: '',
     missing: '',
-    expected: String(
-      p.answers['26']?.expected || p.answers['22']?.benefit || '',
+    expected: String(related?.expected || p.answers['22']?.benefit || ''),
+    observed: String(related?.observed || measured?.actual || ''),
+    source: String(
+      related?.observed
+        ? related?.feedbackSource || ''
+        : measured?.actual
+          ? measured.evidence || ''
+          : '',
     ),
-    observed: String(
-      (p.answers['25']?.benefit !== 'Bilinmiyor' && p.answers['25']?.actual) ||
-        p.answers['26']?.observed ||
-        '',
-    ),
-    source: String(p.answers['25']?.evidence ?? ''),
-    reason: String(p.answers['26']?.why ?? ''),
+    reason: String(related?.why ?? ''),
   })
   const [form, setForm] = useState(initial)
   const [error, setError] = useState('')
